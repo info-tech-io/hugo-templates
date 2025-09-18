@@ -1,0 +1,16 @@
+{
+  "config": {
+    "type": "input-field",
+    "caseSensitive": false,
+    "showTryAgainButton": true,
+    "showExplanationOnError": false
+  },
+  "question": {
+    "en": "What language is used for styles?",
+    "ru": "Какой язык для стилей?"
+  },
+  "answer": {
+        "en": "CSS",
+        "ru": "CSS"
+  }
+}

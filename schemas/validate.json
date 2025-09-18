@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://schemas.hugo-templates.org/validate.json",
+  "title": "Hugo Templates Validate Schema",
+  "description": "Schema for hugo-templates validate command parameters",
+  "type": "object",
+  "properties": {
+    "target": {
+      "type": "string",
+      "description": "Target to validate (config file, template, or component)",
+      "default": "."
+    },
+    "type": {
+      "type": "string",
+      "description": "Type of validation to perform",
+      "enum": ["config", "template", "component", "all"],
+      "default": "all"
+    },
+    "strict": {
+      "type": "boolean",
+      "description": "Enable strict validation mode",
+      "default": false
+    },
+    "fix": {
+      "type": "boolean",
+      "description": "Attempt to fix validation errors automatically",
+      "default": false
+    }
+  },
+  "additionalProperties": false,
+  "required": []
+}

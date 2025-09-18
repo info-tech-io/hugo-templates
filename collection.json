@@ -1,0 +1,32 @@
+{
+  "$schema": "./schemas/collection-schema.json",
+  "name": "hugo-templates",
+  "version": "0.1.0-alpha.1",
+  "description": "Hugo Template Factory Framework - Parametrized scaffolding for Hugo static sites",
+  "schematics": {
+    "build": {
+      "description": "Build a Hugo site with specified template, theme and components",
+      "factory": "./bin/build-factory",
+      "schema": "./schemas/build.json",
+      "aliases": ["b", "generate", "g"]
+    },
+    "list": {
+      "description": "List available templates, themes or components",
+      "factory": "./bin/list-factory",
+      "schema": "./schemas/list.json",
+      "aliases": ["ls"]
+    },
+    "validate": {
+      "description": "Validate configuration files and templates",
+      "factory": "./bin/validate-factory",
+      "schema": "./schemas/validate.json",
+      "aliases": ["v", "check"]
+    },
+    "init": {
+      "description": "Initialize a new Hugo project with interactive prompts",
+      "factory": "./bin/init-factory",
+      "schema": "./schemas/init.json",
+      "aliases": ["i", "create"]
+    }
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "name": "hugo-templates",
+  "version": "0.1.0-alpha.1",
+  "description": "Parametrized build system for Hugo - the first Template Factory framework for static site generation",
+  "main": "bin/hugo-templates.js",
+  "bin": {
+    "hugo-templates": "./bin/hugo-templates.js"
+  },
+  "scripts": {
+    "test": "node tests/runner.js",
+    "lint": "eslint .",
+    "validate": "node scripts/validate.js",
+    "build": "node scripts/build.js",
+    "dev": "node scripts/dev.js",
+    "prepublishOnly": "npm run test && npm run lint"
+  },
+  "keywords": [
+    "hugo",
+    "template",
+    "scaffolding",
+    "cli",
+    "generator",
+    "static-site",
+    "education",
+    "parametrized",
+    "factory"
+  ],
+  "author": {
+    "name": "info-tech-io",
+    "url": "https://github.com/info-tech-io"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/info-tech-io/hugo-templates.git"
+  },
+  "bugs": {
+    "url": "https://github.com/info-tech-io/hugo-templates/issues"
+  },
+  "homepage": "https://github.com/info-tech-io/hugo-templates#readme",
+  "engines": {
+    "node": ">=14.0.0",
+    "npm": ">=6.0.0"
+  },
+  "dependencies": {
+    "commander": "^9.4.1",
+    "ajv": "^8.12.0",
+    "chalk": "^4.1.2",
+    "inquirer": "^8.2.5",
+    "fs-extra": "^11.1.1",
+    "yaml": "^2.3.2",
+    "glob": "^8.1.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.45.0",
+    "jest": "^29.6.1",
+    "nodemon": "^3.0.1"
+  },
+  "files": [
+    "bin/",
+    "schemas/",
+    "templates/",
+    "themes/",
+    "components/",
+    "scripts/",
+    "collection.json",
+    "README.md",
+    "LICENSE"
+  ],
+  "preferGlobal": true
+}

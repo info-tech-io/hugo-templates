@@ -1,0 +1,9 @@
+# Hugo Template Factory Framework Submodules
+
+[submodule "themes/compose"]
+	path = themes/compose
+	url = https://github.com/onweru/compose.git
+
+[submodule "components/quiz-engine"]
+	path = components/quiz-engine
+	url = https://github.com/info-tech-io/quiz.git

@@ -1,0 +1,84 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://schemas.hugo-templates.org/build.json",
+  "title": "Hugo Templates Build Schema",
+  "description": "Schema for hugo-templates build command parameters",
+  "type": "object",
+  "properties": {
+    "template": {
+      "type": "string",
+      "description": "Template to use for site generation",
+      "enum": ["default", "minimal", "academic", "enterprise"],
+      "default": "default"
+    },
+    "theme": {
+      "type": "string",
+      "description": "Hugo theme to apply",
+      "enum": ["compose", "academic", "corporate"],
+      "default": "compose"
+    },
+    "components": {
+      "type": "array",
+      "description": "Components to include in the build",
+      "items": {
+        "type": "string",
+        "enum": ["quiz-engine", "analytics", "auth", "citations"]
+      },
+      "uniqueItems": true,
+      "default": []
+    },
+    "output": {
+      "type": "string",
+      "description": "Output directory for generated site",
+      "default": "./site"
+    },
+    "config": {
+      "type": "string",
+      "description": "Path to custom configuration file"
+    },
+    "minify": {
+      "type": "boolean",
+      "description": "Enable Hugo minification",
+      "default": false
+    },
+    "draft": {
+      "type": "boolean",
+      "description": "Include draft content",
+      "default": false
+    },
+    "future": {
+      "type": "boolean",
+      "description": "Include future content",
+      "default": false
+    },
+    "buildDrafts": {
+      "type": "boolean",
+      "description": "Include drafts when building",
+      "default": false
+    },
+    "baseURL": {
+      "type": "string",
+      "description": "Base URL for the site",
+      "format": "uri"
+    },
+    "environment": {
+      "type": "string",
+      "description": "Hugo environment",
+      "enum": ["production", "development", "staging"],
+      "default": "development"
+    },
+    "verbose": {
+      "type": "boolean",
+      "description": "Enable verbose output",
+      "default": false
+    },
+    "logLevel": {
+      "type": "string",
+      "description": "Log level for build process",
+      "enum": ["trace", "debug", "info", "warn", "error"],
+      "default": "info"
+    }
+  },
+  "additionalProperties": false,
+  "required": []
+}

@@ -1,0 +1,145 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://schemas.hugo-templates.org/component.json",
+  "title": "Hugo Component Configuration Schema",
+  "description": "Schema for defining Hugo components in the factory framework",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Component name",
+      "pattern": "^[a-z][a-z0-9-]*$"
+    },
+    "version": {
+      "type": "string",
+      "description": "Component version",
+      "pattern": "^\\d+\\.\\d+\\.\\d+(-[a-zA-Z0-9-]+)?$"
+    },
+    "description": {
+      "type": "string",
+      "description": "Component description"
+    },
+    "status": {
+      "type": "string",
+      "description": "Component development status",
+      "enum": ["stable", "beta", "alpha", "deprecated", "planned"]
+    },
+    "author": {
+      "type": "string",
+      "description": "Component author"
+    },
+    "license": {
+      "type": "string",
+      "description": "Component license"
+    },
+    "repository": {
+      "type": "string",
+      "description": "Component repository URL",
+      "format": "uri"
+    },
+    "dependencies": {
+      "type": "object",
+      "description": "Component dependencies",
+      "properties": {
+        "hugo": {
+          "type": "string",
+          "description": "Minimum Hugo version"
+        },
+        "extended": {
+          "type": "boolean",
+          "description": "Requires Hugo Extended"
+        },
+        "components": {
+          "type": "array",
+          "description": "Required components",
+          "items": {
+            "type": "string"
+          }
+        },
+        "npm": {
+          "type": "object",
+          "description": "NPM dependencies",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "files": {
+      "type": "object",
+      "description": "Files provided by component",
+      "properties": {
+        "static": {
+          "type": "array",
+          "description": "Static files to copy",
+          "items": {
+            "type": "string"
+          }
+        },
+        "layouts": {
+          "type": "array",
+          "description": "Layout files to copy",
+          "items": {
+            "type": "string"
+          }
+        },
+        "content": {
+          "type": "array",
+          "description": "Content files to copy",
+          "items": {
+            "type": "string"
+          }
+        },
+        "data": {
+          "type": "array",
+          "description": "Data files to copy",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "configuration": {
+      "type": "object",
+      "description": "Hugo configuration additions",
+      "properties": {
+        "params": {
+          "type": "object",
+          "description": "Parameters to add to hugo.toml"
+        },
+        "markup": {
+          "type": "object",
+          "description": "Markup configuration"
+        },
+        "security": {
+          "type": "object",
+          "description": "Security configuration"
+        }
+      }
+    },
+    "variables": {
+      "type": "object",
+      "description": "Component variables that can be customized",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["string", "boolean", "number", "array", "object"]
+          },
+          "description": {
+            "type": "string"
+          },
+          "default": {},
+          "required": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        "required": ["type"]
+      }
+    }
+  },
+  "required": ["name", "version", "description", "status"],
+  "additionalProperties": false
+}

@@ -1,0 +1,6 @@
+[submodule "themes/compose"]
+	path = themes/compose
+	url = https://github.com/info-tech-io/compose.git
+[submodule "static/quiz"]
+	path = static/quiz
+	url = https://github.com/info-tech-io/quiz.git

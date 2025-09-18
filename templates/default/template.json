@@ -1,0 +1,75 @@
+{
+  "$schema": "../../schemas/template.json",
+  "name": "default",
+  "version": "1.0.0",
+  "description": "Full-featured template with all components (equivalent to hugo-base)",
+  "author": "info-tech-io",
+  "license": "MIT",
+  "keywords": [
+    "hugo",
+    "educational",
+    "quiz",
+    "default",
+    "full-featured"
+  ],
+  "components": {
+    "required": [
+      "compose-theme"
+    ],
+    "optional": [
+      "quiz-engine",
+      "analytics",
+      "auth",
+      "citations"
+    ],
+    "excluded": []
+  },
+  "hugo": {
+    "minVersion": "0.110.0",
+    "extended": false
+  },
+  "variables": {
+    "site_title": {
+      "type": "string",
+      "description": "Site title",
+      "default": "My Hugo Site",
+      "required": false
+    },
+    "base_url": {
+      "type": "string",
+      "description": "Base URL for the site",
+      "default": "https://example.com",
+      "required": false
+    },
+    "author": {
+      "type": "string",
+      "description": "Site author",
+      "default": "Site Author",
+      "required": false
+    },
+    "description": {
+      "type": "string",
+      "description": "Site description",
+      "default": "A Hugo site built with Template Factory Framework",
+      "required": false
+    },
+    "language": {
+      "type": "string",
+      "description": "Site language code",
+      "default": "en",
+      "required": false
+    },
+    "enable_quiz": {
+      "type": "boolean",
+      "description": "Enable Quiz Engine component",
+      "default": true,
+      "required": false
+    },
+    "enable_analytics": {
+      "type": "boolean",
+      "description": "Enable analytics tracking",
+      "default": false,
+      "required": false
+    }
+  }
+}
