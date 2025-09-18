@@ -18,7 +18,7 @@ async function initCommand(name, options) {
     let theme = options.theme;
     let components = options.components || [];
 
-    // Interactive prompts if not provided
+    // Interactive prompts if not provided and not in non-interactive mode
     if (!options.noInteractive) {
       const answers = await inquirer.prompt([
         {

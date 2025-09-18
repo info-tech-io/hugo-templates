@@ -1,0 +1,101 @@
+# Hugo Template Factory Framework - Minimal Template Components Configuration
+
+template:
+  name: "minimal"
+  version: "1.0.0"
+  description: "Lightweight template optimized for fast build times and minimal resource usage"
+  author: "info-tech-io"
+  license: "MIT"
+  features:
+    - "Basic Hugo site structure"
+    - "Compose theme integration"
+    - "Optimized for speed"
+    - "No heavy JavaScript components"
+    - "Minimal static assets"
+
+# Component dependencies and configuration
+components:
+  compose-theme:
+    version: "^4.0.0"
+    status: "stable"
+    description: "Clean and modern Hugo theme"
+    repository: "https://github.com/onweru/compose.git"
+    submodule_path: "themes/compose"
+    configuration:
+      theme: "compose"
+      params:
+        compose:
+          logo: "logo.png"
+          favicon: "favicon.ico"
+          social:
+            github: "info-tech-io"
+          # Minimal configuration for faster builds
+          disableJavaScript: false
+          enableSearch: false
+          enableComments: false
+
+  # Quiz Engine is excluded from minimal template for performance
+  # quiz-engine:
+  #   status: "excluded"
+  #   reason: "Heavy component excluded from minimal template for performance"
+
+  # Planned components (not yet implemented)
+  analytics:
+    version: "^0.1.0"
+    status: "planned"
+    description: "Analytics tracking component"
+    files:
+      static:
+        - "js/analytics.js"
+      layouts:
+        - "partials/analytics.html"
+
+  auth:
+    version: "^0.1.0"
+    status: "planned"
+    description: "Authentication system component"
+    files:
+      static:
+        - "js/auth.js"
+        - "css/auth.css"
+      layouts:
+        - "shortcodes/login.html"
+        - "partials/auth/"
+
+  citations:
+    version: "^0.1.0"
+    status: "planned"
+    description: "Academic citation system"
+    files:
+      static:
+        - "js/citations.js"
+        - "css/citations.css"
+      layouts:
+        - "shortcodes/cite.html"
+        - "partials/citations/"
+
+# Hugo configuration overrides
+hugo:
+  minVersion: "0.110.0"
+  extended: false
+  modules:
+    - path: "github.com/onweru/compose"
+
+# Build configuration
+build:
+  writeStats: true
+  noJSConfigInAssets: false
+  useResourceCacheWhen: "fallback"
+
+# Security configuration
+security:
+  funcs:
+    getenv:
+      - "^HUGO_"
+      - "^CI$"
+  exec:
+    allow:
+      - "^dart-sass-embedded$"
+      - "^go$"
+      - "^npx$"
+      - "^postcss$"

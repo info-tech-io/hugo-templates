@@ -100,5 +100,5 @@
     }
   },
   "required": ["name", "version", "description"],
-  "additionalProperties": false
+  "additionalProperties": true
 }
