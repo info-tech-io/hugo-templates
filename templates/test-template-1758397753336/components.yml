@@ -1,0 +1,32 @@
+template:
+  name: test-template-1758397753336
+  version: 1.0.0
+  description: test-template-1758397753336 template for Hugo Template Factory
+  author: info-tech-io
+  license: MIT
+components:
+  compose-theme:
+    version: ^4.0.0
+    status: stable
+    description: Clean and modern Hugo theme
+    repository: https://github.com/onweru/compose.git
+    submodule_path: themes/compose
+    configuration:
+      theme: compose
+  quiz-engine:
+    version: ^1.0.0
+    status: stable
+    description: Interactive quiz system for educational content
+    repository: https://github.com/info-tech-io/quiz.git
+    submodule_path: components/quiz-engine
+    static_files:
+      - quiz/
+      - js/quiz.js
+      - css/quiz.css
+hugo:
+  minVersion: 0.110.0
+  extended: false
+build:
+  writeStats: true
+  noJSConfigInAssets: false
+  useResourceCacheWhen: fallback

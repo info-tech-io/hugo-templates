@@ -1,0 +1,60 @@
+# Hugo Template Factory Framework - test-template-1758368978446 Template Configuration
+
+baseURL = 'http://localhost:1313'
+languageCode = 'en-us'
+title = 'Test-template-1758368978446 Site'
+theme = 'compose'
+
+# Pagination
+paginate = 10
+paginatePath = "page"
+
+# Menu configuration
+[menu]
+  [[menu.main]]
+    name = "Home"
+    url = "/"
+    weight = 1
+
+  [[menu.main]]
+    name = "About"
+    url = "/about/"
+    weight = 2
+
+# Theme parameters
+[params]
+  description = "Site built with Hugo Template Factory Framework"
+  author = "Site Author"
+
+  # Logo and favicon
+  logo = "logo.png"
+  favicon = "favicon.ico"
+
+  # Social links
+  [params.social]
+    github = ""
+    twitter = ""
+
+# Markup configuration
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true
+  [markup.highlight]
+    style = "github"
+    lineNos = true
+
+# Output formats
+[outputs]
+  home = ["HTML", "RSS", "JSON"]
+  page = ["HTML"]
+  section = ["HTML", "RSS"]
+
+# Privacy configuration
+[privacy]
+  [privacy.googleAnalytics]
+    disable = true
+  [privacy.twitter]
+    disable = true
+  [privacy.youtube]
+    disable = true

@@ -346,8 +346,8 @@ run_hugo_build() {
         *) hugo_cmd+=" --logLevel info" ;;
     esac
 
-    # Set destination
-    hugo_cmd+=" --destination public"
+    # Set destination (output to current directory since we're already in OUTPUT)
+    hugo_cmd+=" --destination ."
 
     log_verbose "Running: $hugo_cmd"
 
@@ -375,22 +375,22 @@ show_build_summary() {
     echo "   Environment: $ENVIRONMENT"
     echo "   Output: $OUTPUT"
 
-    local public_dir="$OUTPUT/public"
-    if [[ -d "$public_dir" ]]; then
+    # Check build output (Hugo now outputs directly to OUTPUT directory)
+    if [[ -d "$OUTPUT" ]]; then
         local file_count
-        file_count=$(find "$public_dir" -type f 2>/dev/null | wc -l)
+        file_count=$(find "$OUTPUT" -type f ! -path "*/.git/*" 2>/dev/null | wc -l)
         echo "   Files generated: $file_count"
 
         if command -v du >/dev/null 2>&1; then
             local size
-            size=$(du -sh "$public_dir" 2>/dev/null | cut -f1 || echo "unknown")
+            size=$(du -sh "$OUTPUT" 2>/dev/null | cut -f1 || echo "unknown")
             echo "   Total size: $size"
         fi
 
         if [[ "$VERBOSE" == "true" ]]; then
             echo ""
             log_info "Generated files:"
-            find "$public_dir" -type f 2>/dev/null | head -10 | sed 's|^|   |'
+            find "$OUTPUT" -type f ! -path "*/.git/*" 2>/dev/null | head -10 | sed 's|^|   |'
             if [[ $file_count -gt 10 ]]; then
                 echo "   ... and $((file_count - 10)) more files"
             fi

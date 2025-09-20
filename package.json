@@ -7,10 +7,15 @@
     "hugo-templates": "./bin/hugo-templates.js"
   },
   "scripts": {
-    "test": "node tests/runner.js",
+    "test": "jest",
+    "test:unit": "jest --selectProjects=unit",
+    "test:integration": "jest --selectProjects=integration",
+    "test:performance": "jest --selectProjects=performance",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
     "lint": "eslint .",
     "validate": "node scripts/validate.js",
-    "build": "node scripts/build.js",
+    "build": "bash scripts/build.sh",
     "dev": "node scripts/dev.js",
     "prepublishOnly": "npm run test && npm run lint"
   },
@@ -43,17 +48,18 @@
     "npm": ">=6.0.0"
   },
   "dependencies": {
-    "commander": "^9.4.1",
     "ajv": "^8.12.0",
     "chalk": "^4.1.2",
-    "inquirer": "^8.2.5",
+    "commander": "^9.4.1",
     "fs-extra": "^11.1.1",
-    "yaml": "^2.3.2",
-    "glob": "^8.1.0"
+    "glob": "^8.1.0",
+    "inquirer": "^8.2.5",
+    "yaml": "^2.3.2"
   },
   "devDependencies": {
     "eslint": "^8.45.0",
     "jest": "^29.6.1",
+    "jest-junit": "^16.0.0",
     "nodemon": "^3.0.1"
   },
   "files": [

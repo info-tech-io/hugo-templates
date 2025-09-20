@@ -1,0 +1,30 @@
+{
+  "$schema": "https://schemas.hugo-templates.org/template.json",
+  "name": "test-template-1758368978446",
+  "version": "1.0.0",
+  "description": "test-template-1758368978446 template for Hugo Template Factory",
+  "author": "info-tech-io",
+  "license": "MIT",
+  "homepage": "",
+  "repository": "",
+  "tags": [
+    "test-template-1758368978446"
+  ],
+  "categories": [
+    "general"
+  ],
+  "requirements": {
+    "hugo": ">=0.110.0",
+    "node": ">=16.0.0"
+  },
+  "features": [
+    "Hugo Template Factory Framework",
+    "Responsive design",
+    "Modern CSS",
+    "Fast build times"
+  ],
+  "demo": "",
+  "screenshots": [],
+  "created": "2025-09-20T11:49:39.453Z",
+  "updated": "2025-09-20T11:49:39.454Z"
+}

@@ -1,0 +1,2961 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="jest tests" tests="138" failures="55" errors="0" time="26.866">
+  <testsuite name="tests/unit/cli.test.js" errors="0" failures="5" skipped="0" timestamp="2025-09-20T19:49:05" time="5.592" tests="19">
+    <testcase classname="CLI Components › build.sh script" name="should exist and be executable" time="0.014">
+    </testcase>
+    <testcase classname="CLI Components › build.sh script" name="should show help when called with --help" time="0.052">
+    </testcase>
+    <testcase classname="CLI Components › build.sh script" name="should validate parameters correctly" time="0.083">
+    </testcase>
+    <testcase classname="CLI Components › build.sh script" name="should accept valid template combinations" time="0.04">
+      <failure>Error: Command failed: /root/info-tech-io/hugo-templates/scripts/build.sh --template=minimal --validate-only --verbose
+❌ Unknown option: --template=minimal
+
+    at genericNodeError (node:internal/errors:983:15)
+    at wrappedFn (node:internal/errors:537:14)
+    at checkExecSyncError (node:child_process:882:11)
+    at execSync (node:child_process:954:15)
+    at Object.execSync (/root/info-tech-io/hugo-templates/tests/unit/cli.test.js:52:28)
+    at Promise.then.completed (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:316:40)
+    at _runTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at run (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:444:34)</failure>
+    </testcase>
+    <testcase classname="CLI Components › factory.js Node.js wrapper" name="should exist and be executable" time="0.014">
+    </testcase>
+    <testcase classname="CLI Components › factory.js Node.js wrapper" name="should show version information" time="0.095">
+    </testcase>
+    <testcase classname="CLI Components › factory.js Node.js wrapper" name="should handle help flag correctly" time="0.12">
+      <failure>Error: expect(received).toContain(expected) // indexOf
+
+Expected substring: &quot;Options:&quot;
+Received string:    &quot;Usage: /root/info-tech-io/hugo-templates/scripts/build.sh [OPTIONS]·
+Hugo Template Factory Framework - Build Script·
+OPTIONS:
+    -t, --template &lt;name&gt;       Template to use (default: default)
+    --theme &lt;name&gt;              Hugo theme to apply (default: compose)
+    -c, --components &lt;list&gt;     Comma-separated list of components to include
+    -o, --output &lt;path&gt;         Output directory (default: ./site)
+    --content &lt;path&gt;            Path to content directory
+    --config &lt;path&gt;             Path to custom configuration file
+    --minify                    Enable Hugo minification
+    --draft                     Include draft content
+    --future                    Include future content
+    --base-url &lt;url&gt;            Base URL for the site
+    -e, --environment &lt;env&gt;     Hugo environment (default: development)
+    -v, --verbose               Enable verbose output
+    -q, --quiet                 Suppress non-error output
+    --log-level &lt;level&gt;         Log level (debug|info|warn|error)
+    --validate-only             Only validate configuration, don&apos;t build
+    -h, --help                  Show this help message·
+EXAMPLES:
+    # Basic build with default template
+    /root/info-tech-io/hugo-templates/scripts/build.sh·
+    # Build with minimal template
+    /root/info-tech-io/hugo-templates/scripts/build.sh --template=minimal --theme=compose·
+    # Build with specific components
+    /root/info-tech-io/hugo-templates/scripts/build.sh --template=default --components=quiz-engine,analytics·
+    # Build with custom content directory
+    /root/info-tech-io/hugo-templates/scripts/build.sh --content=/path/to/content --output=/path/to/output·
+    # Production build with minification
+    /root/info-tech-io/hugo-templates/scripts/build.sh --environment=production --minify --base-url=https://example.com·
+    # Validate configuration only
+    /root/info-tech-io/hugo-templates/scripts/build.sh --validate-only --verbose·
+AVAILABLE TEMPLATES:
+    - academic
+    - default
+    - enterprise
+    - minimal
+    - test-template-1758368978446·
+&quot;
+    at Object.toContain (/root/info-tech-io/hugo-templates/tests/unit/cli.test.js:84:28)
+    at Promise.then.completed (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:316:40)
+    at _runTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at run (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:444:34)</failure>
+    </testcase>
+    <testcase classname="CLI Components › validate.js utility" name="should exist and be executable" time="0.009">
+    </testcase>
+    <testcase classname="CLI Components › validate.js utility" name="should validate existing templates" time="0.575">
+      <failure>Error: Command failed: node /root/info-tech-io/hugo-templates/scripts/validate.js --template default
+❌ Failed to load schema &apos;component&apos;: schema with key or id &quot;https://schemas.hugo-templates.org/component.json&quot; already exists
+❌ Failed to load schema &apos;component&apos;: schema with key or id &quot;https://schemas.hugo-templates.org/component.json&quot; already exists
+❌ Failed to load schema &apos;component&apos;: schema with key or id &quot;https://schemas.hugo-templates.org/component.json&quot; already exists
+
+    at genericNodeError (node:internal/errors:983:15)
+    at wrappedFn (node:internal/errors:537:14)
+    at checkExecSyncError (node:child_process:882:11)
+    at execSync (node:child_process:954:15)
+    at Object.execSync (/root/info-tech-io/hugo-templates/tests/unit/cli.test.js:96:28)
+    at Promise.then.completed (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:316:40)
+    at _runTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at run (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:444:34)</failure>
+    </testcase>
+    <testcase classname="CLI Components › validate.js utility" name="should detect invalid template structure" time="0.61">
+    </testcase>
+    <testcase classname="CLI Components › list.js utility" name="should exist and be executable" time="0.007">
+    </testcase>
+    <testcase classname="CLI Components › list.js utility" name="should list available templates" time="0.278">
+    </testcase>
+    <testcase classname="CLI Components › list.js utility" name="should list available themes" time="0.265">
+    </testcase>
+    <testcase classname="CLI Components › list.js utility" name="should support JSON output format" time="0.292">
+    </testcase>
+    <testcase classname="CLI Components › generate.js utility" name="should exist and be executable" time="0.002">
+    </testcase>
+    <testcase classname="CLI Components › generate.js utility" name="should show help for template generation" time="0.758">
+    </testcase>
+    <testcase classname="CLI Components › diagnostic.js system" name="should exist and be executable" time="0.001">
+    </testcase>
+    <testcase classname="CLI Components › diagnostic.js system" name="should run system diagnostics" time="1.144">
+      <failure>Error: expect(received).toContain(expected) // indexOf
+
+Expected substring: &quot;System Diagnostics&quot;
+Received string:    &quot;[19:49:09] 🔍 Hugo Template Factory - System Diagnostic
+[19:49:09] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[19:49:09]·
+[19:49:09] ℹ️  Checking system information...
+[19:49:09] ✅ System: linux x64 (6.1.0-34-amd64)
+[19:49:09] ✅ Memory: 0.70GB used / 0.93GB total
+[19:49:09] ✅ CPUs: 1
+[19:49:09] ℹ️  Checking environment configuration...
+[19:49:09] ✅ Node environment: test
+[19:49:09] ✅ Current directory: /root/info-tech-io/hugo-templates
+[19:49:09] ✅ PATH entries: 11
+[19:49:09] ℹ️  Checking required dependencies...
+[19:49:09] ✅ ✓ node: v23.11.1
+[19:49:09] ✅ ✓ npm: 11.4.2
+[19:49:10] ✅ ✓ hugo: hugo v0.148.0-c0d9bebacc6bf42a91a74d8bb0de7bc775c8e573+extended linux/amd64 BuildDate=2025-07-08T13:34:49Z VendorInfo=gohugoio
+[19:49:10] ✅ ✓ git: git version 2.39.5
+[19:49:10] ✅ ✓ bash: GNU bash, version 5.2.15(1)-release (x86_64-pc-linux-gnu)
+[19:49:10] ℹ️  - yarn: not available (optional)
+[19:49:10] ✅ Package: hugo-templates@0.1.0-alpha.1
+[19:49:10] ✅ Dependencies: 7 runtime, 4 dev
+[19:49:10] ℹ️  Checking project structure...
+[19:49:10] ✅ Directory templates/: 5 items
+[19:49:10] ✅ Directory themes/: 1 items
+[19:49:10] ✅ Directory components/: 1 items
+[19:49:10] ✅ Directory scripts/: 9 items
+[19:49:10] ✅ Directory schemas/: 5 items
+[19:49:10] ✅ Directory docs/: 0 items
+[19:49:10] ✅ File package.json: 1875 bytes
+[19:49:10] ✅ File collection.json: 1077 bytes
+[19:49:10] ✅ File .gitignore: 1306 bytes
+[19:49:10] ✅ File README.md: 2624 bytes
+[19:49:10] ⚠️  Git: 7 files with changes
+[19:49:10] ℹ️  Checking file permissions...
+[19:49:10] ✅ Script build.sh: executable
+[19:49:10] ✅ Script factory.js: executable
+[19:49:10] ✅ Script validate.js: executable
+[19:49:10] ✅ Script list.js: executable
+[19:49:10] ✅ Script generate.js: executable
+[19:49:10] ✅ Directory templates/: read/write access
+[19:49:10] ✅ Directory themes/: read/write access
+[19:49:10] ✅ Directory components/: read/write access
+[19:49:10] ℹ️  Running performance checks...
+[19:49:10] ✅ I/O Performance: 0.48ms for 100KB
+[19:49:10] ✅ Script execution: 257.18ms
+[19:49:10]·
+[19:49:10] 📋 Diagnostic Summary
+[19:49:10] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[19:49:10] ⚠️  WARNING: Uncommitted changes in git repository
+[19:49:10]·
+[19:49:10] ⚠️  ⚠️  1 warnings found - System is mostly ready
+[19:49:10]·
+📊 Performance Report
+[19:49:10] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[19:49:10]·
+⏱️  Timers:
+[19:49:10]    diagnostic: 1015.78ms
+[19:49:10]    file_io: 0.48ms
+[19:49:10]    script_exec: 257.18ms
+[19:49:10]·
+💾 Memory Usage:
+[19:49:10]    start: 5.32MB
+[19:49:10]    end: 5.62MB
+&quot;
+    at Object.toContain (/root/info-tech-io/hugo-templates/tests/unit/cli.test.js:183:28)
+    at Promise.then.completed (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:316:40)
+    at _runTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at run (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:444:34)</failure>
+    </testcase>
+    <testcase classname="CLI Components › diagnostic.js system" name="should check required dependencies" time="0.69">
+      <failure>Error: expect(received).toContain(expected) // indexOf
+
+Expected substring: &quot;Node.js&quot;
+Received string:    &quot;[19:49:10] 🔍 Hugo Template Factory - System Diagnostic
+[19:49:10] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[19:49:10]·
+[19:49:10] ℹ️  Checking system information...
+[19:49:10] ✅ System: linux x64 (6.1.0-34-amd64)
+[19:49:10] ✅ Memory: 0.69GB used / 0.93GB total
+[19:49:10] ✅ CPUs: 1
+[19:49:10] ℹ️  Checking environment configuration...
+[19:49:10] ✅ Node environment: test
+[19:49:10] ✅ Current directory: /root/info-tech-io/hugo-templates
+[19:49:10] ✅ PATH entries: 11
+[19:49:10] ℹ️  Checking required dependencies...
+[19:49:10] ✅ ✓ node: v23.11.1
+[19:49:10] ✅ ✓ npm: 11.4.2
+[19:49:10] ✅ ✓ hugo: hugo v0.148.0-c0d9bebacc6bf42a91a74d8bb0de7bc775c8e573+extended linux/amd64 BuildDate=2025-07-08T13:34:49Z VendorInfo=gohugoio
+[19:49:10] ✅ ✓ git: git version 2.39.5
+[19:49:10] ✅ ✓ bash: GNU bash, version 5.2.15(1)-release (x86_64-pc-linux-gnu)
+[19:49:10] ℹ️  - yarn: not available (optional)
+[19:49:10] ✅ Package: hugo-templates@0.1.0-alpha.1
+[19:49:10] ✅ Dependencies: 7 runtime, 4 dev
+[19:49:10] ℹ️  Checking project structure...
+[19:49:10] ✅ Directory templates/: 5 items
+[19:49:10] ✅ Directory themes/: 1 items
+[19:49:10] ✅ Directory components/: 1 items
+[19:49:10] ✅ Directory scripts/: 9 items
+[19:49:10] ✅ Directory schemas/: 5 items
+[19:49:10] ✅ Directory docs/: 0 items
+[19:49:10] ✅ File package.json: 1875 bytes
+[19:49:10] ✅ File collection.json: 1077 bytes
+[19:49:10] ✅ File .gitignore: 1306 bytes
+[19:49:10] ✅ File README.md: 2624 bytes
+[19:49:10] ⚠️  Git: 7 files with changes
+[19:49:10] ℹ️  Checking file permissions...
+[19:49:10] ✅ Script build.sh: executable
+[19:49:10] ✅ Script factory.js: executable
+[19:49:10] ✅ Script validate.js: executable
+[19:49:10] ✅ Script list.js: executable
+[19:49:10] ✅ Script generate.js: executable
+[19:49:10] ✅ Directory templates/: read/write access
+[19:49:10] ✅ Directory themes/: read/write access
+[19:49:10] ✅ Directory components/: read/write access
+[19:49:10] ℹ️  Running performance checks...
+[19:49:10] ✅ I/O Performance: 0.50ms for 100KB
+[19:49:11] ✅ Script execution: 226.33ms
+[19:49:11]·
+[19:49:11] 📋 Diagnostic Summary
+[19:49:11] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[19:49:11] ⚠️  WARNING: Uncommitted changes in git repository
+[19:49:11]·
+[19:49:11] ⚠️  ⚠️  1 warnings found - System is mostly ready
+[19:49:11]·
+📊 Performance Report
+[19:49:11] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[19:49:11]·
+⏱️  Timers:
+[19:49:11]    diagnostic: 549.67ms
+[19:49:11]    file_io: 0.50ms
+[19:49:11]    script_exec: 226.33ms
+[19:49:11]·
+💾 Memory Usage:
+[19:49:11]    start: 5.32MB
+[19:49:11]    end: 5.62MB
+&quot;
+    at Object.toContain (/root/info-tech-io/hugo-templates/tests/unit/cli.test.js:192:28)
+    at Promise.then.completed (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:316:40)
+    at _runTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at run (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:444:34)</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/components.test.js" errors="0" failures="5" skipped="0" timestamp="2025-09-20T19:49:11" time="1.364" tests="18">
+    <testcase classname="Components System › Components availability" name="should have components directory" time="0.022">
+    </testcase>
+    <testcase classname="Components System › Components availability" name="should have quiz-engine component" time="0.027">
+    </testcase>
+    <testcase classname="Components System › Components availability" name="should list components correctly" time="0.323">
+    </testcase>
+    <testcase classname="Components System › Quiz Engine component" name="should have required files" time="0.021">
+    </testcase>
+    <testcase classname="Components System › Quiz Engine component" name="should have valid component configuration" time="0.001">
+    </testcase>
+    <testcase classname="Components System › Component integration" name="should integrate with build system" time="0.037">
+      <failure>Error: Command failed: bash scripts/build.sh --template=default --components=quiz-engine --validate-only
+❌ Unknown option: --template=default
+
+    at genericNodeError (node:internal/errors:983:15)
+    at wrappedFn (node:internal/errors:537:14)
+    at checkExecSyncError (node:child_process:882:11)
+    at execSync (node:child_process:954:15)
+    at Object.execSync (/root/info-tech-io/hugo-templates/tests/unit/components.test.js:81:28)
+    at Promise.then.completed (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:316:40)
+    at _runTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at run (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:444:34)</failure>
+    </testcase>
+    <testcase classname="Components System › Component integration" name="should handle missing components gracefully" time="0.179">
+    </testcase>
+    <testcase classname="Components System › Component integration" name="should support multiple components" time="0.064">
+      <failure>Error: Command failed: bash scripts/build.sh --template=default --components=quiz-engine --validate-only --verbose
+❌ Unknown option: --template=default
+
+    at genericNodeError (node:internal/errors:983:15)
+    at wrappedFn (node:internal/errors:537:14)
+    at checkExecSyncError (node:child_process:882:11)
+    at execSync (node:child_process:954:15)
+    at Object.execSync (/root/info-tech-io/hugo-templates/tests/unit/components.test.js:103:28)
+    at Promise.then.completed (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:316:40)
+    at _runTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at run (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:444:34)</failure>
+    </testcase>
+    <testcase classname="Components System › Component parsing" name="should parse components.yml correctly" time="0.002">
+    </testcase>
+    <testcase classname="Components System › Component parsing" name="should validate component structure" time="0.002">
+    </testcase>
+    <testcase classname="Components System › Git submodules integration" name="should have .gitmodules file" time="0.009">
+    </testcase>
+    <testcase classname="Components System › Git submodules integration" name="should validate submodule paths" time="0.002">
+    </testcase>
+    <testcase classname="Components System › Component lifecycle" name="should handle component installation" time="0.024">
+    </testcase>
+    <testcase classname="Components System › Component lifecycle" name="should validate component dependencies" time="0.011">
+      <failure>Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: &quot;quiz-engine&quot;
+Received: &quot;testcases&quot;
+    at toBe (/root/info-tech-io/hugo-templates/tests/unit/components.test.js:209:46)
+    at Array.forEach (&lt;anonymous&gt;)
+    at Object.forEach (/root/info-tech-io/hugo-templates/tests/unit/components.test.js:202:27)
+    at Promise.then.completed (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:316:40)
+    at _runTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at run (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:444:34)</failure>
+    </testcase>
+    <testcase classname="Components System › Component build integration" name="should copy component files during build" time="0.058">
+      <failure>Error: Command failed: bash scripts/build.sh --template=minimal --components=quiz-engine --validate-only --verbose
+❌ Unknown option: --template=minimal
+
+    at genericNodeError (node:internal/errors:983:15)
+    at wrappedFn (node:internal/errors:537:14)
+    at checkExecSyncError (node:child_process:882:11)
+    at execSync (node:child_process:954:15)
+    at Object.execSync (/root/info-tech-io/hugo-templates/tests/unit/components.test.js:218:28)
+    at Promise.then.completed (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:316:40)
+    at _runTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at run (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:444:34)</failure>
+    </testcase>
+    <testcase classname="Components System › Component build integration" name="should handle component conflicts gracefully" time="0.048">
+      <failure>Error: expect(received).toContain(expected) // indexOf
+
+Expected substring: &quot;duplicate&quot;
+Received string:    &quot;Command failed: bash scripts/build.sh --template=default --components=quiz-engine,quiz-engine --validate-only
+❌ Unknown option: --template=default
+&quot;
+    at Object.toContain (/root/info-tech-io/hugo-templates/tests/unit/components.test.js:243:39)
+    at Promise.then.completed (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:316:40)
+    at _runTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at run (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:444:34)</failure>
+    </testcase>
+    <testcase classname="Components System › Component API" name="should provide component information through CLI" time="0.312">
+    </testcase>
+    <testcase classname="Components System › Component API" name="should validate component metadata format" time="0.002">
+    </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/templates.test.js" errors="0" failures="6" skipped="0" timestamp="2025-09-20T19:49:12" time="2.161" tests="23">
+    <testcase classname="Template System › Template availability" name="should have required templates" time="0.007">
+    </testcase>
+    <testcase classname="Template System › Template availability" name="should list templates correctly" time="0.268">
+    </testcase>
+    <testcase classname="Template System › Template structure › default template" name="should have hugo.toml configuration" time="0.007">
+    </testcase>
+    <testcase classname="Template System › Template structure › default template" name="should have content directory" time="0.004">
+    </testcase>
+    <testcase classname="Template System › Template structure › default template" name="should have valid metadata.json" time="0.002">
+    </testcase>
+    <testcase classname="Template System › Template structure › default template" name="should have static directory if needed" time="0.001">
+    </testcase>
+    <testcase classname="Template System › Template structure › minimal template" name="should have hugo.toml configuration" time="0.004">
+    </testcase>
+    <testcase classname="Template System › Template structure › minimal template" name="should have content directory" time="0.001">
+    </testcase>
+    <testcase classname="Template System › Template structure › minimal template" name="should have valid metadata.json" time="0.01">
+    </testcase>
+    <testcase classname="Template System › Template structure › minimal template" name="should have static directory if needed" time="0.002">
+    </testcase>
+    <testcase classname="Template System › Theme integration" name="should have compose theme available" time="0.007">
+    </testcase>
+    <testcase classname="Template System › Theme integration" name="should list themes correctly" time="0.208">
+    </testcase>
+    <testcase classname="Template System › Theme integration" name="compose theme should have required structure" time="0.001">
+    </testcase>
+    <testcase classname="Template System › Template parametrization" name="should support template building with parameters" time="0.029">
+      <failure>Error: Command failed: bash scripts/build.sh --template=minimal --theme=compose --validate-only --verbose
+❌ Unknown option: --template=minimal
+
+    at genericNodeError (node:internal/errors:983:15)
+    at wrappedFn (node:internal/errors:537:14)
+    at checkExecSyncError (node:child_process:882:11)
+    at execSync (node:child_process:954:15)
+    at Object.execSync (/root/info-tech-io/hugo-templates/tests/unit/templates.test.js:117:28)
+    at Promise.then.completed (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:316:40)
+    at _runTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at run (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:444:34)</failure>
+    </testcase>
+    <testcase classname="Template System › Template parametrization" name="should handle template+theme combinations" time="0.047">
+      <failure>Error: Command failed: bash scripts/build.sh --template=default --theme=compose --validate-only
+❌ Unknown option: --template=default
+
+    at genericNodeError (node:internal/errors:983:15)
+    at wrappedFn (node:internal/errors:537:14)
+    at checkExecSyncError (node:child_process:882:11)
+    at execSync (node:child_process:954:15)
+    at execSync (/root/info-tech-io/hugo-templates/tests/unit/templates.test.js:133:32)
+    at Array.forEach (&lt;anonymous&gt;)
+    at Object.forEach (/root/info-tech-io/hugo-templates/tests/unit/templates.test.js:132:26)
+    at Promise.then.completed (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:316:40)
+    at _runTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at run (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:444:34)</failure>
+    </testcase>
+    <testcase classname="Template System › Content structure validation" name="default template should have proper content structure" time="0.002">
+    </testcase>
+    <testcase classname="Template System › Content structure validation" name="minimal template should have proper content structure" time="0.001">
+    </testcase>
+    <testcase classname="Template System › Template customization" name="should support template generation" time="0.66">
+      <failure>Error: expect(received).toContain(expected) // indexOf
+
+Expected substring: &quot;interactive&quot;
+Received string:    &quot;expect(received).toContain(expected) // indexOf·
+Expected substring: \&quot;SUCCESS\&quot;
+Received string:    \&quot;🏗️  Generating template: test-template-1758397753336
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ Created: components.yml
+✅ Created: hugo.toml
+✅ Created: template.json
+✅ Created directory: content/
+✅ Created directory: static/
+✅ Created directory: archetypes/·
+🎉 Template &apos;test-template-1758397753336&apos; generated successfully!
+   Location: /root/info-tech-io/hugo-templates/templates/test-template-1758397753336
+   Next steps:
+   1. Edit components.yml to configure components
+   2. Add content to content/ directory
+   3. Customize hugo.toml configuration
+\&quot;&quot;
+    at Object.toContain (/root/info-tech-io/hugo-templates/tests/unit/templates.test.js:185:39)
+    at Promise.then.completed (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:316:40)
+    at _runTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at run (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:444:34)</failure>
+    </testcase>
+    <testcase classname="Template System › Template customization" name="should validate generated template structure" time="0.641">
+    </testcase>
+    <testcase classname="Template System › Hugo configuration validation" name="should validate Hugo config syntax in all templates" time="0.011">
+      <failure>Error: expect(received).toMatch(expected)
+
+Expected pattern: /\[module\]/
+Received string:  &quot;baseURL = &apos;https://example.infotecha.ru/&apos;
+languageCode = &apos;ru-ru&apos;
+title = &apos;Базовый модуль образовательной платформы&apos;
+theme = &apos;compose&apos;·
+[params]
+  # Секции для навигации по курсу
+  docSections = [\&quot;intro\&quot;, \&quot;theme_01\&quot;, \&quot;theme_02\&quot;, \&quot;theme_03\&quot;, \&quot;theme_04\&quot;, \&quot;outro\&quot;]···
+  # Настройки источника (GitHub)
+  [params.source]
+    name = \&quot;GitHub\&quot;
+    iconLight = \&quot;images/GitHubMarkLight.svg\&quot;
+    iconDark = \&quot;images/GitHubMarkDark.svg\&quot;
+    url = \&quot;https://github.com/info-tech-io/\&quot;·
+  # Настройки платформы
+  [params.platform]
+    hub_url = \&quot;https://infotecha.ru\&quot;
+    quiz_engine_path = \&quot;/quiz/src/quiz-engine/quiz-engine.mjs\&quot;·
+# Логотип
+[logo]
+  text = \&quot;InfoTech.io\&quot;·
+# Настройки разметки для поддержки shortcodes
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true
+  [markup.highlight]
+    style = \&quot;github\&quot;
+    lineNos = true
+    noClasses = false&quot;
+    at toMatch (/root/info-tech-io/hugo-templates/tests/unit/templates.test.js:221:75)
+    at Array.forEach (&lt;anonymous&gt;)
+    at Object.forEach (/root/info-tech-io/hugo-templates/tests/unit/templates.test.js:205:26)
+    at Promise.then.completed (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:316:40)
+    at _runTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at run (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:444:34)</failure>
+    </testcase>
+    <testcase classname="Template System › Hugo configuration validation" name="should have consistent Hugo version requirements" time="0.004">
+    </testcase>
+    <testcase classname="Template System › Template compatibility" name="should work with different environments" time="0.027">
+      <failure>Error: Command failed: bash scripts/build.sh --template=minimal --environment=production --validate-only
+❌ Unknown option: --template=minimal
+
+    at genericNodeError (node:internal/errors:983:15)
+    at wrappedFn (node:internal/errors:537:14)
+    at checkExecSyncError (node:child_process:882:11)
+    at execSync (node:child_process:954:15)
+    at execSync (/root/info-tech-io/hugo-templates/tests/unit/templates.test.js:242:32)
+    at Array.forEach (&lt;anonymous&gt;)
+    at Object.forEach (/root/info-tech-io/hugo-templates/tests/unit/templates.test.js:241:26)
+    at Promise.then.completed (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:316:40)
+    at _runTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at run (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:444:34)</failure>
+    </testcase>
+    <testcase classname="Template System › Template compatibility" name="should handle minification options" time="0.05">
+      <failure>Error: Command failed: bash scripts/build.sh --template=minimal --minify --validate-only
+❌ Unknown option: --template=minimal
+
+    at genericNodeError (node:internal/errors:983:15)
+    at wrappedFn (node:internal/errors:537:14)
+    at checkExecSyncError (node:child_process:882:11)
+    at execSync (node:child_process:954:15)
+    at Object.execSync (/root/info-tech-io/hugo-templates/tests/unit/templates.test.js:253:28)
+    at Promise.then.completed (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:316:40)
+    at _runTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at run (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:444:34)</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/validation.test.js" errors="0" failures="2" skipped="0" timestamp="2025-09-20T19:49:14" time="2.463" tests="13">
+    <testcase classname="Validation System › JSON Schema validation" name="should have valid schema files" time="0.005">
+    </testcase>
+    <testcase classname="Validation System › JSON Schema validation" name="should validate template metadata" time="0.001">
+    </testcase>
+    <testcase classname="Validation System › Template structure validation" name="should have required template directories" time="0.002">
+    </testcase>
+    <testcase classname="Validation System › Template structure validation" name="should have required files in each template" time="0.003">
+      <failure>Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: true
+Received: false
+    at toBe (/root/info-tech-io/hugo-templates/tests/unit/validation.test.js:70:59)
+    at Array.forEach (&lt;anonymous&gt;)
+    at Object.forEach (/root/info-tech-io/hugo-templates/tests/unit/validation.test.js:64:26)
+    at Promise.then.completed (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:316:40)
+    at _runTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at run (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:444:34)</failure>
+    </testcase>
+    <testcase classname="Validation System › Template structure validation" name="should validate Hugo configuration syntax" time="0.012">
+    </testcase>
+    <testcase classname="Validation System › Components validation" name="should have valid components.yml files" time="0.001">
+    </testcase>
+    <testcase classname="Validation System › Components validation" name="should validate component Git submodules" time="0.022">
+    </testcase>
+    <testcase classname="Validation System › Build validation" name="should validate template parameter combinations" time="0.546">
+      <failure>Error: Command failed: node scripts/validate.js --template default --theme compose
+❌ Failed to load schema &apos;component&apos;: schema with key or id &quot;https://schemas.hugo-templates.org/component.json&quot; already exists
+❌ Failed to load schema &apos;component&apos;: schema with key or id &quot;https://schemas.hugo-templates.org/component.json&quot; already exists
+❌ Failed to load schema &apos;component&apos;: schema with key or id &quot;https://schemas.hugo-templates.org/component.json&quot; already exists
+❌ Failed to load schema &apos;component&apos;: schema with key or id &quot;https://schemas.hugo-templates.org/component.json&quot; already exists
+
+    at genericNodeError (node:internal/errors:983:15)
+    at wrappedFn (node:internal/errors:537:14)
+    at checkExecSyncError (node:child_process:882:11)
+    at execSync (node:child_process:954:15)
+    at execSync (/root/info-tech-io/hugo-templates/tests/unit/validation.test.js:147:32)
+    at Array.forEach (&lt;anonymous&gt;)
+    at Object.forEach (/root/info-tech-io/hugo-templates/tests/unit/validation.test.js:145:31)
+    at Promise.then.completed (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:316:40)
+    at _runTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at run (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:444:34)</failure>
+    </testcase>
+    <testcase classname="Validation System › Build validation" name="should detect invalid combinations" time="1.09">
+    </testcase>
+    <testcase classname="Validation System › Configuration parsing" name="should parse components.yml correctly" time="0.206">
+    </testcase>
+    <testcase classname="Validation System › Configuration parsing" name="should validate package.json dependencies" time="0.002">
+    </testcase>
+    <testcase classname="Validation System › Error handling validation" name="should handle missing template gracefully" time="0.415">
+    </testcase>
+    <testcase classname="Validation System › Error handling validation" name="should handle corrupted configuration files" time="0.007">
+    </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/logger.test.js" errors="0" failures="4" skipped="0" timestamp="2025-09-20T19:49:17" time="0.344" tests="19">
+    <testcase classname="Logger System › Logger module" name="should exist and be readable" time="0.003">
+    </testcase>
+    <testcase classname="Logger System › Logger module" name="should export required functions" time="0.005">
+    </testcase>
+    <testcase classname="Logger System › Logger functionality" name="should create logger instances" time="0.002">
+    </testcase>
+    <testcase classname="Logger System › Logger functionality" name="should support different log levels" time="0.002">
+    </testcase>
+    <testcase classname="Logger System › Logger functionality" name="should create progress trackers" time="0.001">
+    </testcase>
+    <testcase classname="Logger System › Logger integration with CLI tools" name="should be used in build script" time="0.006">
+      <failure>Error: expect(received).toMatch(expected)
+
+Expected pattern: /echo.*\\\[|\\\033|INFO|SUCCESS|ERROR/
+Received string:  &quot;#!/bin/bash
+set -euo pipefail·
+#
+# Hugo Template Factory Framework - Main Build Script
+# The first parametrized scaffolding tool for Hugo ecosystem
+#
+# This script provides a bash-based interface for building Hugo sites
+# with specified templates, themes, and components.
+#·
+# Colors for output
+readonly RED=&apos;\\033[0;31m&apos;
+readonly GREEN=&apos;\\033[0;32m&apos;
+readonly YELLOW=&apos;\\033[1;33m&apos;
+readonly BLUE=&apos;\\033[0;34m&apos;
+readonly GRAY=&apos;\\033[0;90m&apos;
+readonly NC=&apos;\\033[0m&apos; # No Color·
+# Default values
+TEMPLATE=\&quot;default\&quot;
+THEME=\&quot;compose\&quot;
+COMPONENTS=\&quot;\&quot;
+OUTPUT=\&quot;./site\&quot;
+CONTENT=\&quot;\&quot;
+CONFIG=\&quot;\&quot;
+MINIFY=false
+DRAFT=false
+FUTURE=false
+BASE_URL=\&quot;\&quot;
+ENVIRONMENT=\&quot;development\&quot;
+VERBOSE=false
+QUIET=false
+LOG_LEVEL=\&quot;info\&quot;
+VALIDATE_ONLY=false·
+# Script directory (where this script is located)
+SCRIPT_DIR=\&quot;$(cd \&quot;$(dirname \&quot;${BASH_SOURCE[0]}\&quot;)\&quot; &amp;&amp; pwd)\&quot;
+PROJECT_ROOT=\&quot;$(dirname \&quot;$SCRIPT_DIR\&quot;)\&quot;·
+# Function to print colored output
+print_color() {
+    local color=$1
+    shift
+    echo -e \&quot;${color}$*${NC}\&quot;
+}·
+# Logging functions
+log_info() {
+    [[ \&quot;$QUIET\&quot; == \&quot;true\&quot; ]] &amp;&amp; return
+    print_color \&quot;$BLUE\&quot; \&quot;ℹ️  $*\&quot;
+}·
+log_success() {
+    [[ \&quot;$QUIET\&quot; == \&quot;true\&quot; ]] &amp;&amp; return
+    print_color \&quot;$GREEN\&quot; \&quot;✅ $*\&quot;
+}·
+log_warning() {
+    [[ \&quot;$QUIET\&quot; == \&quot;true\&quot; ]] &amp;&amp; return
+    print_color \&quot;$YELLOW\&quot; \&quot;⚠️  $*\&quot;
+}·
+log_error() {
+    print_color \&quot;$RED\&quot; \&quot;❌ $*\&quot; &gt;&amp;2
+}·
+log_verbose() {
+    [[ \&quot;$VERBOSE\&quot; == \&quot;true\&quot; ]] || return
+    print_color \&quot;$GRAY\&quot; \&quot;🔍 $*\&quot;
+}·
+# Function to show usage
+show_usage() {
+    cat &lt;&lt; EOF
+Usage: $0 [OPTIONS]·
+Hugo Template Factory Framework - Build Script·
+OPTIONS:
+    -t, --template &lt;name&gt;       Template to use (default: default)
+    --theme &lt;name&gt;              Hugo theme to apply (default: compose)
+    -c, --components &lt;list&gt;     Comma-separated list of components to include
+    -o, --output &lt;path&gt;         Output directory (default: ./site)
+    --content &lt;path&gt;            Path to content directory
+    --config &lt;path&gt;             Path to custom configuration file
+    --minify                    Enable Hugo minification
+    --draft                     Include draft content
+    --future                    Include future content
+    --base-url &lt;url&gt;            Base URL for the site
+    -e, --environment &lt;env&gt;     Hugo environment (default: development)
+    -v, --verbose               Enable verbose output
+    -q, --quiet                 Suppress non-error output
+    --log-level &lt;level&gt;         Log level (debug|info|warn|error)
+    --validate-only             Only validate configuration, don&apos;t build
+    -h, --help                  Show this help message·
+EXAMPLES:
+    # Basic build with default template
+    $0·
+    # Build with minimal template
+    $0 --template=minimal --theme=compose·
+    # Build with specific components
+    $0 --template=default --components=quiz-engine,analytics·
+    # Build with custom content directory
+    $0 --content=/path/to/content --output=/path/to/output·
+    # Production build with minification
+    $0 --environment=production --minify --base-url=https://example.com·
+    # Validate configuration only
+    $0 --validate-only --verbose·
+AVAILABLE TEMPLATES:
+$(list_templates)·
+EOF
+}·
+# Function to list available templates
+list_templates() {
+    local templates_dir=\&quot;$PROJECT_ROOT/templates\&quot;
+    if [[ -d \&quot;$templates_dir\&quot; ]]; then
+        find \&quot;$templates_dir\&quot; -mindepth 1 -maxdepth 1 -type d -exec basename {} \\; | sort | sed &apos;s/^/    - /&apos;
+    else
+        echo \&quot;    - No templates found\&quot;
+    fi
+}·
+# Function to validate input parameters
+validate_parameters() {
+    log_verbose \&quot;Validating input parameters...\&quot;·
+    # Check if template exists
+    local template_path=\&quot;$PROJECT_ROOT/templates/$TEMPLATE\&quot;
+    if [[ ! -d \&quot;$template_path\&quot; ]]; then
+        log_error \&quot;Template &apos;$TEMPLATE&apos; not found in $PROJECT_ROOT/templates/\&quot;
+        log_info \&quot;Available templates:\&quot;
+        list_templates
+        return 1
+    fi·
+    # Check if components.yml exists in template
+    local components_file=\&quot;$template_path/components.yml\&quot;
+    if [[ ! -f \&quot;$components_file\&quot; ]]; then
+        log_warning \&quot;No components.yml found in template &apos;$TEMPLATE&apos;\&quot;
+    fi·
+    # Validate output directory
+    if [[ \&quot;$OUTPUT\&quot; == \&quot;.\&quot; || \&quot;$OUTPUT\&quot; == \&quot;./\&quot; ]]; then
+        log_error \&quot;Output directory cannot be current directory\&quot;
+        return 1
+    fi·
+    # Check if output directory already exists and is not empty
+    if [[ -d \&quot;$OUTPUT\&quot; &amp;&amp; \&quot;$(ls -A \&quot;$OUTPUT\&quot; 2&gt;/dev/null)\&quot; ]]; then
+        log_warning \&quot;Output directory &apos;$OUTPUT&apos; already exists and is not empty\&quot;
+        if [[ \&quot;$VERBOSE\&quot; == \&quot;true\&quot; ]]; then
+            echo \&quot;Contents:\&quot;
+            ls -la \&quot;$OUTPUT\&quot; | head -5
+        fi
+    fi·
+    # Validate content directory if specified
+    if [[ -n \&quot;$CONTENT\&quot; &amp;&amp; ! -d \&quot;$CONTENT\&quot; ]]; then
+        log_error \&quot;Content directory &apos;$CONTENT&apos; not found\&quot;
+        return 1
+    fi·
+    # Validate configuration file if specified
+    if [[ -n \&quot;$CONFIG\&quot; &amp;&amp; ! -f \&quot;$CONFIG\&quot; ]]; then
+        log_error \&quot;Configuration file &apos;$CONFIG&apos; not found\&quot;
+        return 1
+    fi·
+    # Check Hugo installation
+    if ! command -v hugo &gt;/dev/null 2&gt;&amp;1; then
+        log_error \&quot;Hugo is not installed or not in PATH\&quot;
+        log_info \&quot;Please install Hugo: https://gohugo.io/getting-started/installing/\&quot;
+        return 1
+    fi·
+    local hugo_version
+    hugo_version=$(hugo version 2&gt;/dev/null | head -1)
+    log_verbose \&quot;Found Hugo: $hugo_version\&quot;·
+    log_success \&quot;Parameter validation completed\&quot;
+    return 0
+}·
+# Function to parse components.yml
+parse_components() {
+    local template_path=\&quot;$PROJECT_ROOT/templates/$TEMPLATE\&quot;
+    local components_file=\&quot;$template_path/components.yml\&quot;·
+    if [[ ! -f \&quot;$components_file\&quot; ]]; then
+        log_verbose \&quot;No components.yml file found, skipping component processing\&quot;
+        return 0
+    fi·
+    log_verbose \&quot;Parsing components from $components_file\&quot;·
+    # Use Node.js to parse YAML if available, otherwise skip detailed parsing
+    if command -v node &gt;/dev/null 2&gt;&amp;1; then
+        local js_parser=\&quot;$SCRIPT_DIR/parse-components.js\&quot;
+        if [[ -f \&quot;$js_parser\&quot; ]]; then
+            log_verbose \&quot;Using Node.js YAML parser\&quot;
+            node \&quot;$js_parser\&quot; \&quot;$components_file\&quot;
+        else
+            log_verbose \&quot;Node.js YAML parser not found, using basic parsing\&quot;
+        fi
+    else
+        log_verbose \&quot;Node.js not available, skipping advanced component parsing\&quot;
+    fi
+}·
+# Function to prepare build environment
+prepare_build_environment() {
+    log_info \&quot;Preparing build environment...\&quot;·
+    # Create output directory
+    mkdir -p \&quot;$OUTPUT\&quot;
+    log_verbose \&quot;Created output directory: $OUTPUT\&quot;·
+    # Copy template files
+    local template_path=\&quot;$PROJECT_ROOT/templates/$TEMPLATE\&quot;
+    log_verbose \&quot;Copying template files from: $template_path\&quot;·
+    # Copy all files except .git directories
+    find \&quot;$template_path\&quot; -type f ! -path \&quot;*/.git/*\&quot; -exec cp --parents {} \&quot;$OUTPUT/\&quot; \\; 2&gt;/dev/null || {
+        # Fallback for systems without --parents
+        rsync -av --exclude=&apos;.git&apos; \&quot;$template_path/\&quot; \&quot;$OUTPUT/\&quot; 2&gt;/dev/null || {
+            # Final fallback
+            cp -r \&quot;$template_path\&quot;/* \&quot;$OUTPUT/\&quot; 2&gt;/dev/null || true
+        }
+    }·
+    # Copy custom content if specified
+    if [[ -n \&quot;$CONTENT\&quot; ]]; then
+        log_verbose \&quot;Copying custom content from: $CONTENT\&quot;
+        cp -r \&quot;$CONTENT\&quot;/* \&quot;$OUTPUT/content/\&quot; 2&gt;/dev/null || true
+    fi·
+    # Initialize Git submodules if they exist
+    if [[ -f \&quot;$PROJECT_ROOT/.gitmodules\&quot; ]]; then
+        log_verbose \&quot;Initializing Git submodules...\&quot;
+        cd \&quot;$PROJECT_ROOT\&quot;
+        git submodule update --init --recursive 2&gt;/dev/null || {
+            log_warning \&quot;Failed to initialize Git submodules\&quot;
+        }
+        cd - &gt;/dev/null
+    fi·
+    # Copy theme if it exists as submodule
+    local theme_path=\&quot;$PROJECT_ROOT/themes/$THEME\&quot;
+    if [[ -d \&quot;$theme_path\&quot; ]]; then
+        log_verbose \&quot;Copying theme: $THEME\&quot;
+        mkdir -p \&quot;$OUTPUT/themes\&quot;
+        cp -r \&quot;$theme_path\&quot; \&quot;$OUTPUT/themes/\&quot; 2&gt;/dev/null || true
+    fi·
+    # Copy components if they exist
+    if [[ -n \&quot;$COMPONENTS\&quot; ]]; then
+        IFS=&apos;,&apos; read -ra COMP_ARRAY &lt;&lt;&lt; \&quot;$COMPONENTS\&quot;
+        for component in \&quot;${COMP_ARRAY[@]}\&quot;; do
+            component=$(echo \&quot;$component\&quot; | xargs) # trim whitespace
+            local comp_path=\&quot;$PROJECT_ROOT/components/$component\&quot;
+            if [[ -d \&quot;$comp_path\&quot; ]]; then
+                log_verbose \&quot;Copying component: $component\&quot;
+                # Copy component files to appropriate locations
+                if [[ -d \&quot;$comp_path/static\&quot; ]]; then
+                    cp -r \&quot;$comp_path/static\&quot;/* \&quot;$OUTPUT/static/\&quot; 2&gt;/dev/null || true
+                fi
+                if [[ -d \&quot;$comp_path/layouts\&quot; ]]; then
+                    cp -r \&quot;$comp_path/layouts\&quot;/* \&quot;$OUTPUT/layouts/\&quot; 2&gt;/dev/null || true
+                fi
+            else
+                log_warning \&quot;Component &apos;$component&apos; not found in $PROJECT_ROOT/components/\&quot;
+            fi
+        done
+    fi·
+    log_success \&quot;Build environment prepared\&quot;
+}·
+# Function to update Hugo configuration
+update_hugo_config() {
+    log_info \&quot;Updating Hugo configuration...\&quot;·
+    local hugo_config=\&quot;$OUTPUT/hugo.toml\&quot;
+    if [[ ! -f \&quot;$hugo_config\&quot; ]]; then
+        log_warning \&quot;No hugo.toml found, creating minimal configuration\&quot;
+        cat &gt; \&quot;$hugo_config\&quot; &lt;&lt; EOF
+baseURL = &apos;${BASE_URL:-http://localhost:1313}&apos;
+languageCode = &apos;en-us&apos;
+title = &apos;Hugo Template Factory Site&apos;
+theme = &apos;$THEME&apos;
+EOF
+    fi·
+    # Update configuration based on parameters
+    if [[ -n \&quot;$BASE_URL\&quot; ]]; then
+        log_verbose \&quot;Setting baseURL to: $BASE_URL\&quot;
+        sed -i \&quot;s|baseURL = .*|baseURL = &apos;$BASE_URL&apos;|\&quot; \&quot;$hugo_config\&quot;
+    fi·
+    if [[ \&quot;$THEME\&quot; != \&quot;compose\&quot; ]]; then
+        log_verbose \&quot;Setting theme to: $THEME\&quot;
+        sed -i \&quot;s|theme = .*|theme = &apos;$THEME&apos;|\&quot; \&quot;$hugo_config\&quot;
+    fi·
+    # Add environment-specific settings
+    if [[ \&quot;$ENVIRONMENT\&quot; == \&quot;production\&quot; ]]; then
+        echo \&quot;\&quot; &gt;&gt; \&quot;$hugo_config\&quot;
+        echo \&quot;# Production environment settings\&quot; &gt;&gt; \&quot;$hugo_config\&quot;
+        echo \&quot;environment = \\\&quot;production\\\&quot;\&quot; &gt;&gt; \&quot;$hugo_config\&quot;
+    fi·
+    log_success \&quot;Hugo configuration updated\&quot;
+}·
+# Function to run Hugo build
+run_hugo_build() {
+    log_info \&quot;Running Hugo build...\&quot;·
+    cd \&quot;$OUTPUT\&quot;·
+    # Build Hugo command
+    local hugo_cmd=\&quot;hugo\&quot;·
+    # Add flags based on parameters
+    [[ \&quot;$MINIFY\&quot; == \&quot;true\&quot; ]] &amp;&amp; hugo_cmd+=\&quot; --minify\&quot;
+    [[ \&quot;$DRAFT\&quot; == \&quot;true\&quot; ]] &amp;&amp; hugo_cmd+=\&quot; --draft\&quot;
+    [[ \&quot;$FUTURE\&quot; == \&quot;true\&quot; ]] &amp;&amp; hugo_cmd+=\&quot; --future\&quot;
+    [[ -n \&quot;$BASE_URL\&quot; ]] &amp;&amp; hugo_cmd+=\&quot; --baseURL \\\&quot;$BASE_URL\\\&quot;\&quot;
+    [[ \&quot;$ENVIRONMENT\&quot; != \&quot;development\&quot; ]] &amp;&amp; hugo_cmd+=\&quot; --environment $ENVIRONMENT\&quot;·
+    # Set log level
+    case \&quot;$LOG_LEVEL\&quot; in
+        debug) hugo_cmd+=\&quot; --logLevel debug\&quot; ;;
+        warn) hugo_cmd+=\&quot; --logLevel warn\&quot; ;;
+        error) hugo_cmd+=\&quot; --logLevel error\&quot; ;;
+        *) hugo_cmd+=\&quot; --logLevel info\&quot; ;;
+    esac·
+    # Set destination (output to current directory since we&apos;re already in OUTPUT)
+    hugo_cmd+=\&quot; --destination .\&quot;·
+    log_verbose \&quot;Running: $hugo_cmd\&quot;·
+    # Execute Hugo build
+    if [[ \&quot;$VERBOSE\&quot; == \&quot;true\&quot; ]]; then
+        eval \&quot;$hugo_cmd\&quot;
+    else
+        eval \&quot;$hugo_cmd\&quot; &gt;/dev/null 2&gt;&amp;1 || {
+            log_error \&quot;Hugo build failed\&quot;
+            return 1
+        }
+    fi·
+    cd - &gt;/dev/null·
+    log_success \&quot;Hugo build completed\&quot;
+}·
+# Function to show build summary
+show_build_summary() {
+    log_info \&quot;Build Summary:\&quot;
+    echo \&quot;   Template: $TEMPLATE\&quot;
+    echo \&quot;   Theme: $THEME\&quot;
+    [[ -n \&quot;$COMPONENTS\&quot; ]] &amp;&amp; echo \&quot;   Components: $COMPONENTS\&quot;
+    echo \&quot;   Environment: $ENVIRONMENT\&quot;
+    echo \&quot;   Output: $OUTPUT\&quot;·
+    # Check build output (Hugo now outputs directly to OUTPUT directory)
+    if [[ -d \&quot;$OUTPUT\&quot; ]]; then
+        local file_count
+        file_count=$(find \&quot;$OUTPUT\&quot; -type f ! -path \&quot;*/.git/*\&quot; 2&gt;/dev/null | wc -l)
+        echo \&quot;   Files generated: $file_count\&quot;·
+        if command -v du &gt;/dev/null 2&gt;&amp;1; then
+            local size
+            size=$(du -sh \&quot;$OUTPUT\&quot; 2&gt;/dev/null | cut -f1 || echo \&quot;unknown\&quot;)
+            echo \&quot;   Total size: $size\&quot;
+        fi·
+        if [[ \&quot;$VERBOSE\&quot; == \&quot;true\&quot; ]]; then
+            echo \&quot;\&quot;
+            log_info \&quot;Generated files:\&quot;
+            find \&quot;$OUTPUT\&quot; -type f ! -path \&quot;*/.git/*\&quot; 2&gt;/dev/null | head -10 | sed &apos;s|^|   |&apos;
+            if [[ $file_count -gt 10 ]]; then
+                echo \&quot;   ... and $((file_count - 10)) more files\&quot;
+            fi
+        fi
+    fi·
+    echo \&quot;\&quot;
+    log_success \&quot;Build completed successfully!\&quot;
+    echo \&quot;   Run: hugo server -s $OUTPUT to preview locally\&quot;
+}·
+# Function to parse command line arguments
+parse_arguments() {
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            -t|--template)
+                TEMPLATE=\&quot;$2\&quot;
+                shift 2
+                ;;
+            --theme)
+                THEME=\&quot;$2\&quot;
+                shift 2
+                ;;
+            -c|--components)
+                COMPONENTS=\&quot;$2\&quot;
+                shift 2
+                ;;
+            -o|--output)
+                OUTPUT=\&quot;$2\&quot;
+                shift 2
+                ;;
+            --content)
+                CONTENT=\&quot;$2\&quot;
+                shift 2
+                ;;
+            --config)
+                CONFIG=\&quot;$2\&quot;
+                shift 2
+                ;;
+            --minify)
+                MINIFY=true
+                shift
+                ;;
+            --draft)
+                DRAFT=true
+                shift
+                ;;
+            --future)
+                FUTURE=true
+                shift
+                ;;
+            --base-url)
+                BASE_URL=\&quot;$2\&quot;
+                shift 2
+                ;;
+            -e|--environment)
+                ENVIRONMENT=\&quot;$2\&quot;
+                shift 2
+                ;;
+            -v|--verbose)
+                VERBOSE=true
+                shift
+                ;;
+            -q|--quiet)
+                QUIET=true
+                shift
+                ;;
+            --log-level)
+                LOG_LEVEL=\&quot;$2\&quot;
+                shift 2
+                ;;
+            --validate-only)
+                VALIDATE_ONLY=true
+                shift
+                ;;
+            -h|--help)
+                show_usage
+                exit 0
+                ;;
+            *)
+                log_error \&quot;Unknown option: $1\&quot;
+                echo \&quot;\&quot;
+                show_usage
+                exit 1
+                ;;
+        esac
+    done
+}·
+# Main function
+main() {
+    # Parse command line arguments
+    parse_arguments \&quot;$@\&quot;·
+    # Show header
+    if [[ \&quot;$QUIET\&quot; != \&quot;true\&quot; ]]; then
+        print_color \&quot;$BLUE\&quot; \&quot;🏗️  Hugo Template Factory Build Script\&quot;
+        print_color \&quot;$GRAY\&quot; \&quot;━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\&quot;
+        echo \&quot;\&quot;
+    fi·
+    # Validate parameters
+    if ! validate_parameters; then
+        exit 1
+    fi·
+    # If validation only, exit here
+    if [[ \&quot;$VALIDATE_ONLY\&quot; == \&quot;true\&quot; ]]; then
+        log_success \&quot;Validation completed successfully\&quot;
+        exit 0
+    fi·
+    # Parse components configuration
+    parse_components·
+    # Prepare build environment
+    prepare_build_environment·
+    # Update Hugo configuration
+    update_hugo_config·
+    # Run Hugo build
+    run_hugo_build·
+    # Show build summary
+    show_build_summary
+}·
+# Run main function with all arguments
+main \&quot;$@\&quot;&quot;
+    at Object.toMatch (/root/info-tech-io/hugo-templates/tests/unit/logger.test.js:88:38)
+    at Promise.then.completed (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:316:40)
+    at _runTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at run (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:444:34)</failure>
+    </testcase>
+    <testcase classname="Logger System › Logger integration with CLI tools" name="should be used in Node.js scripts" time="0.006">
+    </testcase>
+    <testcase classname="Logger System › Colored output" name="should support color codes" time="0.004">
+    </testcase>
+    <testcase classname="Logger System › Colored output" name="should handle no-color environments" time="0.001">
+    </testcase>
+    <testcase classname="Logger System › File logging" name="should support file output" time="0.015">
+    </testcase>
+    <testcase classname="Logger System › File logging" name="should handle log rotation" time="0.002">
+      <failure>Error: expect(received).toMatch(expected)
+
+Expected pattern: /rotation|maxSize|rotate|truncate/
+Received string:  &quot;#!/usr/bin/env node·
+/**
+ * Hugo Template Factory Framework - Centralized Logging System
+ * Provides consistent logging, progress tracking, and debugging capabilities
+ */·
+const chalk = require(&apos;chalk&apos;);
+const fs = require(&apos;fs-extra&apos;);
+const path = require(&apos;path&apos;);
+const util = require(&apos;util&apos;);·
+/**
+ * Log levels
+ */
+const LOG_LEVELS = {
+    DEBUG: 0,
+    INFO: 1,
+    WARN: 2,
+    ERROR: 3,
+    QUIET: 4
+};·
+/**
+ * Logger class
+ */
+class Logger {
+    constructor(options = {}) {
+        this.level = LOG_LEVELS[options.level] || LOG_LEVELS.INFO;
+        this.prefix = options.prefix || &apos;&apos;;
+        this.colors = options.colors !== false;
+        this.timestamp = options.timestamp || false;
+        this.logFile = options.logFile || null;
+        this.context = options.context || {};·
+        // Initialize log file if specified
+        if (this.logFile) {
+            this.initLogFile();
+        }
+    }·
+    /**
+     * Initialize log file
+     */
+    initLogFile() {
+        try {
+            const logDir = path.dirname(this.logFile);
+            fs.ensureDirSync(logDir);·
+            // Write session header
+            const header = `\\n=== Hugo Template Factory Log Session ===\\n` +
+                          `Date: ${new Date().toISOString()}\\n` +
+                          `Level: ${Object.keys(LOG_LEVELS)[this.level]}\\n` +
+                          `Context: ${JSON.stringify(this.context)}\\n` +
+                          `${&apos;=&apos;.repeat(50)}\\n\\n`;·
+            fs.appendFileSync(this.logFile, header);
+        } catch (error) {
+            console.error(&apos;Failed to initialize log file:&apos;, error.message);
+        }
+    }·
+    /**
+     * Write to log file
+     * @param {string} level - Log level
+     * @param {string} message - Message to log
+     * @param {Object} data - Additional data
+     */
+    writeToFile(level, message, data = {}) {
+        if (!this.logFile) return;·
+        try {
+            const timestamp = new Date().toISOString();
+            const contextStr = Object.keys(this.context).length &gt; 0 ?
+                ` [${JSON.stringify(this.context)}]` : &apos;&apos;;·
+            let logEntry = `[${timestamp}] ${level.toUpperCase()}${contextStr}: ${message}`;·
+            if (Object.keys(data).length &gt; 0) {
+                logEntry += `\\n  Data: ${JSON.stringify(data, null, 2)}`;
+            }·
+            logEntry += &apos;\\n&apos;;·
+            fs.appendFileSync(this.logFile, logEntry);
+        } catch (error) {
+            // Silently fail to avoid logging loops
+        }
+    }·
+    /**
+     * Format message with timestamp and prefix
+     * @param {string} message - Message to format
+     */
+    formatMessage(message) {
+        let formatted = &apos;&apos;;·
+        if (this.timestamp) {
+            const now = new Date();
+            const time = now.toTimeString().split(&apos; &apos;)[0];
+            formatted += chalk.gray(`[${time}] `);
+        }·
+        if (this.prefix) {
+            formatted += chalk.gray(`[${this.prefix}] `);
+        }·
+        formatted += message;
+        return formatted;
+    }·
+    /**
+     * Debug level logging
+     * @param {string} message - Debug message
+     * @param {...any} args - Additional arguments
+     */
+    debug(message, ...args) {
+        if (this.level &gt; LOG_LEVELS.DEBUG) return;·
+        const formatted = this.formatMessage(
+            this.colors ? chalk.gray(`🔍 ${message}`) : `🔍 ${message}`
+        );·
+        console.log(formatted, ...args);
+        this.writeToFile(&apos;debug&apos;, message, { args });
+    }·
+    /**
+     * Info level logging
+     * @param {string} message - Info message
+     * @param {...any} args - Additional arguments
+     */
+    info(message, ...args) {
+        if (this.level &gt; LOG_LEVELS.INFO) return;·
+        const formatted = this.formatMessage(
+            this.colors ? chalk.blue(`ℹ️  ${message}`) : `ℹ️  ${message}`
+        );·
+        console.log(formatted, ...args);
+        this.writeToFile(&apos;info&apos;, message, { args });
+    }·
+    /**
+     * Success level logging
+     * @param {string} message - Success message
+     * @param {...any} args - Additional arguments
+     */
+    success(message, ...args) {
+        if (this.level &gt; LOG_LEVELS.INFO) return;·
+        const formatted = this.formatMessage(
+            this.colors ? chalk.green(`✅ ${message}`) : `✅ ${message}`
+        );·
+        console.log(formatted, ...args);
+        this.writeToFile(&apos;success&apos;, message, { args });
+    }·
+    /**
+     * Warning level logging
+     * @param {string} message - Warning message
+     * @param {...any} args - Additional arguments
+     */
+    warn(message, ...args) {
+        if (this.level &gt; LOG_LEVELS.WARN) return;·
+        const formatted = this.formatMessage(
+            this.colors ? chalk.yellow(`⚠️  ${message}`) : `⚠️  ${message}`
+        );·
+        console.log(formatted, ...args);
+        this.writeToFile(&apos;warn&apos;, message, { args });
+    }·
+    /**
+     * Error level logging
+     * @param {string} message - Error message
+     * @param {...any} args - Additional arguments
+     */
+    error(message, ...args) {
+        if (this.level &gt; LOG_LEVELS.ERROR) return;·
+        const formatted = this.formatMessage(
+            this.colors ? chalk.red(`❌ ${message}`) : `❌ ${message}`
+        );·
+        console.error(formatted, ...args);
+        this.writeToFile(&apos;error&apos;, message, { args });
+    }·
+    /**
+     * Always print regardless of log level
+     * @param {string} message - Message to print
+     * @param {...any} args - Additional arguments
+     */
+    print(message, ...args) {
+        const formatted = this.formatMessage(message);
+        console.log(formatted, ...args);
+        this.writeToFile(&apos;print&apos;, message, { args });
+    }·
+    /**
+     * Create a child logger with additional context
+     * @param {Object} context - Additional context
+     * @returns {Logger} Child logger
+     */
+    child(context) {
+        return new Logger({
+            level: Object.keys(LOG_LEVELS)[this.level],
+            prefix: this.prefix,
+            colors: this.colors,
+            timestamp: this.timestamp,
+            logFile: this.logFile,
+            context: { ...this.context, ...context }
+        });
+    }·
+    /**
+     * Set log level
+     * @param {string} level - Log level name
+     */
+    setLevel(level) {
+        const upperLevel = level.toUpperCase();
+        if (LOG_LEVELS.hasOwnProperty(upperLevel)) {
+            this.level = LOG_LEVELS[upperLevel];
+        } else {
+            this.warn(`Invalid log level: ${level}`);
+        }
+    }·
+    /**
+     * Get current log level name
+     * @returns {string} Log level name
+     */
+    getLevel() {
+        return Object.keys(LOG_LEVELS)[this.level];
+    }
+}·
+/**
+ * Progress tracker class
+ */
+class ProgressTracker {
+    constructor(total, options = {}) {
+        this.total = total;
+        this.current = 0;
+        this.label = options.label || &apos;Progress&apos;;
+        this.width = options.width || 40;
+        this.logger = options.logger || new Logger();
+        this.startTime = Date.now();
+        this.showEta = options.showEta !== false;
+        this.showPercent = options.showPercent !== false;
+        this.showCount = options.showCount !== false;
+    }·
+    /**
+     * Update progress
+     * @param {number} increment - Amount to increment (default: 1)
+     * @param {string} message - Optional status message
+     */
+    update(increment = 1, message = &apos;&apos;) {
+        this.current = Math.min(this.current + increment, this.total);
+        this.render(message);
+    }·
+    /**
+     * Set progress to specific value
+     * @param {number} value - Progress value
+     * @param {string} message - Optional status message
+     */
+    set(value, message = &apos;&apos;) {
+        this.current = Math.min(Math.max(value, 0), this.total);
+        this.render(message);
+    }·
+    /**
+     * Render progress bar
+     * @param {string} message - Optional status message
+     */
+    render(message = &apos;&apos;) {
+        const percent = this.total &gt; 0 ? (this.current / this.total) : 0;
+        const filled = Math.floor(percent * this.width);
+        const empty = this.width - filled;·
+        let bar = chalk.green(&apos;█&apos;.repeat(filled)) + chalk.gray(&apos;░&apos;.repeat(empty));
+        let info = [];·
+        if (this.showPercent) {
+            info.push(`${(percent * 100).toFixed(1)}%`);
+        }·
+        if (this.showCount) {
+            info.push(`${this.current}/${this.total}`);
+        }·
+        if (this.showEta &amp;&amp; this.current &gt; 0) {
+            const elapsed = Date.now() - this.startTime;
+            const rate = this.current / elapsed;
+            const remaining = (this.total - this.current) / rate;·
+            if (remaining &gt; 0 &amp;&amp; remaining &lt; Infinity) {
+                const eta = new Date(Date.now() + remaining);
+                info.push(`ETA: ${eta.toTimeString().split(&apos; &apos;)[0]}`);
+            }
+        }·
+        const infoStr = info.length &gt; 0 ? ` (${info.join(&apos;, &apos;)})` : &apos;&apos;;
+        const statusMsg = message ? ` - ${message}` : &apos;&apos;;·
+        // Clear line and rewrite
+        process.stdout.write(`\\r${this.label}: [${bar}]${infoStr}${statusMsg}`);·
+        // New line when complete
+        if (this.current &gt;= this.total) {
+            process.stdout.write(&apos;\\n&apos;);
+        }
+    }·
+    /**
+     * Complete the progress
+     * @param {string} message - Completion message
+     */
+    complete(message = &apos;Complete&apos;) {
+        this.set(this.total, message);
+    }
+}·
+/**
+ * Performance monitor class
+ */
+class PerformanceMonitor {
+    constructor(logger) {
+        this.logger = logger || new Logger();
+        this.timers = new Map();
+        this.counters = new Map();
+        this.memory = [];
+    }·
+    /**
+     * Start a timer
+     * @param {string} name - Timer name
+     */
+    startTimer(name) {
+        this.timers.set(name, {
+            start: process.hrtime.bigint(),
+            end: null
+        });
+        this.logger.debug(`Started timer: ${name}`);
+    }·
+    /**
+     * End a timer
+     * @param {string} name - Timer name
+     * @returns {number} Duration in milliseconds
+     */
+    endTimer(name) {
+        const timer = this.timers.get(name);
+        if (!timer) {
+            this.logger.warn(`Timer &apos;${name}&apos; not found`);
+            return 0;
+        }·
+        timer.end = process.hrtime.bigint();
+        const duration = Number(timer.end - timer.start) / 1000000; // Convert to ms·
+        this.logger.debug(`Timer &apos;${name}&apos; completed: ${duration.toFixed(2)}ms`);
+        return duration;
+    }·
+    /**
+     * Increment a counter
+     * @param {string} name - Counter name
+     * @param {number} increment - Amount to increment (default: 1)
+     */
+    incrementCounter(name, increment = 1) {
+        const current = this.counters.get(name) || 0;
+        this.counters.set(name, current + increment);
+    }·
+    /**
+     * Get counter value
+     * @param {string} name - Counter name
+     * @returns {number} Counter value
+     */
+    getCounter(name) {
+        return this.counters.get(name) || 0;
+    }·
+    /**
+     * Record memory usage
+     * @param {string} label - Memory snapshot label
+     */
+    recordMemory(label) {
+        const usage = process.memoryUsage();
+        this.memory.push({
+            label,
+            timestamp: Date.now(),
+            ...usage
+        });·
+        this.logger.debug(`Memory snapshot &apos;${label}&apos;: ${(usage.heapUsed / 1024 / 1024).toFixed(2)}MB`);
+    }·
+    /**
+     * Get performance summary
+     * @returns {Object} Performance summary
+     */
+    getSummary() {
+        const summary = {
+            timers: {},
+            counters: Object.fromEntries(this.counters),
+            memory: this.memory
+        };·
+        // Calculate timer durations
+        for (const [name, timer] of this.timers) {
+            if (timer.end) {
+                summary.timers[name] = Number(timer.end - timer.start) / 1000000;
+            }
+        }·
+        return summary;
+    }·
+    /**
+     * Print performance report
+     */
+    printReport() {
+        const summary = this.getSummary();·
+        this.logger.print(chalk.blue(&apos;\\n📊 Performance Report&apos;));
+        this.logger.print(chalk.gray(&apos;━&apos;.repeat(50)));·
+        // Timers
+        if (Object.keys(summary.timers).length &gt; 0) {
+            this.logger.print(chalk.yellow(&apos;\\n⏱️  Timers:&apos;));
+            for (const [name, duration] of Object.entries(summary.timers)) {
+                this.logger.print(`   ${name}: ${duration.toFixed(2)}ms`);
+            }
+        }·
+        // Counters
+        if (Object.keys(summary.counters).length &gt; 0) {
+            this.logger.print(chalk.yellow(&apos;\\n🔢 Counters:&apos;));
+            for (const [name, count] of Object.entries(summary.counters)) {
+                this.logger.print(`   ${name}: ${count}`);
+            }
+        }·
+        // Memory
+        if (summary.memory.length &gt; 0) {
+            this.logger.print(chalk.yellow(&apos;\\n💾 Memory Usage:&apos;));
+            summary.memory.forEach(snapshot =&gt; {
+                const heapMB = (snapshot.heapUsed / 1024 / 1024).toFixed(2);
+                this.logger.print(`   ${snapshot.label}: ${heapMB}MB`);
+            });
+        }
+    }
+}·
+/**
+ * Create default logger instance
+ */
+function createLogger(options = {}) {
+    // Get log level from environment or options
+    const envLevel = process.env.HUGO_LOG_LEVEL;
+    const level = options.level || envLevel || &apos;INFO&apos;;·
+    // Get log file from environment or options
+    const envLogFile = process.env.HUGO_LOG_FILE;
+    const logFile = options.logFile || envLogFile || null;·
+    return new Logger({
+        level,
+        logFile,
+        colors: options.colors !== false &amp;&amp; process.stdout.isTTY,
+        timestamp: options.timestamp || false,
+        prefix: options.prefix || &apos;&apos;,
+        context: options.context || {}
+    });
+}·
+/**
+ * Create progress tracker
+ * @param {number} total - Total items
+ * @param {Object} options - Options
+ * @returns {ProgressTracker} Progress tracker instance
+ */
+function createProgress(total, options = {}) {
+    return new ProgressTracker(total, options);
+}·
+/**
+ * Create performance monitor
+ * @param {Logger} logger - Logger instance
+ * @returns {PerformanceMonitor} Performance monitor instance
+ */
+function createPerformanceMonitor(logger) {
+    return new PerformanceMonitor(logger);
+}·
+// Default logger instance
+const defaultLogger = createLogger();·
+module.exports = {
+    Logger,
+    ProgressTracker,
+    PerformanceMonitor,
+    LOG_LEVELS,
+    createLogger,
+    createProgress,
+    createPerformanceMonitor,
+    logger: defaultLogger
+};&quot;
+    at Object.toMatch (/root/info-tech-io/hugo-templates/tests/unit/logger.test.js:144:35)
+    at Promise.then.completed (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:316:40)
+    at _runTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at run (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:444:34)</failure>
+    </testcase>
+    <testcase classname="Logger System › Performance monitoring" name="should support timing operations" time="0.001">
+    </testcase>
+    <testcase classname="Logger System › Performance monitoring" name="should support progress tracking" time="0.008">
+    </testcase>
+    <testcase classname="Logger System › Error handling" name="should handle logging errors gracefully" time="0.001">
+    </testcase>
+    <testcase classname="Logger System › Error handling" name="should validate log parameters" time="0.002">
+      <failure>Error: expect(received).toMatch(expected)
+
+Expected pattern: /typeof|instanceof|validate|check/
+Received string:  &quot;#!/usr/bin/env node·
+/**
+ * Hugo Template Factory Framework - Centralized Logging System
+ * Provides consistent logging, progress tracking, and debugging capabilities
+ */·
+const chalk = require(&apos;chalk&apos;);
+const fs = require(&apos;fs-extra&apos;);
+const path = require(&apos;path&apos;);
+const util = require(&apos;util&apos;);·
+/**
+ * Log levels
+ */
+const LOG_LEVELS = {
+    DEBUG: 0,
+    INFO: 1,
+    WARN: 2,
+    ERROR: 3,
+    QUIET: 4
+};·
+/**
+ * Logger class
+ */
+class Logger {
+    constructor(options = {}) {
+        this.level = LOG_LEVELS[options.level] || LOG_LEVELS.INFO;
+        this.prefix = options.prefix || &apos;&apos;;
+        this.colors = options.colors !== false;
+        this.timestamp = options.timestamp || false;
+        this.logFile = options.logFile || null;
+        this.context = options.context || {};·
+        // Initialize log file if specified
+        if (this.logFile) {
+            this.initLogFile();
+        }
+    }·
+    /**
+     * Initialize log file
+     */
+    initLogFile() {
+        try {
+            const logDir = path.dirname(this.logFile);
+            fs.ensureDirSync(logDir);·
+            // Write session header
+            const header = `\\n=== Hugo Template Factory Log Session ===\\n` +
+                          `Date: ${new Date().toISOString()}\\n` +
+                          `Level: ${Object.keys(LOG_LEVELS)[this.level]}\\n` +
+                          `Context: ${JSON.stringify(this.context)}\\n` +
+                          `${&apos;=&apos;.repeat(50)}\\n\\n`;·
+            fs.appendFileSync(this.logFile, header);
+        } catch (error) {
+            console.error(&apos;Failed to initialize log file:&apos;, error.message);
+        }
+    }·
+    /**
+     * Write to log file
+     * @param {string} level - Log level
+     * @param {string} message - Message to log
+     * @param {Object} data - Additional data
+     */
+    writeToFile(level, message, data = {}) {
+        if (!this.logFile) return;·
+        try {
+            const timestamp = new Date().toISOString();
+            const contextStr = Object.keys(this.context).length &gt; 0 ?
+                ` [${JSON.stringify(this.context)}]` : &apos;&apos;;·
+            let logEntry = `[${timestamp}] ${level.toUpperCase()}${contextStr}: ${message}`;·
+            if (Object.keys(data).length &gt; 0) {
+                logEntry += `\\n  Data: ${JSON.stringify(data, null, 2)}`;
+            }·
+            logEntry += &apos;\\n&apos;;·
+            fs.appendFileSync(this.logFile, logEntry);
+        } catch (error) {
+            // Silently fail to avoid logging loops
+        }
+    }·
+    /**
+     * Format message with timestamp and prefix
+     * @param {string} message - Message to format
+     */
+    formatMessage(message) {
+        let formatted = &apos;&apos;;·
+        if (this.timestamp) {
+            const now = new Date();
+            const time = now.toTimeString().split(&apos; &apos;)[0];
+            formatted += chalk.gray(`[${time}] `);
+        }·
+        if (this.prefix) {
+            formatted += chalk.gray(`[${this.prefix}] `);
+        }·
+        formatted += message;
+        return formatted;
+    }·
+    /**
+     * Debug level logging
+     * @param {string} message - Debug message
+     * @param {...any} args - Additional arguments
+     */
+    debug(message, ...args) {
+        if (this.level &gt; LOG_LEVELS.DEBUG) return;·
+        const formatted = this.formatMessage(
+            this.colors ? chalk.gray(`🔍 ${message}`) : `🔍 ${message}`
+        );·
+        console.log(formatted, ...args);
+        this.writeToFile(&apos;debug&apos;, message, { args });
+    }·
+    /**
+     * Info level logging
+     * @param {string} message - Info message
+     * @param {...any} args - Additional arguments
+     */
+    info(message, ...args) {
+        if (this.level &gt; LOG_LEVELS.INFO) return;·
+        const formatted = this.formatMessage(
+            this.colors ? chalk.blue(`ℹ️  ${message}`) : `ℹ️  ${message}`
+        );·
+        console.log(formatted, ...args);
+        this.writeToFile(&apos;info&apos;, message, { args });
+    }·
+    /**
+     * Success level logging
+     * @param {string} message - Success message
+     * @param {...any} args - Additional arguments
+     */
+    success(message, ...args) {
+        if (this.level &gt; LOG_LEVELS.INFO) return;·
+        const formatted = this.formatMessage(
+            this.colors ? chalk.green(`✅ ${message}`) : `✅ ${message}`
+        );·
+        console.log(formatted, ...args);
+        this.writeToFile(&apos;success&apos;, message, { args });
+    }·
+    /**
+     * Warning level logging
+     * @param {string} message - Warning message
+     * @param {...any} args - Additional arguments
+     */
+    warn(message, ...args) {
+        if (this.level &gt; LOG_LEVELS.WARN) return;·
+        const formatted = this.formatMessage(
+            this.colors ? chalk.yellow(`⚠️  ${message}`) : `⚠️  ${message}`
+        );·
+        console.log(formatted, ...args);
+        this.writeToFile(&apos;warn&apos;, message, { args });
+    }·
+    /**
+     * Error level logging
+     * @param {string} message - Error message
+     * @param {...any} args - Additional arguments
+     */
+    error(message, ...args) {
+        if (this.level &gt; LOG_LEVELS.ERROR) return;·
+        const formatted = this.formatMessage(
+            this.colors ? chalk.red(`❌ ${message}`) : `❌ ${message}`
+        );·
+        console.error(formatted, ...args);
+        this.writeToFile(&apos;error&apos;, message, { args });
+    }·
+    /**
+     * Always print regardless of log level
+     * @param {string} message - Message to print
+     * @param {...any} args - Additional arguments
+     */
+    print(message, ...args) {
+        const formatted = this.formatMessage(message);
+        console.log(formatted, ...args);
+        this.writeToFile(&apos;print&apos;, message, { args });
+    }·
+    /**
+     * Create a child logger with additional context
+     * @param {Object} context - Additional context
+     * @returns {Logger} Child logger
+     */
+    child(context) {
+        return new Logger({
+            level: Object.keys(LOG_LEVELS)[this.level],
+            prefix: this.prefix,
+            colors: this.colors,
+            timestamp: this.timestamp,
+            logFile: this.logFile,
+            context: { ...this.context, ...context }
+        });
+    }·
+    /**
+     * Set log level
+     * @param {string} level - Log level name
+     */
+    setLevel(level) {
+        const upperLevel = level.toUpperCase();
+        if (LOG_LEVELS.hasOwnProperty(upperLevel)) {
+            this.level = LOG_LEVELS[upperLevel];
+        } else {
+            this.warn(`Invalid log level: ${level}`);
+        }
+    }·
+    /**
+     * Get current log level name
+     * @returns {string} Log level name
+     */
+    getLevel() {
+        return Object.keys(LOG_LEVELS)[this.level];
+    }
+}·
+/**
+ * Progress tracker class
+ */
+class ProgressTracker {
+    constructor(total, options = {}) {
+        this.total = total;
+        this.current = 0;
+        this.label = options.label || &apos;Progress&apos;;
+        this.width = options.width || 40;
+        this.logger = options.logger || new Logger();
+        this.startTime = Date.now();
+        this.showEta = options.showEta !== false;
+        this.showPercent = options.showPercent !== false;
+        this.showCount = options.showCount !== false;
+    }·
+    /**
+     * Update progress
+     * @param {number} increment - Amount to increment (default: 1)
+     * @param {string} message - Optional status message
+     */
+    update(increment = 1, message = &apos;&apos;) {
+        this.current = Math.min(this.current + increment, this.total);
+        this.render(message);
+    }·
+    /**
+     * Set progress to specific value
+     * @param {number} value - Progress value
+     * @param {string} message - Optional status message
+     */
+    set(value, message = &apos;&apos;) {
+        this.current = Math.min(Math.max(value, 0), this.total);
+        this.render(message);
+    }·
+    /**
+     * Render progress bar
+     * @param {string} message - Optional status message
+     */
+    render(message = &apos;&apos;) {
+        const percent = this.total &gt; 0 ? (this.current / this.total) : 0;
+        const filled = Math.floor(percent * this.width);
+        const empty = this.width - filled;·
+        let bar = chalk.green(&apos;█&apos;.repeat(filled)) + chalk.gray(&apos;░&apos;.repeat(empty));
+        let info = [];·
+        if (this.showPercent) {
+            info.push(`${(percent * 100).toFixed(1)}%`);
+        }·
+        if (this.showCount) {
+            info.push(`${this.current}/${this.total}`);
+        }·
+        if (this.showEta &amp;&amp; this.current &gt; 0) {
+            const elapsed = Date.now() - this.startTime;
+            const rate = this.current / elapsed;
+            const remaining = (this.total - this.current) / rate;·
+            if (remaining &gt; 0 &amp;&amp; remaining &lt; Infinity) {
+                const eta = new Date(Date.now() + remaining);
+                info.push(`ETA: ${eta.toTimeString().split(&apos; &apos;)[0]}`);
+            }
+        }·
+        const infoStr = info.length &gt; 0 ? ` (${info.join(&apos;, &apos;)})` : &apos;&apos;;
+        const statusMsg = message ? ` - ${message}` : &apos;&apos;;·
+        // Clear line and rewrite
+        process.stdout.write(`\\r${this.label}: [${bar}]${infoStr}${statusMsg}`);·
+        // New line when complete
+        if (this.current &gt;= this.total) {
+            process.stdout.write(&apos;\\n&apos;);
+        }
+    }·
+    /**
+     * Complete the progress
+     * @param {string} message - Completion message
+     */
+    complete(message = &apos;Complete&apos;) {
+        this.set(this.total, message);
+    }
+}·
+/**
+ * Performance monitor class
+ */
+class PerformanceMonitor {
+    constructor(logger) {
+        this.logger = logger || new Logger();
+        this.timers = new Map();
+        this.counters = new Map();
+        this.memory = [];
+    }·
+    /**
+     * Start a timer
+     * @param {string} name - Timer name
+     */
+    startTimer(name) {
+        this.timers.set(name, {
+            start: process.hrtime.bigint(),
+            end: null
+        });
+        this.logger.debug(`Started timer: ${name}`);
+    }·
+    /**
+     * End a timer
+     * @param {string} name - Timer name
+     * @returns {number} Duration in milliseconds
+     */
+    endTimer(name) {
+        const timer = this.timers.get(name);
+        if (!timer) {
+            this.logger.warn(`Timer &apos;${name}&apos; not found`);
+            return 0;
+        }·
+        timer.end = process.hrtime.bigint();
+        const duration = Number(timer.end - timer.start) / 1000000; // Convert to ms·
+        this.logger.debug(`Timer &apos;${name}&apos; completed: ${duration.toFixed(2)}ms`);
+        return duration;
+    }·
+    /**
+     * Increment a counter
+     * @param {string} name - Counter name
+     * @param {number} increment - Amount to increment (default: 1)
+     */
+    incrementCounter(name, increment = 1) {
+        const current = this.counters.get(name) || 0;
+        this.counters.set(name, current + increment);
+    }·
+    /**
+     * Get counter value
+     * @param {string} name - Counter name
+     * @returns {number} Counter value
+     */
+    getCounter(name) {
+        return this.counters.get(name) || 0;
+    }·
+    /**
+     * Record memory usage
+     * @param {string} label - Memory snapshot label
+     */
+    recordMemory(label) {
+        const usage = process.memoryUsage();
+        this.memory.push({
+            label,
+            timestamp: Date.now(),
+            ...usage
+        });·
+        this.logger.debug(`Memory snapshot &apos;${label}&apos;: ${(usage.heapUsed / 1024 / 1024).toFixed(2)}MB`);
+    }·
+    /**
+     * Get performance summary
+     * @returns {Object} Performance summary
+     */
+    getSummary() {
+        const summary = {
+            timers: {},
+            counters: Object.fromEntries(this.counters),
+            memory: this.memory
+        };·
+        // Calculate timer durations
+        for (const [name, timer] of this.timers) {
+            if (timer.end) {
+                summary.timers[name] = Number(timer.end - timer.start) / 1000000;
+            }
+        }·
+        return summary;
+    }·
+    /**
+     * Print performance report
+     */
+    printReport() {
+        const summary = this.getSummary();·
+        this.logger.print(chalk.blue(&apos;\\n📊 Performance Report&apos;));
+        this.logger.print(chalk.gray(&apos;━&apos;.repeat(50)));·
+        // Timers
+        if (Object.keys(summary.timers).length &gt; 0) {
+            this.logger.print(chalk.yellow(&apos;\\n⏱️  Timers:&apos;));
+            for (const [name, duration] of Object.entries(summary.timers)) {
+                this.logger.print(`   ${name}: ${duration.toFixed(2)}ms`);
+            }
+        }·
+        // Counters
+        if (Object.keys(summary.counters).length &gt; 0) {
+            this.logger.print(chalk.yellow(&apos;\\n🔢 Counters:&apos;));
+            for (const [name, count] of Object.entries(summary.counters)) {
+                this.logger.print(`   ${name}: ${count}`);
+            }
+        }·
+        // Memory
+        if (summary.memory.length &gt; 0) {
+            this.logger.print(chalk.yellow(&apos;\\n💾 Memory Usage:&apos;));
+            summary.memory.forEach(snapshot =&gt; {
+                const heapMB = (snapshot.heapUsed / 1024 / 1024).toFixed(2);
+                this.logger.print(`   ${snapshot.label}: ${heapMB}MB`);
+            });
+        }
+    }
+}·
+/**
+ * Create default logger instance
+ */
+function createLogger(options = {}) {
+    // Get log level from environment or options
+    const envLevel = process.env.HUGO_LOG_LEVEL;
+    const level = options.level || envLevel || &apos;INFO&apos;;·
+    // Get log file from environment or options
+    const envLogFile = process.env.HUGO_LOG_FILE;
+    const logFile = options.logFile || envLogFile || null;·
+    return new Logger({
+        level,
+        logFile,
+        colors: options.colors !== false &amp;&amp; process.stdout.isTTY,
+        timestamp: options.timestamp || false,
+        prefix: options.prefix || &apos;&apos;,
+        context: options.context || {}
+    });
+}·
+/**
+ * Create progress tracker
+ * @param {number} total - Total items
+ * @param {Object} options - Options
+ * @returns {ProgressTracker} Progress tracker instance
+ */
+function createProgress(total, options = {}) {
+    return new ProgressTracker(total, options);
+}·
+/**
+ * Create performance monitor
+ * @param {Logger} logger - Logger instance
+ * @returns {PerformanceMonitor} Performance monitor instance
+ */
+function createPerformanceMonitor(logger) {
+    return new PerformanceMonitor(logger);
+}·
+// Default logger instance
+const defaultLogger = createLogger();·
+module.exports = {
+    Logger,
+    ProgressTracker,
+    PerformanceMonitor,
+    LOG_LEVELS,
+    createLogger,
+    createProgress,
+    createPerformanceMonitor,
+    logger: defaultLogger
+};&quot;
+    at Object.toMatch (/root/info-tech-io/hugo-templates/tests/unit/logger.test.js:177:35)
+    at Promise.then.completed (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:316:40)
+    at _runTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at run (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:444:34)</failure>
+    </testcase>
+    <testcase classname="Logger System › Logger configuration" name="should support configuration options" time="0.041">
+    </testcase>
+    <testcase classname="Logger System › Logger configuration" name="should have default configurations" time="0.002">
+    </testcase>
+    <testcase classname="Logger System › Memory management" name="should handle memory efficiently" time="0.029">
+    </testcase>
+    <testcase classname="Logger System › Memory management" name="should cleanup resources" time="0.001">
+      <failure>ReferenceError: Cannot access &apos;loggerContent&apos; before initialization
+    at Object.loggerContent (/root/info-tech-io/hugo-templates/tests/unit/logger.test.js:208:51)
+    at Promise.then.completed (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:316:40)
+    at _runTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at run (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:444:34)</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="tests/performance/benchmark.test.js" errors="0" failures="7" skipped="0" timestamp="2025-09-20T19:49:17" time="8.423" tests="16">
+    <testcase classname="Performance Benchmarking › Build Performance Benchmarks" name="should benchmark minimal template build time" time="0.058">
+      <failure>Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: true
+Received: false
+    at Object.toBe (/root/info-tech-io/hugo-templates/tests/performance/benchmark.test.js:77:46)</failure>
+    </testcase>
+    <testcase classname="Performance Benchmarking › Build Performance Benchmarks" name="should benchmark default template build time" time="0.048">
+      <failure>Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: true
+Received: false
+    at Object.toBe (/root/info-tech-io/hugo-templates/tests/performance/benchmark.test.js:92:46)</failure>
+    </testcase>
+    <testcase classname="Performance Benchmarking › Build Performance Benchmarks" name="should benchmark components integration performance" time="0.089">
+      <failure>Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: true
+Received: false
+    at Object.toBe (/root/info-tech-io/hugo-templates/tests/performance/benchmark.test.js:107:46)</failure>
+    </testcase>
+    <testcase classname="Performance Benchmarking › CLI Tools Performance" name="should benchmark validation performance" time="0.483">
+    </testcase>
+    <testcase classname="Performance Benchmarking › CLI Tools Performance" name="should benchmark list operations performance" time="0.296">
+    </testcase>
+    <testcase classname="Performance Benchmarking › CLI Tools Performance" name="should benchmark diagnostic performance" time="0.726">
+    </testcase>
+    <testcase classname="Performance Benchmarking › Memory Usage Benchmarks" name="should monitor memory usage during build" time="0.054">
+    </testcase>
+    <testcase classname="Performance Benchmarking › Memory Usage Benchmarks" name="should monitor memory efficiency of CLI tools" time="1.217">
+    </testcase>
+    <testcase classname="Performance Benchmarking › Scalability Benchmarks" name="should benchmark multiple concurrent builds" time="0.124">
+      <failure>Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: true
+Received: false
+    at Object.toBe (/root/info-tech-io/hugo-templates/tests/performance/benchmark.test.js:211:78)</failure>
+    </testcase>
+    <testcase classname="Performance Benchmarking › Scalability Benchmarks" name="should benchmark repeated operations" time="2.553">
+    </testcase>
+    <testcase classname="Performance Benchmarking › File Size Benchmarks" name="should measure output file sizes" time="0.037">
+      <failure>Error: ENOENT: no such file or directory, scandir &apos;/tmp/hugo-templates-perf-1758397758617/size-test&apos;
+    at Object.readdirSync (node:fs:1581:26)
+    at readdirSync (/root/info-tech-io/hugo-templates/tests/performance/benchmark.test.js:254:34)
+    at Object.getDirectorySize (/root/info-tech-io/hugo-templates/tests/performance/benchmark.test.js:267:32)</failure>
+    </testcase>
+    <testcase classname="Performance Benchmarking › File Size Benchmarks" name="should compare minified vs non-minified sizes" time="0.083">
+      <failure>Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: true
+Received: false
+    at Object.toBe (/root/info-tech-io/hugo-templates/tests/performance/benchmark.test.js:302:46)</failure>
+    </testcase>
+    <testcase classname="Performance Benchmarking › Resource Utilization" name="should monitor CPU usage patterns" time="0.049">
+    </testcase>
+    <testcase classname="Performance Benchmarking › Resource Utilization" name="should test performance with different load levels" time="0.056">
+      <failure>Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: true
+Received: false
+    at Object.toBe (/root/info-tech-io/hugo-templates/tests/performance/benchmark.test.js:354:50)</failure>
+    </testcase>
+    <testcase classname="Performance Benchmarking › Performance Regression Detection" name="should establish baseline performance metrics" time="1.053">
+    </testcase>
+    <testcase classname="Performance Benchmarking › Performance Regression Detection" name="should compare with hugo-base baseline" time="0.137">
+    </testcase>
+  </testsuite>
+  <testsuite name="tests/integration/build.test.js" errors="0" failures="13" skipped="0" timestamp="2025-09-20T19:49:26" time="1.266" tests="16">
+    <testcase classname="Build System Integration › End-to-end build process" name="should build minimal template successfully" time="0.044">
+      <failure>Error: Command failed: bash scripts/build.sh --template=minimal --theme=compose --output=&quot;/tmp/hugo-templates-test-1758397766588/minimal-build&quot; --verbose
+❌ Unknown option: --template=minimal
+
+    at genericNodeError (node:internal/errors:983:15)
+    at wrappedFn (node:internal/errors:537:14)
+    at checkExecSyncError (node:child_process:882:11)
+    at execSync (node:child_process:954:15)
+    at Object.execSync (/root/info-tech-io/hugo-templates/tests/integration/build.test.js:35:28)
+    at Promise.then.completed (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:316:40)
+    at _runTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at run (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:444:34)</failure>
+    </testcase>
+    <testcase classname="Build System Integration › End-to-end build process" name="should build default template successfully" time="0.05">
+      <failure>Error: Command failed: bash scripts/build.sh --template=default --theme=compose --output=&quot;/tmp/hugo-templates-test-1758397766588/default-build&quot; --verbose
+❌ Unknown option: --template=default
+
+    at genericNodeError (node:internal/errors:983:15)
+    at wrappedFn (node:internal/errors:537:14)
+    at checkExecSyncError (node:child_process:882:11)
+    at execSync (node:child_process:954:15)
+    at Object.execSync (/root/info-tech-io/hugo-templates/tests/integration/build.test.js:57:28)
+    at Promise.then.completed (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:316:40)
+    at _runTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at run (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:444:34)</failure>
+    </testcase>
+    <testcase classname="Build System Integration › End-to-end build process" name="should build with components integration" time="0.03">
+      <failure>Error: Command failed: bash scripts/build.sh --template=default --theme=compose --components=quiz-engine --output=&quot;/tmp/hugo-templates-test-1758397766588/components-build&quot; --verbose
+❌ Unknown option: --template=default
+
+    at genericNodeError (node:internal/errors:983:15)
+    at wrappedFn (node:internal/errors:537:14)
+    at checkExecSyncError (node:child_process:882:11)
+    at execSync (node:child_process:954:15)
+    at Object.execSync (/root/info-tech-io/hugo-templates/tests/integration/build.test.js:81:28)
+    at Promise.then.completed (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:316:40)
+    at _runTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at run (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:444:34)</failure>
+    </testcase>
+    <testcase classname="Build System Integration › Hugo build integration" name="should produce valid Hugo site with minimal template" time="0.041">
+      <failure>Error: Command failed: bash scripts/build.sh --template=minimal --theme=compose --output=&quot;/tmp/hugo-templates-test-1758397766588/hugo-minimal&quot;
+❌ Unknown option: --template=minimal
+
+    at genericNodeError (node:internal/errors:983:15)
+    at wrappedFn (node:internal/errors:537:14)
+    at checkExecSyncError (node:child_process:882:11)
+    at execSync (node:child_process:954:15)
+    at Object.execSync (/root/info-tech-io/hugo-templates/tests/integration/build.test.js:104:13)
+    at Promise.then.completed (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:316:40)
+    at _runTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at run (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:444:34)</failure>
+    </testcase>
+    <testcase classname="Build System Integration › Hugo build integration" name="should produce valid Hugo site with default template" time="0.042">
+      <failure>Error: Command failed: bash scripts/build.sh --template=default --theme=compose --output=&quot;/tmp/hugo-templates-test-1758397766588/hugo-default&quot;
+❌ Unknown option: --template=default
+
+    at genericNodeError (node:internal/errors:983:15)
+    at wrappedFn (node:internal/errors:537:14)
+    at checkExecSyncError (node:child_process:882:11)
+    at execSync (node:child_process:954:15)
+    at Object.execSync (/root/info-tech-io/hugo-templates/tests/integration/build.test.js:138:13)
+    at Promise.then.completed (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:316:40)
+    at _runTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at run (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:444:34)</failure>
+    </testcase>
+    <testcase classname="Build System Integration › Theme integration" name="should integrate compose theme correctly" time="0.042">
+      <failure>Error: Command failed: bash scripts/build.sh --template=minimal --theme=compose --output=&quot;/tmp/hugo-templates-test-1758397766588/theme-integration&quot;
+❌ Unknown option: --template=minimal
+
+    at genericNodeError (node:internal/errors:983:15)
+    at wrappedFn (node:internal/errors:537:14)
+    at checkExecSyncError (node:child_process:882:11)
+    at execSync (node:child_process:954:15)
+    at Object.execSync (/root/info-tech-io/hugo-templates/tests/integration/build.test.js:168:13)
+    at Promise.then.completed (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:316:40)
+    at _runTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at run (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:444:34)</failure>
+    </testcase>
+    <testcase classname="Build System Integration › Theme integration" name="should handle theme submodules correctly" time="0.042">
+      <failure>Error: Command failed: bash scripts/build.sh --template=default --theme=compose --output=&quot;/tmp/hugo-templates-test-1758397766588/submodule-test&quot; --verbose
+❌ Unknown option: --template=default
+
+    at genericNodeError (node:internal/errors:983:15)
+    at wrappedFn (node:internal/errors:537:14)
+    at checkExecSyncError (node:child_process:882:11)
+    at execSync (node:child_process:954:15)
+    at Object.execSync (/root/info-tech-io/hugo-templates/tests/integration/build.test.js:192:28)
+    at Promise.then.completed (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:316:40)
+    at _runTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at run (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:444:34)</failure>
+    </testcase>
+    <testcase classname="Build System Integration › Environment-specific builds" name="should build for production environment" time="0.027">
+      <failure>Error: Command failed: bash scripts/build.sh --template=minimal --theme=compose --environment=production --output=&quot;/tmp/hugo-templates-test-1758397766588/production&quot;
+❌ Unknown option: --template=minimal
+
+    at genericNodeError (node:internal/errors:983:15)
+    at wrappedFn (node:internal/errors:537:14)
+    at checkExecSyncError (node:child_process:882:11)
+    at execSync (node:child_process:954:15)
+    at Object.execSync (/root/info-tech-io/hugo-templates/tests/integration/build.test.js:213:28)
+    at Promise.then.completed (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:316:40)
+    at _runTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at run (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:444:34)</failure>
+    </testcase>
+    <testcase classname="Build System Integration › Environment-specific builds" name="should build for development environment" time="0.037">
+      <failure>Error: Command failed: bash scripts/build.sh --template=minimal --theme=compose --environment=development --output=&quot;/tmp/hugo-templates-test-1758397766588/development&quot;
+❌ Unknown option: --template=minimal
+
+    at genericNodeError (node:internal/errors:983:15)
+    at wrappedFn (node:internal/errors:537:14)
+    at checkExecSyncError (node:child_process:882:11)
+    at execSync (node:child_process:954:15)
+    at Object.execSync (/root/info-tech-io/hugo-templates/tests/integration/build.test.js:228:28)
+    at Promise.then.completed (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:316:40)
+    at _runTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at run (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:444:34)</failure>
+    </testcase>
+    <testcase classname="Build System Integration › Custom content integration" name="should handle custom content directory" time="0.05">
+      <failure>Error: Command failed: bash scripts/build.sh --template=minimal --theme=compose --content=&quot;/tmp/hugo-templates-test-1758397766588/custom-content-source&quot; --output=&quot;/tmp/hugo-templates-test-1758397766588/custom-content&quot;
+❌ Unknown option: --template=minimal
+
+    at genericNodeError (node:internal/errors:983:15)
+    at wrappedFn (node:internal/errors:537:14)
+    at checkExecSyncError (node:child_process:882:11)
+    at execSync (node:child_process:954:15)
+    at Object.execSync (/root/info-tech-io/hugo-templates/tests/integration/build.test.js:253:28)
+    at Promise.then.completed (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:316:40)
+    at _runTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at run (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:444:34)</failure>
+    </testcase>
+    <testcase classname="Build System Integration › Build options integration" name="should handle minification option" time="0.045">
+      <failure>Error: Command failed: bash scripts/build.sh --template=minimal --theme=compose --minify --output=&quot;/tmp/hugo-templates-test-1758397766588/minified&quot;
+❌ Unknown option: --template=minimal
+
+    at genericNodeError (node:internal/errors:983:15)
+    at wrappedFn (node:internal/errors:537:14)
+    at checkExecSyncError (node:child_process:882:11)
+    at execSync (node:child_process:954:15)
+    at Object.execSync (/root/info-tech-io/hugo-templates/tests/integration/build.test.js:274:28)
+    at Promise.then.completed (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:316:40)
+    at _runTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at run (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:444:34)</failure>
+    </testcase>
+    <testcase classname="Build System Integration › Build options integration" name="should handle verbose output" time="0.042">
+      <failure>Error: Command failed: bash scripts/build.sh --template=minimal --theme=compose --verbose --output=&quot;/tmp/hugo-templates-test-1758397766588/verbose&quot;
+❌ Unknown option: --template=minimal
+
+    at genericNodeError (node:internal/errors:983:15)
+    at wrappedFn (node:internal/errors:537:14)
+    at checkExecSyncError (node:child_process:882:11)
+    at execSync (node:child_process:954:15)
+    at Object.execSync (/root/info-tech-io/hugo-templates/tests/integration/build.test.js:286:28)
+    at Promise.then.completed (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:316:40)
+    at _runTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at run (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:444:34)</failure>
+    </testcase>
+    <testcase classname="Build System Integration › Error handling integration" name="should handle invalid template gracefully" time="0.047">
+    </testcase>
+    <testcase classname="Build System Integration › Error handling integration" name="should handle invalid theme gracefully" time="0.04">
+    </testcase>
+    <testcase classname="Build System Integration › Error handling integration" name="should handle missing output directory" time="0.038">
+    </testcase>
+    <testcase classname="Build System Integration › Parallel build support" name="should handle multiple builds concurrently" time="0.075">
+      <failure>Error: Command failed: bash scripts/build.sh --template=minimal --theme=compose --output=&quot;/tmp/hugo-templates-test-1758397766588/parallel1&quot;
+❌ Unknown option: --template=minimal
+
+    at genericNodeError (node:internal/errors:983:15)
+    at wrappedFn (node:internal/errors:537:14)
+    at checkExecSyncError (node:child_process:882:11)
+    at execSync (node:child_process:954:15)
+    at execSync (/root/info-tech-io/hugo-templates/tests/integration/build.test.js:343:40)
+    at new Promise (&lt;anonymous&gt;)
+    at /root/info-tech-io/hugo-templates/tests/integration/build.test.js:341:24
+    at Array.map (&lt;anonymous&gt;)
+    at Object.map (/root/info-tech-io/hugo-templates/tests/integration/build.test.js:340:42)
+    at Promise.then.completed (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:316:40)
+    at _runTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at run (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:444:34)</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="tests/integration/cli-workflow.test.js" errors="0" failures="13" skipped="0" timestamp="2025-09-20T19:49:27" time="4.87" tests="14">
+    <testcase classname="CLI Workflow Integration › Complete workflow scenarios" name="should execute complete workflow: list → validate → build" time="0.815">
+      <failure>Error: Command failed: node scripts/validate.js --template default --theme compose
+❌ Failed to load schema &apos;component&apos;: schema with key or id &quot;https://schemas.hugo-templates.org/component.json&quot; already exists
+❌ Failed to load schema &apos;component&apos;: schema with key or id &quot;https://schemas.hugo-templates.org/component.json&quot; already exists
+❌ Failed to load schema &apos;component&apos;: schema with key or id &quot;https://schemas.hugo-templates.org/component.json&quot; already exists
+❌ Failed to load schema &apos;component&apos;: schema with key or id &quot;https://schemas.hugo-templates.org/component.json&quot; already exists
+
+    at genericNodeError (node:internal/errors:983:15)
+    at wrappedFn (node:internal/errors:537:14)
+    at checkExecSyncError (node:child_process:882:11)
+    at execSync (node:child_process:954:15)
+    at Object.execSync (/root/info-tech-io/hugo-templates/tests/integration/cli-workflow.test.js:39:36)
+    at Promise.then.completed (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:316:40)
+    at _runTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at run (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:444:34)</failure>
+    </testcase>
+    <testcase classname="CLI Workflow Integration › Complete workflow scenarios" name="should execute diagnostic → build → validate workflow" time="0.711">
+      <failure>Error: expect(received).toContain(expected) // indexOf
+
+Expected substring: &quot;Diagnostics&quot;
+Received string:    &quot;[19:49:28] 🔍 Hugo Template Factory - System Diagnostic
+[19:49:28] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[19:49:28]·
+[19:49:28] ℹ️  Checking system information...
+[19:49:28] ✅ System: linux x64 (6.1.0-34-amd64)
+[19:49:28] ✅ Memory: 0.71GB used / 0.93GB total
+[19:49:28] ✅ CPUs: 1
+[19:49:28] ℹ️  Checking environment configuration...
+[19:49:28] ✅ Node environment: test
+[19:49:28] ✅ Current directory: /root/info-tech-io/hugo-templates
+[19:49:28] ✅ PATH entries: 11
+[19:49:28] ℹ️  Checking required dependencies...
+[19:49:28] ✅ ✓ node: v23.11.1
+[19:49:29] ✅ ✓ npm: 11.4.2
+[19:49:29] ✅ ✓ hugo: hugo v0.148.0-c0d9bebacc6bf42a91a74d8bb0de7bc775c8e573+extended linux/amd64 BuildDate=2025-07-08T13:34:49Z VendorInfo=gohugoio
+[19:49:29] ✅ ✓ git: git version 2.39.5
+[19:49:29] ✅ ✓ bash: GNU bash, version 5.2.15(1)-release (x86_64-pc-linux-gnu)
+[19:49:29] ℹ️  - yarn: not available (optional)
+[19:49:29] ✅ Package: hugo-templates@0.1.0-alpha.1
+[19:49:29] ✅ Dependencies: 7 runtime, 4 dev
+[19:49:29] ℹ️  Checking project structure...
+[19:49:29] ✅ Directory templates/: 6 items
+[19:49:29] ✅ Directory themes/: 1 items
+[19:49:29] ✅ Directory components/: 1 items
+[19:49:29] ✅ Directory scripts/: 9 items
+[19:49:29] ✅ Directory schemas/: 5 items
+[19:49:29] ✅ Directory docs/: 0 items
+[19:49:29] ✅ File package.json: 1875 bytes
+[19:49:29] ✅ File collection.json: 1077 bytes
+[19:49:29] ✅ File .gitignore: 1306 bytes
+[19:49:29] ✅ File README.md: 2624 bytes
+[19:49:29] ⚠️  Git: 8 files with changes
+[19:49:29] ℹ️  Checking file permissions...
+[19:49:29] ✅ Script build.sh: executable
+[19:49:29] ✅ Script factory.js: executable
+[19:49:29] ✅ Script validate.js: executable
+[19:49:29] ✅ Script list.js: executable
+[19:49:29] ✅ Script generate.js: executable
+[19:49:29] ✅ Directory templates/: read/write access
+[19:49:29] ✅ Directory themes/: read/write access
+[19:49:29] ✅ Directory components/: read/write access
+[19:49:29] ℹ️  Running performance checks...
+[19:49:29] ✅ I/O Performance: 0.54ms for 100KB
+[19:49:29] ✅ Script execution: 200.51ms
+[19:49:29]·
+[19:49:29] 📋 Diagnostic Summary
+[19:49:29] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[19:49:29] ⚠️  WARNING: Uncommitted changes in git repository
+[19:49:29]·
+[19:49:29] ⚠️  ⚠️  1 warnings found - System is mostly ready
+[19:49:29]·
+📊 Performance Report
+[19:49:29] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[19:49:29]·
+⏱️  Timers:
+[19:49:29]    diagnostic: 594.31ms
+[19:49:29]    file_io: 0.54ms
+[19:49:29]    script_exec: 200.51ms
+[19:49:29]·
+💾 Memory Usage:
+[19:49:29]    start: 5.32MB
+[19:49:29]    end: 5.62MB
+&quot;
+    at Object.toContain (/root/info-tech-io/hugo-templates/tests/integration/cli-workflow.test.js:67:38)
+    at Promise.then.completed (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:316:40)
+    at _runTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at run (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:444:34)</failure>
+    </testcase>
+    <testcase classname="CLI Workflow Integration › Node.js vs Bash CLI compatibility" name="should produce same results with Node.js and Bash interfaces" time="0.101">
+      <failure>Error: Command failed: node scripts/factory.js --template=minimal --theme=compose --output=&quot;/tmp/hugo-templates-cli-test-1758397767813/node-build&quot;
+❌ Unknown option: --template=minimal
+❌ Wrapper execution failed: Build script exited with code 1
+
+    at genericNodeError (node:internal/errors:983:15)
+    at wrappedFn (node:internal/errors:537:14)
+    at checkExecSyncError (node:child_process:882:11)
+    at execSync (node:child_process:954:15)
+    at Object.execSync (/root/info-tech-io/hugo-templates/tests/integration/cli-workflow.test.js:96:32)
+    at Promise.then.completed (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:316:40)
+    at _runTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at run (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:444:34)</failure>
+    </testcase>
+    <testcase classname="CLI Workflow Integration › Node.js vs Bash CLI compatibility" name="should handle validation consistently across interfaces" time="0.496">
+      <failure>Error: Command failed: node scripts/validate.js --template default
+❌ Failed to load schema &apos;component&apos;: schema with key or id &quot;https://schemas.hugo-templates.org/component.json&quot; already exists
+❌ Failed to load schema &apos;component&apos;: schema with key or id &quot;https://schemas.hugo-templates.org/component.json&quot; already exists
+❌ Failed to load schema &apos;component&apos;: schema with key or id &quot;https://schemas.hugo-templates.org/component.json&quot; already exists
+❌ Failed to load schema &apos;component&apos;: schema with key or id &quot;https://schemas.hugo-templates.org/component.json&quot; already exists
+
+    at genericNodeError (node:internal/errors:983:15)
+    at wrappedFn (node:internal/errors:537:14)
+    at checkExecSyncError (node:child_process:882:11)
+    at execSync (node:child_process:954:15)
+    at Object.execSync (/root/info-tech-io/hugo-templates/tests/integration/cli-workflow.test.js:123:36)
+    at Promise.then.completed (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:316:40)
+    at _runTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at run (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:444:34)</failure>
+    </testcase>
+    <testcase classname="CLI Workflow Integration › Error recovery workflows" name="should recover from invalid parameters gracefully" time="0.066">
+      <failure>Error: Command failed: bash scripts/build.sh --template=minimal --validate-only
+❌ Unknown option: --template=minimal
+
+    at genericNodeError (node:internal/errors:983:15)
+    at wrappedFn (node:internal/errors:537:14)
+    at checkExecSyncError (node:child_process:882:11)
+    at execSync (node:child_process:954:15)
+    at Object.execSync (/root/info-tech-io/hugo-templates/tests/integration/cli-workflow.test.js:154:33)
+    at Promise.then.completed (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:316:40)
+    at _runTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at run (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:444:34)</failure>
+    </testcase>
+    <testcase classname="CLI Workflow Integration › Error recovery workflows" name="should handle partial build failures" time="0.053">
+      <failure>Error: Command failed: bash scripts/build.sh --template=minimal --theme=compose --output=&quot;/tmp/hugo-templates-cli-test-1758397767813/recovery-test&quot;
+❌ Unknown option: --template=minimal
+
+    at genericNodeError (node:internal/errors:983:15)
+    at wrappedFn (node:internal/errors:537:14)
+    at checkExecSyncError (node:child_process:882:11)
+    at execSync (node:child_process:954:15)
+    at Object.execSync (/root/info-tech-io/hugo-templates/tests/integration/cli-workflow.test.js:171:33)
+    at Promise.then.completed (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:316:40)
+    at _runTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at run (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:444:34)</failure>
+    </testcase>
+    <testcase classname="CLI Workflow Integration › Advanced parameter combinations" name="should handle complex parameter combinations" time="0.038">
+      <failure>Error: Command failed: bash scripts/build.sh --template=default --theme=compose --components=quiz-engine --environment=production --minify --verbose --output=&quot;/tmp/hugo-templates-cli-test-1758397767813/complex-params&quot;
+❌ Unknown option: --template=default
+
+    at genericNodeError (node:internal/errors:983:15)
+    at wrappedFn (node:internal/errors:537:14)
+    at checkExecSyncError (node:child_process:882:11)
+    at execSync (node:child_process:954:15)
+    at Object.execSync (/root/info-tech-io/hugo-templates/tests/integration/cli-workflow.test.js:186:34)
+    at Promise.then.completed (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:316:40)
+    at _runTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at run (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:444:34)</failure>
+    </testcase>
+    <testcase classname="CLI Workflow Integration › Advanced parameter combinations" name="should handle edge case parameter values" time="0.025">
+      <failure>Error: Command failed: bash scripts/build.sh --template=minimal --theme=compose --output=&quot;/tmp/hugo-templates-cli-test-1758397767813/edge-cases&quot; --verbose
+❌ Unknown option: --template=minimal
+
+    at genericNodeError (node:internal/errors:983:15)
+    at wrappedFn (node:internal/errors:537:14)
+    at checkExecSyncError (node:child_process:882:11)
+    at execSync (node:child_process:954:15)
+    at Object.execSync (/root/info-tech-io/hugo-templates/tests/integration/cli-workflow.test.js:205:35)
+    at Promise.then.completed (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:316:40)
+    at _runTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at run (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:444:34)</failure>
+    </testcase>
+    <testcase classname="CLI Workflow Integration › Cross-platform workflow compatibility" name="should work with different path separators" time="0.056">
+      <failure>Error: Command failed: bash scripts/build.sh --template=minimal --theme=compose --output=&quot;/tmp/hugo-templates-cli-test-1758397767813/cross-platform&quot;
+❌ Unknown option: --template=minimal
+
+    at genericNodeError (node:internal/errors:983:15)
+    at wrappedFn (node:internal/errors:537:14)
+    at checkExecSyncError (node:child_process:882:11)
+    at execSync (node:child_process:954:15)
+    at Object.execSync (/root/info-tech-io/hugo-templates/tests/integration/cli-workflow.test.js:220:40)
+    at Promise.then.completed (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:316:40)
+    at _runTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at run (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:444:34)</failure>
+    </testcase>
+    <testcase classname="CLI Workflow Integration › Cross-platform workflow compatibility" name="should handle different line endings" time="0.461">
+    </testcase>
+    <testcase classname="CLI Workflow Integration › Performance workflow testing" name="should complete workflow within reasonable time" time="0.033">
+      <failure>Error: Command failed: bash scripts/build.sh --template=minimal --theme=compose --output=&quot;/tmp/hugo-templates-cli-test-1758397767813/performance-test&quot;
+❌ Unknown option: --template=minimal
+
+    at genericNodeError (node:internal/errors:983:15)
+    at wrappedFn (node:internal/errors:537:14)
+    at checkExecSyncError (node:child_process:882:11)
+    at execSync (node:child_process:954:15)
+    at Object.execSync (/root/info-tech-io/hugo-templates/tests/integration/cli-workflow.test.js:248:38)
+    at Promise.then.completed (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:316:40)
+    at _runTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at run (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:444:34)</failure>
+    </testcase>
+    <testcase classname="CLI Workflow Integration › Performance workflow testing" name="should handle concurrent CLI operations" time="1.456">
+      <failure>Error: Command failed: node scripts/validate.js --template minimal
+❌ Failed to load schema &apos;component&apos;: schema with key or id &quot;https://schemas.hugo-templates.org/component.json&quot; already exists
+❌ Failed to load schema &apos;component&apos;: schema with key or id &quot;https://schemas.hugo-templates.org/component.json&quot; already exists
+❌ Failed to load schema &apos;component&apos;: schema with key or id &quot;https://schemas.hugo-templates.org/component.json&quot; already exists
+❌ Failed to load schema &apos;component&apos;: schema with key or id &quot;https://schemas.hugo-templates.org/component.json&quot; already exists
+
+    at genericNodeError (node:internal/errors:983:15)
+    at wrappedFn (node:internal/errors:537:14)
+    at checkExecSyncError (node:child_process:882:11)
+    at execSync (node:child_process:954:15)
+    at execSync (/root/info-tech-io/hugo-templates/tests/integration/cli-workflow.test.js:264:23)
+    at op (/root/info-tech-io/hugo-templates/tests/integration/cli-workflow.test.js:271:33)
+    at new Promise (&lt;anonymous&gt;)
+    at /root/info-tech-io/hugo-templates/tests/integration/cli-workflow.test.js:269:17
+    at Array.map (&lt;anonymous&gt;)
+    at Object.map (/root/info-tech-io/hugo-templates/tests/integration/cli-workflow.test.js:268:58)
+    at Promise.then.completed (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:316:40)
+    at _runTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at run (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:444:34)</failure>
+    </testcase>
+    <testcase classname="CLI Workflow Integration › Help and documentation workflow" name="should provide consistent help across all CLI tools" time="0.027">
+      <failure>Error: expect(received).toContain(expected) // indexOf
+
+Expected substring: &quot;Options:&quot;
+Received string:    &quot;Usage: scripts/build.sh [OPTIONS]·
+Hugo Template Factory Framework - Build Script·
+OPTIONS:
+    -t, --template &lt;name&gt;       Template to use (default: default)
+    --theme &lt;name&gt;              Hugo theme to apply (default: compose)
+    -c, --components &lt;list&gt;     Comma-separated list of components to include
+    -o, --output &lt;path&gt;         Output directory (default: ./site)
+    --content &lt;path&gt;            Path to content directory
+    --config &lt;path&gt;             Path to custom configuration file
+    --minify                    Enable Hugo minification
+    --draft                     Include draft content
+    --future                    Include future content
+    --base-url &lt;url&gt;            Base URL for the site
+    -e, --environment &lt;env&gt;     Hugo environment (default: development)
+    -v, --verbose               Enable verbose output
+    -q, --quiet                 Suppress non-error output
+    --log-level &lt;level&gt;         Log level (debug|info|warn|error)
+    --validate-only             Only validate configuration, don&apos;t build
+    -h, --help                  Show this help message·
+EXAMPLES:
+    # Basic build with default template
+    scripts/build.sh·
+    # Build with minimal template
+    scripts/build.sh --template=minimal --theme=compose·
+    # Build with specific components
+    scripts/build.sh --template=default --components=quiz-engine,analytics·
+    # Build with custom content directory
+    scripts/build.sh --content=/path/to/content --output=/path/to/output·
+    # Production build with minification
+    scripts/build.sh --environment=production --minify --base-url=https://example.com·
+    # Validate configuration only
+    scripts/build.sh --validate-only --verbose·
+AVAILABLE TEMPLATES:
+    - academic
+    - default
+    - enterprise
+    - minimal
+    - test-template-1758368978446
+    - test-template-1758397753336·
+&quot;
+    at Object.toContain (/root/info-tech-io/hugo-templates/tests/integration/cli-workflow.test.js:313:118)
+    at Promise.then.completed (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:316:40)
+    at _runTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at run (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:444:34)</failure>
+    </testcase>
+    <testcase classname="CLI Workflow Integration › Help and documentation workflow" name="should provide version information consistently" time="0.078">
+      <failure>Error: expect(received).toContain(expected) // indexOf
+
+Expected substring: &quot;version&quot;
+Received string:    &quot;Hugo Template Factory Framework v0.1.0-alpha.1
+Node.js wrapper for bash build script
+&quot;
+    at Object.toContain (/root/info-tech-io/hugo-templates/tests/integration/cli-workflow.test.js:329:89)
+    at Promise.then.completed (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:316:40)
+    at _runTest (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at _runTestsForDescribeBlock (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:121:9)
+    at run (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/root/info-tech-io/hugo-templates/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/root/info-tech-io/hugo-templates/node_modules/jest-runner/build/runTest.js:444:34)</failure>
+    </testcase>
+  </testsuite>
+</testsuites>

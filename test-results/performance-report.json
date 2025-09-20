@@ -1,0 +1,57 @@
+{
+  "slowestTests": [
+    {
+      "name": "Performance Benchmarking Scalability Benchmarks should benchmark repeated operations",
+      "file": "/root/info-tech-io/hugo-templates/tests/performance/benchmark.test.js",
+      "duration": 2553
+    },
+    {
+      "name": "CLI Workflow Integration Performance workflow testing should handle concurrent CLI operations",
+      "file": "/root/info-tech-io/hugo-templates/tests/integration/cli-workflow.test.js",
+      "duration": 1456
+    },
+    {
+      "name": "Performance Benchmarking Memory Usage Benchmarks should monitor memory efficiency of CLI tools",
+      "file": "/root/info-tech-io/hugo-templates/tests/performance/benchmark.test.js",
+      "duration": 1217
+    },
+    {
+      "name": "CLI Components diagnostic.js system should run system diagnostics",
+      "file": "/root/info-tech-io/hugo-templates/tests/unit/cli.test.js",
+      "duration": 1144
+    },
+    {
+      "name": "Validation System Build validation should detect invalid combinations",
+      "file": "/root/info-tech-io/hugo-templates/tests/unit/validation.test.js",
+      "duration": 1090
+    }
+  ],
+  "fastestTests": [
+    {
+      "name": "CLI Components diagnostic.js system should exist and be executable",
+      "file": "/root/info-tech-io/hugo-templates/tests/unit/cli.test.js",
+      "duration": 1
+    },
+    {
+      "name": "Components System Quiz Engine component should have valid component configuration",
+      "file": "/root/info-tech-io/hugo-templates/tests/unit/components.test.js",
+      "duration": 1
+    },
+    {
+      "name": "Template System Template structure default template should have static directory if needed",
+      "file": "/root/info-tech-io/hugo-templates/tests/unit/templates.test.js",
+      "duration": 1
+    },
+    {
+      "name": "Template System Template structure minimal template should have content directory",
+      "file": "/root/info-tech-io/hugo-templates/tests/unit/templates.test.js",
+      "duration": 1
+    },
+    {
+      "name": "Template System Theme integration compose theme should have required structure",
+      "file": "/root/info-tech-io/hugo-templates/tests/unit/templates.test.js",
+      "duration": 1
+    }
+  ],
+  "averageTestDuration": 165.231884057971
+}
