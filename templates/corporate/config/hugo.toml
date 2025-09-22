@@ -1,0 +1,54 @@
+title = "InfoTech.io"
+baseURL = "https://info-tech.io"
+languageCode = "ru"
+theme = "compose"
+enableRobotsTXT = true
+enableGitInfo = true
+
+[markup]
+[markup.goldmark]
+[markup.goldmark.renderer]
+unsafe = true
+
+[params]
+author = "InfoTech.io Organization"
+description = "Open Source Educational Technology Organization"
+logo = "/images/logo.png"
+
+# Navigation menu
+[menu]
+[[menu.main]]
+name = "Главная"
+url = "/"
+weight = 1
+
+[[menu.main]]
+name = "Продукты"
+url = "/products/"
+weight = 2
+
+[[menu.main]]
+name = "Блог"
+url = "/blog/"
+weight = 3
+
+[[menu.main]]
+name = "О нас"
+url = "/about/"
+weight = 4
+
+[[menu.main]]
+name = "Контакты"
+url = "/contact/"
+weight = 5
+
+# Footer menu
+[[menu.footer]]
+name = "GitHub"
+url = "https://github.com/info-tech-io"
+weight = 1
+
+[[menu.footer]]
+name = "ИНФОТЕКА"
+url = "https://infotecha.ru"
+weight = 2

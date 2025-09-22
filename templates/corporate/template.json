@@ -1,0 +1,76 @@
+{
+  "$schema": "../../schemas/template.json",
+  "name": "corporate",
+  "version": "1.0.0",
+  "description": "Corporate website template with compose theme (simplified version for initial deployment)",
+  "author": "info-tech-io",
+  "license": "MIT",
+  "keywords": [
+    "hugo",
+    "corporate",
+    "business",
+    "organization",
+    "compose"
+  ],
+  "components": {
+    "required": [
+      "compose-theme"
+    ],
+    "optional": [
+      "analytics"
+    ],
+    "excluded": [
+      "quiz-engine",
+      "auth",
+      "citations"
+    ]
+  },
+  "hugo": {
+    "minVersion": "0.110.0",
+    "extended": false
+  },
+  "variables": {
+    "site_title": {
+      "type": "string",
+      "description": "Organization name",
+      "default": "InfoTech.io",
+      "required": false
+    },
+    "base_url": {
+      "type": "string",
+      "description": "Base URL for the corporate site",
+      "default": "https://info-tech.io",
+      "required": false
+    },
+    "author": {
+      "type": "string",
+      "description": "Organization",
+      "default": "InfoTech.io Organization",
+      "required": false
+    },
+    "description": {
+      "type": "string",
+      "description": "Organization description",
+      "default": "Open Source Educational Technology Organization",
+      "required": false
+    },
+    "language": {
+      "type": "string",
+      "description": "Site language code",
+      "default": "ru",
+      "required": false
+    },
+    "enable_blog": {
+      "type": "boolean",
+      "description": "Enable blog functionality",
+      "default": true,
+      "required": false
+    },
+    "enable_analytics": {
+      "type": "boolean",
+      "description": "Enable analytics tracking",
+      "default": false,
+      "required": false
+    }
+  }
+}

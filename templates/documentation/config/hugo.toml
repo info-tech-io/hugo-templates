@@ -1,0 +1,59 @@
+title = "Product Documentation"
+baseURL = "https://docs.info-tech.io"
+languageCode = "ru"
+theme = "compose"
+enableRobotsTXT = true
+enableGitInfo = true
+
+[markup]
+[markup.goldmark]
+[markup.goldmark.renderer]
+unsafe = true
+[markup.highlight]
+style = "github"
+lineNos = true
+
+[params]
+author = "InfoTech.io Team"
+description = "Product documentation and API reference"
+logo = "/images/logo.png"
+edit_page = true
+search = true
+
+# Navigation menu
+[menu]
+[[menu.main]]
+name = "Начало работы"
+url = "/getting-started/"
+weight = 1
+
+[[menu.main]]
+name = "Руководство"
+url = "/guide/"
+weight = 2
+
+[[menu.main]]
+name = "API"
+url = "/api/"
+weight = 3
+
+[[menu.main]]
+name = "Примеры"
+url = "/examples/"
+weight = 4
+
+[[menu.main]]
+name = "FAQ"
+url = "/faq/"
+weight = 5
+
+# Footer menu
+[[menu.footer]]
+name = "GitHub"
+url = "https://github.com/info-tech-io"
+weight = 1
+
+[[menu.footer]]
+name = "InfoTech.io"
+url = "https://info-tech.io"
+weight = 2

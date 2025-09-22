@@ -1,0 +1,82 @@
+{
+  "$schema": "../../schemas/template.json",
+  "name": "documentation",
+  "version": "1.0.0",
+  "description": "Documentation template with compose theme (simplified version for initial deployment)",
+  "author": "info-tech-io",
+  "license": "MIT",
+  "keywords": [
+    "hugo",
+    "documentation",
+    "docs",
+    "api",
+    "compose"
+  ],
+  "components": {
+    "required": [
+      "compose-theme"
+    ],
+    "optional": [
+      "analytics"
+    ],
+    "excluded": [
+      "quiz-engine",
+      "auth",
+      "citations"
+    ]
+  },
+  "hugo": {
+    "minVersion": "0.110.0",
+    "extended": false
+  },
+  "variables": {
+    "site_title": {
+      "type": "string",
+      "description": "Product documentation title",
+      "default": "Product Documentation",
+      "required": false
+    },
+    "base_url": {
+      "type": "string",
+      "description": "Base URL for the documentation",
+      "default": "https://docs.info-tech.io",
+      "required": false
+    },
+    "author": {
+      "type": "string",
+      "description": "Documentation maintainer",
+      "default": "InfoTech.io Team",
+      "required": false
+    },
+    "description": {
+      "type": "string",
+      "description": "Product description",
+      "default": "Product documentation and API reference",
+      "required": false
+    },
+    "language": {
+      "type": "string",
+      "description": "Documentation language code",
+      "default": "ru",
+      "required": false
+    },
+    "product_name": {
+      "type": "string",
+      "description": "Product name",
+      "default": "Product",
+      "required": false
+    },
+    "enable_search": {
+      "type": "boolean",
+      "description": "Enable documentation search",
+      "default": true,
+      "required": false
+    },
+    "enable_analytics": {
+      "type": "boolean",
+      "description": "Enable analytics tracking",
+      "default": false,
+      "required": false
+    }
+  }
+}
