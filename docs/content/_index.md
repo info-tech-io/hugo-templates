@@ -1,76 +1,113 @@
 ---
-title: "Hugo Templates Documentation"
-description: "Фабрика шаблонов для Hugo static site generator"
+title: "Hugo Templates Framework Documentation"
+description: "A powerful template factory for rapidly building Hugo static sites with reusable components"
 date: 2025-09-22
 ---
 
-# Hugo Templates
+# Hugo Templates Framework
 
-Фабрика шаблонов для быстрого создания статических сайтов с Hugo. Предоставляет гибкую систему шаблонов, тем и компонентов для различных типов сайтов.
+A sophisticated template factory system for rapidly building Hugo static sites with reusable components, themes, and configurations. Designed for developers who need to create multiple sites with consistent patterns and maintainable architecture.
 
-## Быстрый старт
+## Quick Start
 
-1. [Установка CLI](/getting-started/installation/)
-2. [Создание первого сайта](/getting-started/quickstart/)
-3. [Понимание архитектуры](/getting-started/concepts/)
+1. **[Getting Started](/hugo/getting-started/)** - Installation and first site setup
+2. **[Template Guide](/hugo/templates/)** - Understand available templates
+3. **[Build Scripts](/hugo/user-guide/build-scripts/)** - Learn the build system
 
-## Возможности
+## Key Features
 
-- **Множественные шаблоны**: educational, corporate, documentation
-- **Гибкая система тем**: легкая кастомизация дизайна
-- **Переиспользуемые компоненты**: Quiz Engine, аналитика, авторизация
-- **JSON Schema валидация**: автоматическая проверка конфигурации
-- **CLI инструменты**: удобный интерфейс командной строки
-- **CI/CD интеграция**: автоматическая сборка и деплой
+🏗️ **Template Factory** - Parametrized scaffolding system for multiple site types
+🎨 **Flexible Themes** - Easy customization with hot-swappable themes
+🧩 **Reusable Components** - Quiz Engine, analytics, authentication modules
+📋 **JSON Schema Validation** - Automatic configuration validation and error checking
+⚙️ **CLI Tools** - Powerful command-line interface for developers
+🚀 **CI/CD Integration** - Seamless automated building and deployment
+📦 **Zero Dependencies** - Self-contained system with all tools included
 
-## Доступные шаблоны
+## Available Templates
 
-### Educational Template
-Для образовательных модулей и курсов.
-- Quiz Engine интеграция
-- Структурированное обучение
-- Прогресс-трекинг
+### 🎓 Educational Template
+Designed for educational content and course modules.
+- **Quiz Engine Integration** - Interactive testing capabilities
+- **Progressive Learning Structure** - Structured lesson paths
+- **Progress Tracking** - Student advancement monitoring
+- **Multi-language Support** - Internationalization ready
 
-### Corporate Template
-Для корпоративных сайтов организаций.
-- Каталог продуктов
-- Блог и новости
-- SEO оптимизация
+### 🏢 Corporate Template
+Perfect for organization and company websites.
+- **Product Catalog** - Showcase multiple products/services
+- **Blog & News System** - Content marketing capabilities
+- **SEO Optimization** - Search engine friendly structure
+- **Contact & About Pages** - Professional business presence
 
-### Documentation Template
-Для сайтов документации продуктов.
-- Навигация по разделам
-- Поиск по контенту
-- API справочники
+### 📚 Documentation Template
+Optimized for technical documentation sites.
+- **Hierarchical Navigation** - Deep content organization
+- **Search Integration** - Built-in content search
+- **API References** - Technical documentation structure
+- **Code Examples** - Syntax highlighted code blocks
 
-## Разделы документации
+## Documentation Sections
 
-### 📖 Руководство пользователя
-Пошаговые инструкции по работе с фабрикой шаблонов.
-- [Перейти к руководству](/guide/)
+### 📚 User Guide
+Comprehensive guides for using Hugo Templates Framework.
+- **[Templates](/hugo/templates/)** - Available template types and usage
+- **[Build Scripts](/hugo/user-guide/build-scripts/)** - Command-line build system
+- **[Configuration](/hugo/user-guide/configuration/)** - Module.json reference
+- **[Themes](/hugo/user-guide/themes/)** - Styling and customization
 
-### 🔧 API Справочник
-Подробное описание конфигурации и схем.
-- [Перейти к API](/api/)
+### 🔧 Developer Documentation
+Technical documentation for contributors and advanced users.
+- **[Architecture](/hugo/developer/architecture/)** - System design and structure
+- **[API Reference](/hugo/developer/api/)** - Programmatic interfaces
+- **[Contributing](/hugo/contributing/)** - How to contribute to the project
+- **[Plugin Development](/hugo/developer/plugins/)** - Creating custom extensions
 
-### 💡 Примеры
-Практические примеры создания сайтов.
-- [Посмотреть примеры](/examples/)
+### 💡 Examples & Tutorials
+Real-world examples and step-by-step tutorials.
+- **[Getting Started Tutorial](/hugo/examples/getting-started/)** - Your first site
+- **[Template Examples](/hugo/examples/templates/)** - Pre-built examples
+- **[Advanced Usage](/hugo/examples/advanced/)** - Complex configurations
 
-### ❓ Часто задаваемые вопросы
-Ответы на популярные вопросы.
-- [Читать FAQ](/faq/)
+## Architecture Overview
 
-## Архитектура
+Hugo Templates Framework follows a modular, factory-based architecture:
 
-Hugo Templates построен по принципу модульности:
-- **Шаблоны** определяют структуру и логику сайта
-- **Темы** отвечают за внешний вид и стиль
-- **Компоненты** добавляют функциональность
-- **JSON Schema** обеспечивает валидацию
+```
+┌─────────────────────────────────────────────────┐
+│           Hugo Templates Framework              │
+├─────────────────────────────────────────────────┤
+│  Templates/     Themes/      Components/       │
+│  ├─educational  ├─compose     ├─quiz-engine     │
+│  ├─corporate    ├─minimal     ├─analytics       │
+│  └─documentation└─dark        └─auth            │
+├─────────────────────────────────────────────────┤
+│  Scripts/       Schemas/      Build System/     │
+│  ├─build.sh     ├─module.json ├─validation      │
+│  ├─validate.js  ├─template    ├─generation      │
+│  └─generate.js  └─component   └─deployment      │
+└─────────────────────────────────────────────────┘
+```
 
-## Нужна помощь?
+**Core Principles:**
+- **Templates** define site structure and content organization
+- **Themes** control visual appearance and styling
+- **Components** add functionality (quiz engine, analytics, etc.)
+- **JSON Schema** ensures configuration validity
+- **Build Scripts** provide parametrized site generation
 
-- [GitHub Issues](https://github.com/info-tech-io/hugo-templates) - багрепорты и предложения
-- [Discussions](https://github.com/info-tech-io/hugo-templates/discussions) - обсуждения
-- [InfoTech.io](https://info-tech.io) - основной сайт организации
+## Live Examples
+
+Hugo Templates Framework is actively used in production:
+- **[INFOTECHA Platform](https://infotecha.ru)** - Educational module system
+- **[Info-Tech.io Organization](https://info-tech-io.github.io)** - Corporate documentation hub
+
+## Getting Help
+
+- **[GitHub Issues](https://github.com/info-tech-io/hugo-templates/issues)** - Bug reports and feature requests
+- **[GitHub Discussions](https://github.com/info-tech-io/hugo-templates/discussions)** - Community questions
+- **[InfoTech.io](https://info-tech.io)** - Main organization website
+
+---
+
+**Ready to build your first site?** Start with our [Getting Started Guide](/hugo/getting-started/) and create a professional Hugo site in minutes!
