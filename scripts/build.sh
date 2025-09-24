@@ -213,14 +213,16 @@ load_module_config() {
 const fs = require('fs');
 const config = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
 
-if (config.build && config.build.template) {
-    console.log('TEMPLATE=' + config.build.template);
+// Support both hugo_config (new format) and build (old format) for compatibility
+const buildConfig = config.hugo_config || config.build;
+if (buildConfig && buildConfig.template) {
+    console.log('TEMPLATE=' + buildConfig.template);
 }
-if (config.build && config.build.theme) {
-    console.log('THEME=' + config.build.theme);
+if (buildConfig && buildConfig.theme) {
+    console.log('THEME=' + buildConfig.theme);
 }
-if (config.build && config.build.components && Array.isArray(config.build.components)) {
-    console.log('COMPONENTS=' + config.build.components.join(','));
+if (buildConfig && buildConfig.components && Array.isArray(buildConfig.components)) {
+    console.log('COMPONENTS=' + buildConfig.components.join(','));
 }
 if (config.site && config.site.baseURL) {
     console.log('BASE_URL=' + config.site.baseURL);
