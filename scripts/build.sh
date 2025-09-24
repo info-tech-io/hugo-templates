@@ -338,12 +338,13 @@ run_hugo_build() {
     [[ -n "$BASE_URL" ]] && hugo_cmd+=" --baseURL \"$BASE_URL\""
     [[ "$ENVIRONMENT" != "development" ]] && hugo_cmd+=" --environment $ENVIRONMENT"
 
-    # Set log level
+    # Set log level (Hugo 0.110+ uses different flags)
     case "$LOG_LEVEL" in
-        debug) hugo_cmd+=" --logLevel debug" ;;
-        warn) hugo_cmd+=" --logLevel warn" ;;
-        error) hugo_cmd+=" --logLevel error" ;;
-        *) hugo_cmd+=" --logLevel info" ;;
+        debug) hugo_cmd+=" --verboseLog" ;;
+        warn) hugo_cmd+=" --quiet" ;;
+        error) hugo_cmd+=" --quiet" ;;
+        *) # info level - no special flags needed
+            ;;
     esac
 
     # Set destination (output to current directory since we're already in OUTPUT)
