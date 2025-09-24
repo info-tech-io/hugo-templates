@@ -191,6 +191,70 @@ validate_parameters() {
     return 0
 }
 
+# Function to load configuration from module.json
+load_module_config() {
+    if [[ -z "$CONFIG" ]]; then
+        log_verbose "No module configuration file specified"
+        return 0
+    fi
+
+    if [[ ! -f "$CONFIG" ]]; then
+        log_error "Configuration file not found: $CONFIG"
+        return 1
+    fi
+
+    log_verbose "Loading module configuration from: $CONFIG"
+
+    # Use Node.js to parse JSON if available
+    if command -v node >/dev/null 2>&1; then
+        # Extract configuration values using node
+        local temp_script=$(mktemp)
+        cat > "$temp_script" << 'EOF'
+const fs = require('fs');
+const config = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
+
+if (config.build && config.build.template) {
+    console.log('TEMPLATE=' + config.build.template);
+}
+if (config.build && config.build.theme) {
+    console.log('THEME=' + config.build.theme);
+}
+if (config.build && config.build.components && Array.isArray(config.build.components)) {
+    console.log('COMPONENTS=' + config.build.components.join(','));
+}
+if (config.site && config.site.baseURL) {
+    console.log('BASE_URL=' + config.site.baseURL);
+}
+if (config.site && config.site.language) {
+    console.log('LANGUAGE=' + config.site.language);
+}
+EOF
+
+        # Parse configuration and apply values
+        local config_vars
+        config_vars=$(node "$temp_script" "$CONFIG" 2>/dev/null) || {
+            log_warning "Failed to parse module.json with Node.js"
+            rm -f "$temp_script"
+            return 1
+        }
+
+        # Apply extracted configuration
+        while IFS= read -r line; do
+            if [[ -n "$line" ]]; then
+                log_verbose "Applying config: $line"
+                eval "$line"
+            fi
+        done <<< "$config_vars"
+
+        rm -f "$temp_script"
+        log_success "Module configuration loaded successfully"
+    else
+        log_warning "Node.js not available, skipping detailed module.json parsing"
+    fi
+
+    return 0
+}
+
 # Function to parse components.yml
 parse_components() {
     local template_path="$PROJECT_ROOT/templates/$TEMPLATE"
@@ -491,6 +555,11 @@ main() {
         print_color "$BLUE" "🏗️  Hugo Template Factory Build Script"
         print_color "$GRAY" "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
         echo ""
+    fi
+
+    # Load module configuration first (before validation)
+    if ! load_module_config; then
+        exit 1
     fi
 
     # Validate parameters
