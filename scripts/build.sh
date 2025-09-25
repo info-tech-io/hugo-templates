@@ -304,18 +304,27 @@ prepare_build_environment() {
     log_verbose "Copying template files from: $template_path"
 
     # Copy all files except .git directories
-    find "$template_path" -type f ! -path "*/.git/*" -exec cp --parents {} "$OUTPUT/" \; 2>/dev/null || {
-        # Fallback for systems without --parents
-        rsync -av --exclude='.git' "$template_path/" "$OUTPUT/" 2>/dev/null || {
-            # Final fallback
-            cp -r "$template_path"/* "$OUTPUT/" 2>/dev/null || true
-        }
-    }
+    log_verbose "Attempting to copy template files..."
+    if find "$template_path" -type f ! -path "*/.git/*" -exec cp --parents {} "$OUTPUT/" \; 2>/dev/null; then
+        log_verbose "Template files copied successfully with find+cp"
+    elif rsync -av --exclude='.git' "$template_path/" "$OUTPUT/" 2>/dev/null; then
+        log_verbose "Template files copied successfully with rsync"
+    elif cp -r "$template_path"/* "$OUTPUT/" 2>/dev/null; then
+        log_verbose "Template files copied successfully with cp -r"
+    else
+        log_error "Failed to copy template files from $template_path"
+        return 1
+    fi
 
     # Copy custom content if specified
     if [[ -n "$CONTENT" ]]; then
         log_verbose "Copying custom content from: $CONTENT"
-        cp -r "$CONTENT"/* "$OUTPUT/content/" 2>/dev/null || true
+        mkdir -p "$OUTPUT/content"
+        if cp -r "$CONTENT"/* "$OUTPUT/content/" 2>/dev/null; then
+            log_verbose "Custom content copied successfully"
+        else
+            log_warning "Failed to copy custom content (may be expected if no content files exist)"
+        fi
     fi
 
     # Initialize Git submodules if they exist
@@ -333,7 +342,13 @@ prepare_build_environment() {
     if [[ -d "$theme_path" ]]; then
         log_verbose "Copying theme: $THEME"
         mkdir -p "$OUTPUT/themes"
-        cp -r "$theme_path" "$OUTPUT/themes/" 2>/dev/null || true
+        if cp -r "$theme_path" "$OUTPUT/themes/" 2>/dev/null; then
+            log_verbose "Theme copied successfully"
+        else
+            log_warning "Failed to copy theme: $THEME"
+        fi
+    else
+        log_verbose "Theme directory not found: $theme_path"
     fi
 
     # Copy components if they exist
@@ -346,10 +361,12 @@ prepare_build_environment() {
                 log_verbose "Copying component: $component"
                 # Copy component files to appropriate locations
                 if [[ -d "$comp_path/static" ]]; then
-                    cp -r "$comp_path/static"/* "$OUTPUT/static/" 2>/dev/null || true
+                    mkdir -p "$OUTPUT/static"
+                    cp -r "$comp_path/static"/* "$OUTPUT/static/" 2>/dev/null || log_verbose "No static files to copy for component $component"
                 fi
                 if [[ -d "$comp_path/layouts" ]]; then
-                    cp -r "$comp_path/layouts"/* "$OUTPUT/layouts/" 2>/dev/null || true
+                    mkdir -p "$OUTPUT/layouts"
+                    cp -r "$comp_path/layouts"/* "$OUTPUT/layouts/" 2>/dev/null || log_verbose "No layout files to copy for component $component"
                 fi
             else
                 log_warning "Component '$component' not found in $PROJECT_ROOT/components/"
