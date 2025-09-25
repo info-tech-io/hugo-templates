@@ -33,6 +33,7 @@ VERBOSE=false
 QUIET=false
 LOG_LEVEL="info"
 VALIDATE_ONLY=false
+FORCE=false
 
 # Script directory (where this script is located)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -93,6 +94,7 @@ OPTIONS:
     -q, --quiet                 Suppress non-error output
     --log-level <level>         Log level (debug|info|warn|error)
     --validate-only             Only validate configuration, don't build
+    --force                     Force build even if output directory exists
     -h, --help                  Show this help message
 
 EXAMPLES:
@@ -157,10 +159,16 @@ validate_parameters() {
 
     # Check if output directory already exists and is not empty
     if [[ -d "$OUTPUT" && "$(ls -A "$OUTPUT" 2>/dev/null)" ]]; then
-        log_warning "Output directory '$OUTPUT' already exists and is not empty"
-        if [[ "$VERBOSE" == "true" ]]; then
-            echo "Contents:"
-            ls -la "$OUTPUT" | head -5
+        if [[ "$FORCE" == "true" ]]; then
+            log_warning "Output directory '$OUTPUT' already exists and is not empty - continuing due to --force flag"
+            if [[ "$VERBOSE" == "true" ]]; then
+                echo "Contents will be overwritten:"
+                ls -la "$OUTPUT" | head -5
+            fi
+        else
+            log_error "Output directory '$OUTPUT' already exists and is not empty"
+            log_info "Use --force to overwrite existing directory or choose a different output path"
+            return 1
         fi
     fi
 
@@ -531,6 +539,10 @@ parse_arguments() {
                 ;;
             --validate-only)
                 VALIDATE_ONLY=true
+                shift
+                ;;
+            --force)
+                FORCE=true
                 shift
                 ;;
             -h|--help)
