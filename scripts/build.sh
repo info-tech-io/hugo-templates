@@ -34,6 +34,7 @@ QUIET=false
 LOG_LEVEL="info"
 VALIDATE_ONLY=false
 FORCE=false
+DEBUG_MODE=false
 
 # Script directory (where this script is located)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -95,6 +96,7 @@ OPTIONS:
     --log-level <level>         Log level (debug|info|warn|error)
     --validate-only             Only validate configuration, don't build
     --force                     Force build even if output directory exists
+    --debug                     Enable debug mode with detailed tracing
     -h, --help                  Show this help message
 
 EXAMPLES:
@@ -293,6 +295,7 @@ parse_components() {
 
 # Function to prepare build environment
 prepare_build_environment() {
+    [[ "$DEBUG_MODE" == "true" ]] && set -x
     log_info "Preparing build environment..."
 
     # Create output directory
@@ -305,14 +308,18 @@ prepare_build_environment() {
 
     # Copy all files except .git directories
     log_verbose "Attempting to copy template files..."
-    if find "$template_path" -type f ! -path "*/.git/*" -exec cp --parents {} "$OUTPUT/" \; 2>/dev/null; then
-        log_verbose "Template files copied successfully with find+cp"
-    elif rsync -av --exclude='.git' "$template_path/" "$OUTPUT/" 2>/dev/null; then
+    log_verbose "Template path: $template_path"
+    log_verbose "Output path: $OUTPUT"
+
+    # Try different copy methods with better error reporting
+    if rsync --version >/dev/null 2>&1 && rsync -av --exclude='.git' "$template_path/" "$OUTPUT/" 2>/dev/null; then
         log_verbose "Template files copied successfully with rsync"
-    elif cp -r "$template_path"/* "$OUTPUT/" 2>/dev/null; then
+    elif cp -r "$template_path/"* "$OUTPUT/" 2>/dev/null; then
         log_verbose "Template files copied successfully with cp -r"
     else
-        log_error "Failed to copy template files from $template_path"
+        log_error "Failed to copy template files from $template_path to $OUTPUT"
+        log_verbose "Template directory contents:"
+        ls -la "$template_path" || true
         return 1
     fi
 
@@ -560,6 +567,11 @@ parse_arguments() {
                 ;;
             --force)
                 FORCE=true
+                shift
+                ;;
+            --debug)
+                DEBUG_MODE=true
+                VERBOSE=true
                 shift
                 ;;
             -h|--help)
