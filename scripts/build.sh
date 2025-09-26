@@ -272,6 +272,9 @@ parse_components() {
     local template_path="$PROJECT_ROOT/templates/$TEMPLATE"
     local components_file="$template_path/components.yml"
 
+    log_verbose "Template path: $template_path"
+    log_verbose "Looking for components file: $components_file"
+
     if [[ ! -f "$components_file" ]]; then
         log_verbose "No components.yml file found, skipping component processing"
         return 0
@@ -283,10 +286,19 @@ parse_components() {
     if command -v node >/dev/null 2>&1; then
         local js_parser="$SCRIPT_DIR/parse-components.js"
         if [[ -f "$js_parser" ]]; then
-            log_verbose "Using Node.js YAML parser"
-            node "$js_parser" "$components_file"
+            log_verbose "Using Node.js YAML parser: $js_parser"
+            local parse_output
+            if parse_output=$(node "$js_parser" "$components_file" 2>&1); then
+                log_verbose "Component parsing successful"
+                [[ "$VERBOSE" == "true" ]] && echo "$parse_output"
+            else
+                log_warning "Component parsing failed with output:"
+                log_warning "$parse_output"
+                log_warning "Continuing build without component processing..."
+                return 0  # Don't fail the entire build
+            fi
         else
-            log_verbose "Node.js YAML parser not found, using basic parsing"
+            log_verbose "Node.js YAML parser not found at $js_parser, using basic parsing"
         fi
     else
         log_verbose "Node.js not available, skipping advanced component parsing"
