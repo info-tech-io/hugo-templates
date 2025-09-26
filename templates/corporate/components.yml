@@ -1,0 +1,51 @@
+# Hugo Template Factory Framework - Corporate Template Components Configuration
+
+template:
+  name: "corporate"
+  version: "1.0.0"
+  description: "Corporate template for InfoTech.io company site"
+  author: "info-tech-io"
+  license: "MIT"
+
+# Component dependencies and configuration
+components:
+  compose-theme:
+    version: "^4.0.0"
+    status: "stable"
+    description: "Clean and modern Hugo theme for corporate sites"
+    repository: "https://github.com/onweru/compose.git"
+    submodule_path: "themes/compose"
+    configuration:
+      theme: "compose"
+      params:
+        compose:
+          logo: "logo.png"
+          favicon: "favicon.ico"
+          social:
+            github: "info-tech-io"
+
+# Hugo configuration overrides
+hugo:
+  minVersion: "0.148.0"
+  extended: true
+  modules:
+    - path: "github.com/onweru/compose"
+
+# Build configuration
+build:
+  writeStats: true
+  noJSConfigInAssets: false
+  useResourceCacheWhen: "fallback"
+
+# Security configuration
+security:
+  funcs:
+    getenv:
+      - "^HUGO_"
+      - "^CI$"
+  exec:
+    allow:
+      - "^dart-sass-embedded$"
+      - "^go$"
+      - "^npx$"
+      - "^postcss$"
