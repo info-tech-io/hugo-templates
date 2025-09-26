@@ -454,10 +454,15 @@ run_hugo_build() {
     if [[ "$VERBOSE" == "true" ]]; then
         eval "$hugo_cmd"
     else
-        eval "$hugo_cmd" >/dev/null 2>&1 || {
-            log_error "Hugo build failed"
+        # Capture both stdout and stderr for error reporting
+        local build_output
+        build_output=$(eval "$hugo_cmd" 2>&1) || {
+            log_error "Hugo build failed with output:"
+            echo "$build_output" | sed 's/^/   /' >&2
             return 1
         }
+        # Only show success message in non-verbose mode
+        log_verbose "Hugo build output: $build_output"
     fi
 
     cd - >/dev/null
