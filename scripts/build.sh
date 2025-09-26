@@ -622,16 +622,33 @@ main() {
     fi
 
     # Parse components configuration
+    log_info "Starting component parsing..."
     parse_components
+    log_success "Component parsing completed"
 
     # Prepare build environment
-    prepare_build_environment
+    log_info "Starting build environment preparation..."
+    if ! prepare_build_environment; then
+        log_error "Build environment preparation failed"
+        exit 1
+    fi
+    log_success "Build environment preparation completed"
 
     # Update Hugo configuration
-    update_hugo_config
+    log_info "Starting Hugo configuration update..."
+    if ! update_hugo_config; then
+        log_error "Hugo configuration update failed"
+        exit 1
+    fi
+    log_success "Hugo configuration update completed"
 
     # Run Hugo build
-    run_hugo_build
+    log_info "Starting Hugo build..."
+    if ! run_hugo_build; then
+        log_error "Hugo build failed"
+        exit 1
+    fi
+    log_success "Hugo build completed"
 
     # Show build summary
     show_build_summary
