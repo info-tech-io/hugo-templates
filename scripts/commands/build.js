@@ -126,6 +126,26 @@ async function executeBuild(options) {
 
   console.log(chalk.yellow('📋 Step 4: Processing components...'));
 
+  // Load components from config file if specified
+  if (options.config) {
+    const configPath = path.resolve(options.config);
+    if (await fs.pathExists(configPath)) {
+      if (options.verbose) {
+        console.log(chalk.gray(`   Loading components configuration from: ${configPath}`));
+      }
+      const customConfig = await fs.readJson(configPath);
+      if (customConfig.components && customConfig.components.required) {
+        // If user did not specify components on the command line, use the required ones from config
+        if (!options.components || options.components.length === 0) {
+          options.components = customConfig.components.required;
+          console.log(chalk.white(`   Using required components from config: ${options.components.join(', ')}`));
+        }
+      }
+    } else {
+      console.warn(chalk.yellow(`   Warning: Config file not found at ${configPath}`));
+    }
+  }
+
   // Process components based on options
   await processComponents(templateConfig, options, outputPath);
 
@@ -165,10 +185,8 @@ async function processComponents(templateConfig, options, outputPath) {
       continue;
     }
 
-    // Include component if specifically requested or if it's a stable default
-    const shouldInclude = requestedComponents.length === 0 ||
-                         requestedComponents.includes(componentName) ||
-                         componentConfig.status === 'stable';
+    // Include component if specifically requested
+    const shouldInclude = requestedComponents.includes(componentName);
 
     if (shouldInclude) {
       console.log(chalk.white(`   ✓ Including component: ${componentName}`));

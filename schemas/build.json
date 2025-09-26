@@ -8,7 +8,7 @@
     "template": {
       "type": "string",
       "description": "Template to use for site generation",
-      "enum": ["default", "minimal", "academic", "enterprise"],
+      "enum": ["default", "minimal", "academic", "enterprise", "corporate"],
       "default": "default"
     },
     "theme": {
