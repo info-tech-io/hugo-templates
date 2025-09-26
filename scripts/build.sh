@@ -225,6 +225,12 @@ const config = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
 
 // Support both hugo_config (new format) and build (old format) for compatibility
 const buildConfig = config.hugo_config || config.build;
+if (config.components && config.components.required && Array.isArray(config.components.required)) {
+    // If COMPONENTS is not already set from command line, use the required ones
+    if ([ -z "$COMPONENTS" ]); then
+        console.log('COMPONENTS=' + config.components.required.join(','));
+    fi
+}
 if (buildConfig && buildConfig.template) {
     console.log('TEMPLATE=' + buildConfig.template);
 }
@@ -288,14 +294,20 @@ parse_components() {
         if [[ -f "$js_parser" ]]; then
             log_verbose "Using Node.js YAML parser: $js_parser"
             local parse_output
-            if parse_output=$(node "$js_parser" "$components_file" 2>&1); then
+            # Temporarily allow errors for this command
+            set +e
+            parse_output=$(node "$js_parser" "$components_file" 2>&1)
+            local parser_exit_code=$?
+            set -e
+
+            if [[ $parser_exit_code -eq 0 ]]; then
                 log_verbose "Component parsing successful"
                 [[ "$VERBOSE" == "true" ]] && echo "$parse_output"
             else
-                log_warning "Component parsing failed with output:"
+                log_warning "Component parsing failed with exit code $parser_exit_code:"
                 log_warning "$parse_output"
                 log_warning "Continuing build without component processing..."
-                return 0  # Don't fail the entire build
+                # Don't fail the entire build - return success
             fi
         else
             log_verbose "Node.js YAML parser not found at $js_parser, using basic parsing"
@@ -635,8 +647,18 @@ main() {
 
     # Parse components configuration
     log_info "Starting component parsing..."
+
+    # Ensure parse_components doesn't fail the entire build
+    set +e
     parse_components
-    log_success "Component parsing completed"
+    local parse_result=$?
+    set -e
+
+    if [[ $parse_result -eq 0 ]]; then
+        log_success "Component parsing completed"
+    else
+        log_warning "Component parsing encountered issues but continuing build..."
+    fi
 
     # Prepare build environment
     log_info "Starting build environment preparation..."
