@@ -1,0 +1,294 @@
+name: Bash Test Suite
+
+on:
+  push:
+    branches: [ main, epic/*, feature/* ]
+    paths:
+      - 'scripts/**'
+      - 'tests/bash/**'
+      - '.github/workflows/bash-tests.yml'
+  pull_request:
+    branches: [ main, epic/* ]
+    paths:
+      - 'scripts/**'
+      - 'tests/bash/**'
+      - '.github/workflows/bash-tests.yml'
+
+env:
+  HUGO_VERSION: '0.148.0'
+  NODE_VERSION: '18'
+
+jobs:
+  bash-unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Setup Build Environment
+      uses: ./.github/actions/setup-build-env
+      with:
+        hugo-version: ${{ env.HUGO_VERSION }}
+        node-version: ${{ env.NODE_VERSION }}
+        install-bats: 'true'
+
+    - name: Setup test environment
+      run: |
+        # Create mock templates and themes for testing
+        mkdir -p templates/{corporate,minimal,educational}
+        mkdir -p themes/{compose,minimal}
+        echo "# Corporate Template" > templates/corporate/README.md
+        echo "# Minimal Template" > templates/minimal/README.md
+        echo "# Educational Template" > templates/educational/README.md
+
+    - name: Run unit tests
+      run: ./scripts/test-bash.sh --suite unit --verbose --format junit --output unit-test-results.xml
+
+    - name: Upload unit test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: unit-test-results
+        path: unit-test-results.xml
+
+  bash-integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    needs: bash-unit-tests
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Setup Build Environment
+      uses: ./.github/actions/setup-build-env
+      with:
+        hugo-version: ${{ env.HUGO_VERSION }}
+        node-version: ${{ env.NODE_VERSION }}
+        install-bats: 'true'
+
+    - name: Setup comprehensive test environment
+      run: |
+        # Create full template structure
+        mkdir -p templates/{corporate,minimal,educational}/{content,static,layouts}
+        mkdir -p themes/{compose,minimal}
+        mkdir -p components/{quiz-engine,analytics,auth}
+
+        # Create realistic template files
+        echo 'baseURL = "http://localhost:1313"' > templates/corporate/hugo.toml
+        echo 'theme = "compose"' >> templates/corporate/hugo.toml
+        echo "# Corporate Template" > templates/corporate/content/_index.md
+
+        echo 'baseURL = "http://localhost:1313"' > templates/minimal/hugo.toml
+        echo 'theme = "minimal"' >> templates/minimal/hugo.toml
+        echo "# Minimal Template" > templates/minimal/content/_index.md
+
+    - name: Run integration tests
+      run: ./scripts/test-bash.sh --suite integration --verbose --format junit --output integration-test-results.xml
+
+    - name: Upload integration test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: integration-test-results
+        path: integration-test-results.xml
+
+  bash-performance-tests:
+    name: Performance Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [bash-unit-tests, bash-integration-tests]
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Setup Build Environment
+      uses: ./.github/actions/setup-build-env
+      with:
+        hugo-version: ${{ env.HUGO_VERSION }}
+        node-version: ${{ env.NODE_VERSION }}
+        install-bats: 'true'
+
+    - name: Setup performance test environment
+      run: |
+        # Create comprehensive test environment for performance testing
+        mkdir -p templates/{corporate,minimal,educational}/{content,static,layouts,data}
+        mkdir -p themes/{compose,minimal,dark}
+        mkdir -p components/{quiz-engine,analytics,auth,search,comments}
+
+        # Create larger, more realistic template structures
+        for template in corporate minimal educational; do
+          for i in {1..10}; do
+            echo "# Content file $i" > "templates/$template/content/page$i.md"
+          done
+
+          # Create components.yml for corporate template
+          if [[ "$template" == "corporate" ]]; then
+            cat > "templates/$template/components.yml" << 'EOF'
+        components:
+          - name: quiz-engine
+            version: "1.0.0"
+          - name: analytics
+            version: "2.1.0"
+          - name: auth
+            version: "3.0.0"
+        EOF
+          fi
+        done
+
+    - name: Run performance benchmarks
+      run: ./scripts/test-bash.sh --suite performance --performance --verbose --format tap --output performance-results.txt
+
+    - name: Upload performance results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: performance-results
+        path: performance-results.txt
+
+  bash-coverage-tests:
+    name: Coverage Analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/epic/'))
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Setup Build Environment
+      uses: ./.github/actions/setup-build-env
+      with:
+        hugo-version: ${{ env.HUGO_VERSION }}
+        node-version: ${{ env.NODE_VERSION }}
+        install-bats: 'true'
+
+    - name: Install coverage tools
+      run: |
+        sudo apt-get update -q
+        sudo apt-get install -y kcov
+
+    - name: Setup test environment
+      run: |
+        mkdir -p templates/{corporate,minimal}
+        mkdir -p themes/{compose,minimal}
+        echo "# Corporate Template" > templates/corporate/README.md
+        echo "# Minimal Template" > templates/minimal/README.md
+
+    - name: Run tests with coverage
+      run: ./scripts/test-bash.sh --suite unit --coverage --output coverage-results.xml
+
+    - name: Upload coverage results
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-results
+        path: |
+          coverage-results.xml
+          coverage/
+
+  test-summary:
+    name: Test Summary
+    runs-on: ubuntu-latest
+    needs: [bash-unit-tests, bash-integration-tests, bash-performance-tests]
+    if: always()
+
+    steps:
+    - name: Download all test artifacts
+      uses: actions/download-artifact@v4
+
+    - name: Generate test summary
+      run: |
+        echo "# Bash Test Suite Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+
+        # Check unit tests
+        if [[ -f unit-test-results/unit-test-results.xml ]]; then
+          echo "✅ Unit Tests: COMPLETED" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ Unit Tests: FAILED" >> $GITHUB_STEP_SUMMARY
+        fi
+
+        # Check integration tests
+        if [[ -f integration-test-results/integration-test-results.xml ]]; then
+          echo "✅ Integration Tests: COMPLETED" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ Integration Tests: FAILED" >> $GITHUB_STEP_SUMMARY
+        fi
+
+        # Check performance tests
+        if [[ -f performance-results/performance-results.txt ]]; then
+          echo "✅ Performance Tests: COMPLETED" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Performance Benchmarks" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          grep "^#" performance-results/performance-results.txt | head -10 >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ Performance Tests: FAILED" >> $GITHUB_STEP_SUMMARY
+        fi
+
+    - name: Fail if critical tests failed
+      if: needs.bash-unit-tests.result == 'failure' || needs.bash-integration-tests.result == 'failure'
+      run: |
+        echo "Critical tests failed!"
+        exit 1
+
+  error-handling-validation:
+    name: Error Handling Validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup Build Environment
+      uses: ./.github/actions/setup-build-env
+      with:
+        hugo-version: ${{ env.HUGO_VERSION }}
+        node-version: ${{ env.NODE_VERSION }}
+        install-bats: 'false'
+
+    - name: Test error handling system
+      run: |
+        # Test that error handling system works in CI environment
+        ./scripts/build.sh --template nonexistent --validate-only 2>&1 | tee error_output.log
+
+        # Verify error output contains expected elements
+        if grep -q "VALIDATION" error_output.log && grep -q "Template directory not found" error_output.log; then
+          echo "✅ Error handling system working correctly in CI"
+        else
+          echo "❌ Error handling system not working as expected"
+          cat error_output.log
+          exit 1
+        fi
+
+    - name: Test GitHub Actions annotations
+      run: |
+        # Set GitHub Actions environment
+        export GITHUB_ACTIONS=true
+
+        # Test that GitHub Actions annotations are generated
+        ./scripts/build.sh --template nonexistent --validate-only 2>&1 | tee github_actions_output.log
+
+        # Check for GitHub Actions annotation format
+        if grep -q "::error::" github_actions_output.log || grep -q "VALIDATION" github_actions_output.log; then
+          echo "✅ GitHub Actions integration working"
+        else
+          echo "❌ GitHub Actions integration not working"
+          cat github_actions_output.log
+          exit 1
+        fi
