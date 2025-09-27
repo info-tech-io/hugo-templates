@@ -1,0 +1,107 @@
+name: 'Setup Build Environment'
+description: 'Setup Hugo, Node.js, and dependencies with optimized caching'
+inputs:
+  hugo-version:
+    description: 'Hugo version to install'
+    required: false
+    default: '0.148.0'
+  node-version:
+    description: 'Node.js version to install'
+    required: false
+    default: '18'
+  install-bats:
+    description: 'Whether to install BATS testing framework'
+    required: false
+    default: 'false'
+  cache-key-suffix:
+    description: 'Additional suffix for cache key'
+    required: false
+    default: ''
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node-version }}
+        cache: 'npm'
+
+    - name: Cache Hugo Binary
+      id: cache-hugo
+      uses: actions/cache@v3
+      with:
+        path: ~/hugo
+        key: hugo-${{ inputs.hugo-version }}-${{ runner.os }}
+        restore-keys: |
+          hugo-${{ inputs.hugo-version }}-
+
+    - name: Install Hugo Extended
+      if: steps.cache-hugo.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        mkdir -p ~/hugo
+        cd ~/hugo
+        if [[ "${{ runner.os }}" == "Linux" ]]; then
+          wget -O hugo.deb https://github.com/gohugoio/hugo/releases/download/v${{ inputs.hugo-version }}/hugo_extended_${{ inputs.hugo-version }}_linux-amd64.deb
+          sudo dpkg -i hugo.deb
+        elif [[ "${{ runner.os }}" == "macOS" ]]; then
+          wget -O hugo.tar.gz https://github.com/gohugoio/hugo/releases/download/v${{ inputs.hugo-version }}/hugo_extended_${{ inputs.hugo-version }}_darwin-universal.tar.gz
+          tar -xzf hugo.tar.gz
+          sudo mv hugo /usr/local/bin/
+        elif [[ "${{ runner.os }}" == "Windows" ]]; then
+          curl -L -o hugo.zip https://github.com/gohugoio/hugo/releases/download/v${{ inputs.hugo-version }}/hugo_extended_${{ inputs.hugo-version }}_windows-amd64.zip
+          unzip hugo.zip
+          mkdir -p /c/Hugo/bin
+          mv hugo.exe /c/Hugo/bin/
+          echo "/c/Hugo/bin" >> $GITHUB_PATH
+        fi
+
+    - name: Verify Hugo Installation
+      shell: bash
+      run: |
+        hugo version
+        echo "✅ Hugo ${{ inputs.hugo-version }} installed successfully"
+
+    - name: Cache BATS
+      if: inputs.install-bats == 'true'
+      id: cache-bats
+      uses: actions/cache@v3
+      with:
+        path: /usr/local/bin/bats
+        key: bats-${{ runner.os }}-latest
+        restore-keys: |
+          bats-${{ runner.os }}-
+
+    - name: Install BATS
+      if: inputs.install-bats == 'true' && steps.cache-bats.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        if [[ "${{ runner.os }}" == "Linux" ]]; then
+          sudo apt-get update -q
+          sudo apt-get install -y bats
+        elif [[ "${{ runner.os }}" == "macOS" ]]; then
+          brew install bats-core
+        elif [[ "${{ runner.os }}" == "Windows" ]]; then
+          # For Windows, use npm version
+          npm install -g bats
+        fi
+
+    - name: Install Node.js dependencies
+      shell: bash
+      run: |
+        echo "📦 Installing Node.js dependencies..."
+        npm ci --prefer-offline --no-audit
+        echo "✅ Dependencies installed successfully"
+
+    - name: Verify Build Environment
+      shell: bash
+      run: |
+        echo "🔍 Build Environment Summary:"
+        echo "Hugo: $(hugo version)"
+        echo "Node.js: $(node --version)"
+        echo "NPM: $(npm --version)"
+        if [[ "${{ inputs.install-bats }}" == "true" ]]; then
+          echo "BATS: $(bats --version 2>/dev/null || echo 'Not available')"
+        fi
+        echo "✅ Build environment ready"
