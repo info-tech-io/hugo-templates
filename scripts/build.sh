@@ -512,7 +512,7 @@ show_build_summary() {
         if [[ "$VERBOSE" == "true" ]]; then
             echo ""
             log_info "Generated files:"
-            find "$OUTPUT" -type f ! -path "*/.git/*" 2>/dev/null | head -10 | sed 's|^|   |'
+            find "$OUTPUT" -type f ! -path "*/.git/*" 2>/dev/null | head -10 | sed 's|^|   |' || true
             if [[ $file_count -gt 10 ]]; then
                 echo "   ... and $((file_count - 10)) more files"
             fi
