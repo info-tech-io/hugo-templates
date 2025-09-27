@@ -12,7 +12,7 @@ jobs:
   test-setup-ubuntu:
     name: Test Setup on Ubuntu
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 8
 
     steps:
     - name: Checkout repository
@@ -53,7 +53,7 @@ jobs:
   test-setup-with-bats:
     name: Test Setup with BATS
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 8
 
     steps:
     - name: Checkout repository
@@ -80,7 +80,7 @@ jobs:
   test-caching:
     name: Test Caching Efficiency
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 12
 
     steps:
     - name: Checkout repository
@@ -110,7 +110,7 @@ jobs:
   test-performance:
     name: Performance Benchmark
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 12
 
     steps:
     - name: Checkout repository

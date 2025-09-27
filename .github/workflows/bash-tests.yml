@@ -22,6 +22,7 @@ jobs:
   bash-unit-tests:
     name: Unit Tests
     runs-on: ubuntu-latest
+    timeout-minutes: 8
 
     steps:
     - name: Checkout repository
@@ -29,24 +30,12 @@ jobs:
       with:
         submodules: recursive
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
+    - name: Setup Build Environment
+      uses: ./.github/actions/setup-build-env
       with:
+        hugo-version: ${{ env.HUGO_VERSION }}
         node-version: ${{ env.NODE_VERSION }}
-        cache: 'npm'
-
-    - name: Install Hugo Extended
-      run: |
-        wget -O hugo.deb https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/hugo_extended_${HUGO_VERSION}_linux-amd64.deb
-        sudo dpkg -i hugo.deb
-
-    - name: Install BATS
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y bats
-
-    - name: Install Node.js dependencies
-      run: npm ci
+        install-bats: 'true'
 
     - name: Setup test environment
       run: |
@@ -70,6 +59,7 @@ jobs:
   bash-integration-tests:
     name: Integration Tests
     runs-on: ubuntu-latest
+    timeout-minutes: 12
     needs: bash-unit-tests
 
     steps:
@@ -78,24 +68,12 @@ jobs:
       with:
         submodules: recursive
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
+    - name: Setup Build Environment
+      uses: ./.github/actions/setup-build-env
       with:
+        hugo-version: ${{ env.HUGO_VERSION }}
         node-version: ${{ env.NODE_VERSION }}
-        cache: 'npm'
-
-    - name: Install Hugo Extended
-      run: |
-        wget -O hugo.deb https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/hugo_extended_${HUGO_VERSION}_linux-amd64.deb
-        sudo dpkg -i hugo.deb
-
-    - name: Install BATS
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y bats
-
-    - name: Install Node.js dependencies
-      run: npm ci
+        install-bats: 'true'
 
     - name: Setup comprehensive test environment
       run: |
@@ -126,6 +104,7 @@ jobs:
   bash-performance-tests:
     name: Performance Tests
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     needs: [bash-unit-tests, bash-integration-tests]
 
     steps:
@@ -134,24 +113,12 @@ jobs:
       with:
         submodules: recursive
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
+    - name: Setup Build Environment
+      uses: ./.github/actions/setup-build-env
       with:
+        hugo-version: ${{ env.HUGO_VERSION }}
         node-version: ${{ env.NODE_VERSION }}
-        cache: 'npm'
-
-    - name: Install Hugo Extended
-      run: |
-        wget -O hugo.deb https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/hugo_extended_${HUGO_VERSION}_linux-amd64.deb
-        sudo dpkg -i hugo.deb
-
-    - name: Install BATS
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y bats
-
-    - name: Install Node.js dependencies
-      run: npm ci
+        install-bats: 'true'
 
     - name: Setup performance test environment
       run: |
@@ -169,14 +136,14 @@ jobs:
           # Create components.yml for corporate template
           if [[ "$template" == "corporate" ]]; then
             cat > "templates/$template/components.yml" << 'EOF'
-components:
-  - name: quiz-engine
-    version: "1.0.0"
-  - name: analytics
-    version: "2.1.0"
-  - name: auth
-    version: "3.0.0"
-EOF
+        components:
+          - name: quiz-engine
+            version: "1.0.0"
+          - name: analytics
+            version: "2.1.0"
+          - name: auth
+            version: "3.0.0"
+        EOF
           fi
         done
 
@@ -193,6 +160,7 @@ EOF
   bash-coverage-tests:
     name: Coverage Analysis
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/epic/'))
 
     steps:
@@ -201,24 +169,17 @@ EOF
       with:
         submodules: recursive
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
+    - name: Setup Build Environment
+      uses: ./.github/actions/setup-build-env
       with:
+        hugo-version: ${{ env.HUGO_VERSION }}
         node-version: ${{ env.NODE_VERSION }}
-        cache: 'npm'
+        install-bats: 'true'
 
-    - name: Install Hugo Extended
+    - name: Install coverage tools
       run: |
-        wget -O hugo.deb https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/hugo_extended_${HUGO_VERSION}_linux-amd64.deb
-        sudo dpkg -i hugo.deb
-
-    - name: Install BATS and kcov
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y bats kcov
-
-    - name: Install Node.js dependencies
-      run: npm ci
+        sudo apt-get update -q
+        sudo apt-get install -y kcov
 
     - name: Setup test environment
       run: |
@@ -288,20 +249,18 @@ EOF
   error-handling-validation:
     name: Error Handling Validation
     runs-on: ubuntu-latest
+    timeout-minutes: 6
 
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
+    - name: Setup Build Environment
+      uses: ./.github/actions/setup-build-env
       with:
+        hugo-version: ${{ env.HUGO_VERSION }}
         node-version: ${{ env.NODE_VERSION }}
-
-    - name: Install Hugo Extended
-      run: |
-        wget -O hugo.deb https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/hugo_extended_${HUGO_VERSION}_linux-amd64.deb
-        sudo dpkg -i hugo.deb
+        install-bats: 'false'
 
     - name: Test error handling system
       run: |
