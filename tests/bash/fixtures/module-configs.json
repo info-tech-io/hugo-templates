@@ -1,0 +1,72 @@
+{
+  "valid_corporate": {
+    "hugo_config": {
+      "template": "corporate",
+      "theme": "compose",
+      "components": ["quiz-engine", "analytics"]
+    },
+    "site": {
+      "baseURL": "https://example.com",
+      "language": "en",
+      "title": "Corporate Site"
+    }
+  },
+
+  "valid_minimal": {
+    "hugo_config": {
+      "template": "minimal",
+      "theme": "minimal"
+    },
+    "site": {
+      "baseURL": "http://localhost:1313",
+      "language": "en"
+    }
+  },
+
+  "valid_educational": {
+    "hugo_config": {
+      "template": "educational",
+      "theme": "compose",
+      "components": ["quiz-engine"]
+    },
+    "site": {
+      "baseURL": "https://learn.example.com",
+      "language": "en",
+      "title": "Learning Platform"
+    }
+  },
+
+  "legacy_format": {
+    "build": {
+      "template": "corporate",
+      "theme": "compose",
+      "components": ["quiz-engine"]
+    },
+    "site": {
+      "baseURL": "https://legacy.example.com",
+      "language": "en"
+    }
+  },
+
+  "empty_config": {},
+
+  "missing_template": {
+    "hugo_config": {
+      "theme": "compose"
+    },
+    "site": {
+      "baseURL": "https://example.com"
+    }
+  },
+
+  "invalid_components": {
+    "hugo_config": {
+      "template": "corporate",
+      "theme": "compose",
+      "components": "not-an-array"
+    },
+    "site": {
+      "baseURL": "https://example.com"
+    }
+  }
+}

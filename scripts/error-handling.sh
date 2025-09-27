@@ -6,20 +6,42 @@
 #
 
 # Error levels with numeric codes
-readonly ERROR_LEVEL_DEBUG=0
-readonly ERROR_LEVEL_INFO=1
-readonly ERROR_LEVEL_WARN=2
-readonly ERROR_LEVEL_ERROR=3
-readonly ERROR_LEVEL_FATAL=4
+# Skip readonly in test mode to avoid conflicts
+if [[ "$TEST_MODE" != "true" ]]; then
+    readonly ERROR_LEVEL_DEBUG=0
+    readonly ERROR_LEVEL_INFO=1
+    readonly ERROR_LEVEL_WARN=2
+    readonly ERROR_LEVEL_ERROR=3
+    readonly ERROR_LEVEL_FATAL=4
 
-# Error categories for structured logging
-readonly ERROR_CAT_CONFIG="CONFIG"
-readonly ERROR_CAT_DEPENDENCY="DEPENDENCY"
-readonly ERROR_CAT_BUILD="BUILD"
-readonly ERROR_CAT_IO="IO"
-readonly ERROR_CAT_VALIDATION="VALIDATION"
-readonly ERROR_CAT_NETWORK="NETWORK"
-readonly ERROR_CAT_SYSTEM="SYSTEM"
+    # Error categories for structured logging
+    readonly ERROR_CAT_CONFIG="CONFIG"
+    readonly ERROR_CAT_DEPENDENCY="DEPENDENCY"
+    readonly ERROR_CAT_BUILD="BUILD"
+    readonly ERROR_CAT_IO="IO"
+    readonly ERROR_CAT_VALIDATION="VALIDATION"
+else
+    # In test mode, use regular variables
+    ERROR_LEVEL_DEBUG=0
+    ERROR_LEVEL_INFO=1
+    ERROR_LEVEL_WARN=2
+    ERROR_LEVEL_ERROR=3
+    ERROR_LEVEL_FATAL=4
+
+    # Error categories for structured logging
+    ERROR_CAT_CONFIG="CONFIG"
+    ERROR_CAT_DEPENDENCY="DEPENDENCY"
+    ERROR_CAT_BUILD="BUILD"
+    ERROR_CAT_IO="IO"
+    ERROR_CAT_VALIDATION="VALIDATION"
+fi
+if [[ "$TEST_MODE" != "true" ]]; then
+    readonly ERROR_CAT_NETWORK="NETWORK"
+    readonly ERROR_CAT_SYSTEM="SYSTEM"
+else
+    ERROR_CAT_NETWORK="NETWORK"
+    ERROR_CAT_SYSTEM="SYSTEM"
+fi
 
 # Global error context tracking
 declare -g ERROR_CONTEXT=""
