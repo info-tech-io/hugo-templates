@@ -225,12 +225,6 @@ const config = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
 
 // Support both hugo_config (new format) and build (old format) for compatibility
 const buildConfig = config.hugo_config || config.build;
-if (config.components && config.components.required && Array.isArray(config.components.required)) {
-    // If COMPONENTS is not already set from command line, use the required ones
-    if ([ -z "$COMPONENTS" ]); then
-        console.log('COMPONENTS=' + config.components.required.join(','));
-    fi
-}
 if (buildConfig && buildConfig.template) {
     console.log('TEMPLATE=' + buildConfig.template);
 }
