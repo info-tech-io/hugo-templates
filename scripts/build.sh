@@ -2,14 +2,28 @@
 set -euo pipefail
 
 #
-# Hugo Template Factory Framework - Main Build Script
+# Hugo Template Factory Framework - Main Build Script v2.0
 # The first parametrized scaffolding tool for Hugo ecosystem
 #
 # This script provides a bash-based interface for building Hugo sites
 # with specified templates, themes, and components.
+# Enhanced with comprehensive error handling and diagnostics.
 #
 
-# Colors for output
+# Script directory (where this script is located)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+
+# Load enhanced error handling system
+source "$SCRIPT_DIR/error-handling.sh" || {
+    echo "FATAL: Cannot load error handling system from $SCRIPT_DIR/error-handling.sh" >&2
+    exit 1
+}
+
+# Initialize error handling
+init_error_handling
+
+# Legacy color definitions (maintained for backward compatibility)
 readonly RED='\033[0;31m'
 readonly GREEN='\033[0;32m'
 readonly YELLOW='\033[1;33m'
@@ -35,10 +49,6 @@ LOG_LEVEL="info"
 VALIDATE_ONLY=false
 FORCE=false
 DEBUG_MODE=false
-
-# Script directory (where this script is located)
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
 # Function to print colored output
 print_color() {
@@ -203,112 +213,217 @@ validate_parameters() {
 
 # Function to load configuration from module.json
 load_module_config() {
+    enter_function "load_module_config"
+
     if [[ -z "$CONFIG" ]]; then
         log_verbose "No module configuration file specified"
+        exit_function
         return 0
     fi
 
-    if [[ ! -f "$CONFIG" ]]; then
-        log_error "Configuration file not found: $CONFIG"
+    set_error_context "Loading module configuration from $CONFIG"
+
+    # Validate configuration file exists and is readable
+    if ! safe_file_operation "read" "$CONFIG"; then
+        log_config_error "Configuration file validation failed: $CONFIG"
+        exit_function
         return 1
     fi
 
-    log_verbose "Loading module configuration from: $CONFIG"
+    log_info "Loading module configuration from: $CONFIG"
 
-    # Use Node.js to parse JSON if available
+    # Use enhanced Node.js parsing with comprehensive error handling
     if command -v node >/dev/null 2>&1; then
-        # Extract configuration values using node
-        local temp_script=$(mktemp)
-        cat > "$temp_script" << 'EOF'
-const fs = require('fs');
-const config = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
-
-// Support both hugo_config (new format) and build (old format) for compatibility
-const buildConfig = config.hugo_config || config.build;
-if (buildConfig && buildConfig.template) {
-    console.log('TEMPLATE=' + buildConfig.template);
-}
-if (buildConfig && buildConfig.theme) {
-    console.log('THEME=' + buildConfig.theme);
-}
-if (buildConfig && buildConfig.components && Array.isArray(buildConfig.components)) {
-    console.log('COMPONENTS=' + buildConfig.components.join(','));
-}
-if (config.site && config.site.baseURL) {
-    console.log('BASE_URL=' + config.site.baseURL);
-}
-if (config.site && config.site.language) {
-    console.log('LANGUAGE=' + config.site.language);
-}
-EOF
-
-        # Parse configuration and apply values
-        local config_vars
-        config_vars=$(node "$temp_script" "$CONFIG" 2>/dev/null) || {
-            log_warning "Failed to parse module.json with Node.js"
-            rm -f "$temp_script"
+        # Create temporary parsing script with enhanced error handling
+        local temp_script
+        temp_script=$(mktemp) || {
+            log_io_error "Failed to create temporary script file"
+            exit_function
             return 1
         }
 
-        # Apply extracted configuration
-        while IFS= read -r line; do
-            if [[ -n "$line" ]]; then
-                log_verbose "Applying config: $line"
-                eval "$line"
-            fi
-        done <<< "$config_vars"
+        # Enhanced Node.js script with better error reporting
+        cat > "$temp_script" << 'EOF'
+const fs = require('fs');
+
+try {
+    // Read and validate file
+    const configFile = process.argv[2];
+    if (!fs.existsSync(configFile)) {
+        console.error(`ERROR: Configuration file not found: ${configFile}`);
+        process.exit(1);
+    }
+
+    const configContent = fs.readFileSync(configFile, 'utf8');
+    if (!configContent.trim()) {
+        console.error(`ERROR: Configuration file is empty: ${configFile}`);
+        process.exit(1);
+    }
+
+    // Parse JSON with detailed error reporting
+    let config;
+    try {
+        config = JSON.parse(configContent);
+    } catch (parseError) {
+        console.error(`ERROR: Invalid JSON in ${configFile}:`);
+        console.error(`  Line: ${parseError.message}`);
+        console.error(`  Content preview: ${configContent.substring(0, 100)}...`);
+        process.exit(1);
+    }
+
+    // Validate configuration structure
+    if (typeof config !== 'object' || config === null) {
+        console.error(`ERROR: Configuration must be a JSON object, got: ${typeof config}`);
+        process.exit(1);
+    }
+
+    // Support both hugo_config (new format) and build (old format) for compatibility
+    const buildConfig = config.hugo_config || config.build;
+
+    // Extract and validate configuration values
+    if (buildConfig && typeof buildConfig === 'object') {
+        if (buildConfig.template && typeof buildConfig.template === 'string') {
+            console.log('TEMPLATE=' + buildConfig.template);
+        }
+        if (buildConfig.theme && typeof buildConfig.theme === 'string') {
+            console.log('THEME=' + buildConfig.theme);
+        }
+        if (buildConfig.components && Array.isArray(buildConfig.components)) {
+            console.log('COMPONENTS=' + buildConfig.components.join(','));
+        }
+    }
+
+    if (config.site && typeof config.site === 'object') {
+        if (config.site.baseURL && typeof config.site.baseURL === 'string') {
+            console.log('BASE_URL=' + config.site.baseURL);
+        }
+        if (config.site.language && typeof config.site.language === 'string') {
+            console.log('LANGUAGE=' + config.site.language);
+        }
+    }
+
+    // Success - configuration parsed successfully
+    process.exit(0);
+
+} catch (error) {
+    console.error(`ERROR: Unexpected error parsing configuration: ${error.message}`);
+    console.error(`Stack: ${error.stack}`);
+    process.exit(1);
+}
+EOF
+
+        # Execute Node.js parser with enhanced error capture
+        local config_vars
+        config_vars=$(safe_node_parse "$temp_script" "$CONFIG" "module.json configuration parsing") || {
+            log_config_error "Module.json parsing failed" "Check JSON syntax and structure"
+            rm -f "$temp_script"
+            clear_error_context
+            exit_function
+            return 1
+        }
+
+        # Apply extracted configuration values
+        if [[ -n "$config_vars" ]]; then
+            while IFS= read -r line; do
+                if [[ -n "$line" && "$line" =~ ^[A-Z_]+=.+ ]]; then
+                    log_verbose "Applying config: $line"
+                    eval "$line" || {
+                        log_config_error "Failed to apply configuration line: $line"
+                        rm -f "$temp_script"
+                        clear_error_context
+                        exit_function
+                        return 1
+                    }
+                fi
+            done <<< "$config_vars"
+        fi
 
         rm -f "$temp_script"
         log_success "Module configuration loaded successfully"
     else
-        log_warning "Node.js not available, skipping detailed module.json parsing"
+        log_dependency_error "Node.js not available for module.json parsing" "Install Node.js 16+ for advanced configuration features"
+        clear_error_context
+        exit_function
+        return 1
     fi
 
+    clear_error_context
+    exit_function
     return 0
 }
 
 # Function to parse components.yml
 parse_components() {
+    enter_function "parse_components"
+
     local template_path="$PROJECT_ROOT/templates/$TEMPLATE"
     local components_file="$template_path/components.yml"
+
+    set_error_context "Parsing components for template $TEMPLATE"
 
     log_verbose "Template path: $template_path"
     log_verbose "Looking for components file: $components_file"
 
+    # Check if template directory exists
+    if [[ ! -d "$template_path" ]]; then
+        log_validation_error "Template directory not found: $template_path" "Check if template '$TEMPLATE' exists"
+        clear_error_context
+        exit_function
+        return 1
+    fi
+
+    # Components file is optional - if not found, continue without component processing
     if [[ ! -f "$components_file" ]]; then
         log_verbose "No components.yml file found, skipping component processing"
+        clear_error_context
+        exit_function
         return 0
     fi
 
-    log_verbose "Parsing components from $components_file"
+    log_info "Parsing components from $components_file"
 
-    # Use Node.js to parse YAML if available, otherwise skip detailed parsing
+    # Use Node.js to parse YAML if available
     if command -v node >/dev/null 2>&1; then
         local js_parser="$SCRIPT_DIR/parse-components.js"
-        if [[ -f "$js_parser" ]]; then
-            log_verbose "Using Node.js YAML parser: $js_parser"
-            local parse_output
-            # Temporarily allow errors for this command
-            set +e
-            parse_output=$(node "$js_parser" "$components_file" 2>&1)
-            local parser_exit_code=$?
-            set -e
 
-            if [[ $parser_exit_code -eq 0 ]]; then
-                log_verbose "Component parsing successful"
-                [[ "$VERBOSE" == "true" ]] && echo "$parse_output"
-            else
-                log_warning "Component parsing failed with exit code $parser_exit_code:"
-                log_warning "$parse_output"
-                log_warning "Continuing build without component processing..."
-                # Don't fail the entire build - return success
-            fi
+        # Validate parser script exists
+        if [[ ! -f "$js_parser" ]]; then
+            log_dependency_error "Node.js YAML parser not found: $js_parser" "Ensure parse-components.js is present in scripts directory"
+            clear_error_context
+            exit_function
+            return 1
+        fi
+
+        log_verbose "Using Node.js YAML parser: $js_parser"
+
+        # Use safe_node_parse for comprehensive error handling
+        local parse_output
+        parse_output=$(safe_node_parse "$js_parser" "$components_file" "components.yml parsing") || {
+            # Component parsing failure is not fatal - log warning and continue
+            log_structured "WARN" "BUILD" "Component parsing failed, continuing without component processing" "Template: $TEMPLATE"
+            clear_error_context
+            exit_function
+            return 0
+        }
+
+        # Process successful parsing output
+        if [[ -n "$parse_output" ]]; then
+            log_verbose "Component parsing successful"
+            [[ "$VERBOSE" == "true" ]] && echo "$parse_output"
+            log_success "Components processed successfully"
         else
-            log_verbose "Node.js YAML parser not found at $js_parser, using basic parsing"
+            log_verbose "No component output generated (empty components.yml)"
         fi
     else
-        log_verbose "Node.js not available, skipping advanced component parsing"
+        log_dependency_error "Node.js not available for component parsing" "Install Node.js 16+ for component processing features"
+        clear_error_context
+        exit_function
+        return 1
     fi
+
+    clear_error_context
+    exit_function
+    return 0
 }
 
 # Function to prepare build environment
@@ -490,6 +605,9 @@ run_hugo_build() {
 
 # Function to show build summary
 show_build_summary() {
+    enter_function "show_build_summary"
+    set_error_context "Generating build summary"
+
     log_info "Build Summary:"
     echo "   Template: $TEMPLATE"
     echo "   Theme: $THEME"
@@ -499,29 +617,63 @@ show_build_summary() {
 
     # Check build output (Hugo now outputs directly to OUTPUT directory)
     if [[ -d "$OUTPUT" ]]; then
-        local file_count
-        file_count=$(find "$OUTPUT" -type f ! -path "*/.git/*" 2>/dev/null | wc -l)
+        local file_count=0
+        local size="unknown"
+
+        # Safe file counting with error handling
+        if ! file_count=$(safe_execute "find '$OUTPUT' -type f ! -path '*/.git/*' 2>/dev/null | wc -l" "counting generated files" "true"); then
+            log_warning "Could not count generated files in $OUTPUT"
+            file_count="unknown"
+        fi
+
         echo "   Files generated: $file_count"
 
+        # Safe size calculation
         if command -v du >/dev/null 2>&1; then
-            local size
-            size=$(du -sh "$OUTPUT" 2>/dev/null | cut -f1 || echo "unknown")
-            echo "   Total size: $size"
-        fi
-
-        if [[ "$VERBOSE" == "true" ]]; then
-            echo ""
-            log_info "Generated files:"
-            find "$OUTPUT" -type f ! -path "*/.git/*" 2>/dev/null | head -10 | sed 's|^|   |' || true
-            if [[ $file_count -gt 10 ]]; then
-                echo "   ... and $((file_count - 10)) more files"
+            if ! size=$(safe_execute "du -sh '$OUTPUT' 2>/dev/null | cut -f1" "calculating directory size" "true"); then
+                size="unknown"
             fi
         fi
+        echo "   Total size: $size"
+
+        # Verbose file listing with safe error handling
+        if [[ "$VERBOSE" == "true" ]] && [[ "$file_count" != "unknown" ]] && [[ $file_count -gt 0 ]]; then
+            echo ""
+            log_info "Generated files:"
+
+            local file_list
+            if file_list=$(safe_execute "find '$OUTPUT' -type f ! -path '*/.git/*' 2>/dev/null | head -10" "listing generated files" "true"); then
+                echo "$file_list" | sed 's|^|   |'
+                if [[ $file_count -gt 10 ]]; then
+                    echo "   ... and $((file_count - 10)) more files"
+                fi
+            else
+                log_warning "Could not list generated files"
+            fi
+        fi
+    else
+        log_warning "Output directory not found: $OUTPUT"
+    fi
+
+    # Show error/warning summary
+    if [[ $ERROR_COUNT -gt 0 ]] || [[ $WARNING_COUNT -gt 0 ]]; then
+        echo ""
+        echo "   Issues encountered:"
+        [[ $ERROR_COUNT -gt 0 ]] && echo "   Errors: $ERROR_COUNT"
+        [[ $WARNING_COUNT -gt 0 ]] && echo "   Warnings: $WARNING_COUNT"
     fi
 
     echo ""
-    log_success "Build completed successfully!"
-    echo "   Run: hugo server -s $OUTPUT to preview locally"
+    if [[ $ERROR_COUNT -eq 0 ]]; then
+        log_success "Build completed successfully!"
+        echo "   Run: hugo server -s $OUTPUT to preview locally"
+    else
+        log_warning "Build completed with errors. Check error log for details."
+        echo "   Error diagnostics: $ERROR_STATE_FILE"
+    fi
+
+    clear_error_context
+    exit_function
 }
 
 # Function to parse command line arguments
@@ -680,6 +832,9 @@ main() {
 
     # Show build summary
     show_build_summary
+
+    # Cleanup error handling system
+    cleanup_error_handling
 }
 
 # Run main function with all arguments

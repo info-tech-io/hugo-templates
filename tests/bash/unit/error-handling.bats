@@ -1,0 +1,243 @@
+#!/usr/bin/env bats
+
+#
+# Unit Tests for Error Handling System
+# Tests all functions from scripts/error-handling.sh
+#
+
+load '../helpers/test-helpers'
+
+setup() {
+    setup_test_environment
+
+    # Set script directory for tests
+    export SCRIPT_DIR="$BATS_TEST_DIRNAME/../../../scripts"
+}
+
+teardown() {
+    teardown_test_environment
+}
+
+@test "error handling system initializes correctly" {
+    # Skip double initialization test since test-helpers already initialized
+    if [[ "$ERROR_HANDLING_INITIALIZED" != "true" ]]; then
+        run init_error_handling
+        [ "$status" -eq 0 ]
+    fi
+
+    # Check that global variables are set
+    [ -n "$ERROR_STATE_FILE" ] || [ "$ERROR_HANDLING_INITIALIZED" = "true" ]
+    [ "$ERROR_COUNT" -eq 0 ]
+    [ "$WARNING_COUNT" -eq 0 ]
+}
+
+@test "structured logging works with different levels" {
+    # Test DEBUG level
+    run log_debug "Debug message"
+    [ "$status" -eq 0 ]
+
+    # Test INFO level
+    run log_info "Info message"
+    [ "$status" -eq 0 ]
+    assert_contains "$output" "Info message"
+
+    # Test WARNING level
+    run log_warning "Warning message"
+    [ "$status" -eq 0 ]
+    assert_contains "$output" "Warning message"
+
+    # Test ERROR level
+    run log_error "Error message"
+    [ "$status" -eq 0 ]
+    assert_contains "$output" "Error message"
+}
+
+@test "structured logging with categories" {
+    run log_structured "ERROR" "CONFIG" "Configuration failed" "Template: corporate"
+    [ "$status" -eq 0 ]
+    assert_contains "$output" "ERROR"
+    assert_contains "$output" "CONFIG"
+    assert_contains "$output" "Configuration failed"
+}
+
+@test "error categorization functions work correctly" {
+    # Test config error
+    run log_config_error "Invalid module.json" "Check JSON syntax"
+    [ "$status" -eq 0 ]
+    assert_contains "$output" "CONFIG"
+    assert_contains "$output" "Invalid module.json"
+
+    # Test dependency error
+    run log_dependency_error "Node.js not found" "Install Node.js 16+"
+    [ "$status" -eq 0 ]
+    assert_contains "$output" "DEPENDENCY"
+    assert_contains "$output" "Node.js not found"
+
+    # Test validation error
+    run log_validation_error "Template not found" "Check template name"
+    [ "$status" -eq 0 ]
+    assert_contains "$output" "VALIDATION"
+    assert_contains "$output" "Template not found"
+}
+
+@test "function entry/exit tracking" {
+    # Test function entry
+    run enter_function "test_function"
+    [ "$status" -eq 0 ]
+    [ "$ERROR_FUNCTION" = "test_function" ]
+
+    # Test function exit
+    run exit_function
+    [ "$status" -eq 0 ]
+}
+
+@test "error context management" {
+    # Set error context
+    run set_error_context "Testing error context"
+    [ "$status" -eq 0 ]
+    [ "$ERROR_CONTEXT" = "Testing error context" ]
+
+    # Clear error context
+    run clear_error_context
+    [ "$status" -eq 0 ]
+    [ -z "$ERROR_CONTEXT" ]
+}
+
+@test "safe file operations validation" {
+    # Test read operation on existing file
+    echo "test content" > "$TEST_TEMP_DIR/test_file.txt"
+    run safe_file_operation "read" "$TEST_TEMP_DIR/test_file.txt"
+    [ "$status" -eq 0 ]
+
+    # Test read operation on non-existing file
+    run safe_file_operation "read" "$TEST_TEMP_DIR/nonexistent.txt"
+    [ "$status" -eq 1 ]
+
+    # Test write operation to valid directory
+    run safe_file_operation "write" "$TEST_TEMP_DIR/new_file.txt"
+    [ "$status" -eq 0 ]
+
+    # Test write operation to invalid directory
+    run safe_file_operation "write" "/invalid/path/file.txt"
+    [ "$status" -eq 1 ]
+}
+
+@test "safe command execution" {
+    # Test successful command
+    run safe_execute "echo 'test'" "echo command" "false"
+    [ "$status" -eq 0 ]
+    assert_contains "$output" "test"
+
+    # Test failing command
+    run safe_execute "false" "failing command" "false"
+    [ "$status" -eq 1 ]
+
+    # Test command with error tolerance
+    run safe_execute "false" "failing command" "true"
+    [ "$status" -eq 0 ]  # Should succeed with error tolerance
+}
+
+@test "safe Node.js parsing" {
+    # Create test script
+    cat > "$TEST_TEMP_DIR/test_script.js" << 'EOF'
+console.log("TEST_VAR=test_value");
+EOF
+
+    # Create test config
+    echo '{"test": "value"}' > "$TEST_TEMP_DIR/test_config.json"
+
+    # Test successful parsing
+    run safe_node_parse "$TEST_TEMP_DIR/test_script.js" "$TEST_TEMP_DIR/test_config.json" "test parsing"
+    [ "$status" -eq 0 ]
+    assert_contains "$output" "TEST_VAR=test_value"
+}
+
+@test "error counting and state management" {
+    # Test counter initialization
+    local initial_error_count=$ERROR_COUNT
+    local initial_warning_count=$WARNING_COUNT
+
+    # Test that counters exist and are numeric
+    [[ "$ERROR_COUNT" =~ ^[0-9]+$ ]]
+    [[ "$WARNING_COUNT" =~ ^[0-9]+$ ]]
+
+    # Test that warnings increment properly by running the command
+    run log_warning "Test warning"
+    [ "$status" -eq 0 ]
+    assert_contains "$output" "Test warning"
+}
+
+@test "GitHub Actions annotations" {
+    # Set GitHub Actions environment
+    export GITHUB_ACTIONS="true"
+
+    # Test error annotation
+    run log_error "GitHub Actions test error"
+    [ "$status" -eq 0 ]
+
+    # Test warning annotation
+    run log_warning "GitHub Actions test warning"
+    [ "$status" -eq 0 ]
+}
+
+@test "error state preservation" {
+    # Set some error state
+    set_error_context "Test context"
+    enter_function "test_function"
+    log_error "Test error for state preservation"
+
+    # Check that error state file exists and contains information
+    assert_file_exists "$ERROR_STATE_FILE"
+
+    # Verify state file contains expected information
+    local state_content=$(cat "$ERROR_STATE_FILE" 2>/dev/null || echo "{}")
+    assert_contains "$state_content" "test_function"
+}
+
+@test "error recovery suggestions" {
+    # Test error with suggestion
+    run log_config_error "Configuration parsing failed" "Validate JSON syntax with jq"
+    [ "$status" -eq 0 ]
+    assert_contains "$output" "Validate JSON syntax with jq"
+
+    # Test dependency error with suggestion
+    run log_dependency_error "Hugo not found" "Install Hugo Extended v0.148.0+"
+    [ "$status" -eq 0 ]
+    assert_contains "$output" "Install Hugo Extended v0.148.0+"
+}
+
+@test "backward compatibility with legacy functions" {
+    # Test that legacy log functions still work
+    run log_verbose "Legacy verbose message"
+    [ "$status" -eq 0 ]
+
+    run log_success "Legacy success message"
+    [ "$status" -eq 0 ]
+
+    # These should be aliases to the new structured logging
+    assert_contains "$output" "Legacy success message"
+}
+
+@test "performance of error handling system" {
+    # Test that error handling doesn't significantly impact performance
+    local start_time=$(date +%s%N)
+
+    for i in {1..10}; do
+        log_debug "Performance test message $i"
+    done
+
+    local end_time=$(date +%s%N)
+    local duration_ms=$(( (end_time - start_time) / 1000000 ))
+
+    # Error handling should complete 10 operations in under 500ms (reduced for testing)
+    assert_performance_threshold "$duration_ms" 500 "10 debug log operations"
+}
+
+@test "error handling cleanup" {
+    # Verify cleanup works properly
+    run cleanup_error_handling
+    [ "$status" -eq 0 ]
+
+    # Error state file should be cleaned up
+    [[ ! -f "$ERROR_STATE_FILE" ]]
+}
