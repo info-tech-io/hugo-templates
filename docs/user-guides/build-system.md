@@ -266,22 +266,139 @@ Common error categories:
 
 ## Performance Optimization
 
+The build system includes a comprehensive 4-phase performance optimization framework designed to minimize build times and maximize efficiency.
+
+### Phase 1: Multi-Level Intelligent Caching
+
+The system implements a sophisticated 3-level caching architecture:
+
+- **L1 Cache**: In-memory caching for frequently accessed data
+- **L2 Cache**: Persistent disk cache for build artifacts
+- **L3 Cache**: Network cache for remote resources and themes
+
+#### Caching Commands
+
+```bash
+# Enable intelligent caching (default)
+./scripts/build.sh --template=default
+
+# Disable caching for clean builds
+./scripts/build.sh --no-cache
+
+# Clear all cache data before build
+./scripts/build.sh --cache-clear
+
+# Show cache statistics after build
+./scripts/build.sh --cache-stats
+```
+
+#### Cache Management
+
+```bash
+# Set Hugo cache directory
+export HUGO_CACHEDIR="$HOME/.hugo-cache"
+
+# Verify cache effectiveness
+./scripts/build.sh --cache-stats --template=default
+```
+
+### Phase 2: Parallel Processing with Job Throttling
+
+Optimized parallel processing for file operations, theme copying, and content generation:
+
+```bash
+# Enable parallel processing (default)
+./scripts/build.sh --template=default
+
+# Disable parallel processing for debugging
+./scripts/build.sh --no-parallel
+
+# Parallel processing works best with larger templates
+./scripts/build.sh --template=enterprise --components=quiz-engine,analytics
+```
+
+### Phase 3: Performance Monitoring & Analytics
+
+Real-time performance tracking with historical analysis and optimization recommendations:
+
+#### Performance Tracking Commands
+
+```bash
+# Track performance metrics during build
+./scripts/build.sh --performance-track --template=default
+
+# Show detailed performance report after build
+./scripts/build.sh --performance-report --template=enterprise
+
+# Display historical performance data
+./scripts/build.sh --performance-history
+
+# Combined performance analysis
+./scripts/build.sh --performance-track --performance-report --template=default
+```
+
+#### Performance Analytics
+
+```bash
+# Direct performance script usage
+./scripts/performance.sh init         # Initialize monitoring
+./scripts/performance.sh history 20  # Show last 20 builds
+./scripts/performance.sh stats       # Calculate statistics
+./scripts/performance.sh clear       # Clear performance history
+```
+
+#### Performance Data Location
+
+Performance data is stored in `~/.hugo-template-perf/`:
+- `performance_history.json` - Historical build data
+- `current_session.json` - Current session metrics
+
+### Phase 4: Build System Integration
+
+Complete integration of all performance features into the main build system:
+
+```bash
+# Full performance optimization example
+./scripts/build.sh \
+  --template=enterprise \
+  --theme=compose \
+  --components=quiz-engine,analytics \
+  --performance-track \
+  --performance-report \
+  --cache-stats \
+  --environment=production
+
+# Development with performance monitoring
+./scripts/build.sh \
+  --template=minimal \
+  --performance-track \
+  --environment=development
+```
+
 ### Build Speed Optimization
 
 1. **Use minimal template** for development:
    ```bash
-   ./scripts/build.sh --template=minimal
+   ./scripts/build.sh --template=minimal --performance-track
    ```
 
-2. **Enable Hugo caching**:
+2. **Enable intelligent caching** (default):
    ```bash
-   export HUGO_CACHEDIR="$HOME/.hugo-cache"
+   ./scripts/build.sh --cache-stats --template=default
    ```
 
-3. **Parallel processing** for large sites:
+3. **Parallel processing** for large sites (default):
    ```bash
-   ./scripts/build.sh --parallel
+   ./scripts/build.sh --template=enterprise --components=quiz-engine
    ```
+
+### Performance Benchmarks
+
+| Template | Expected Build Time | With Caching | With Parallel | Full Optimization |
+|----------|-------------------|--------------|---------------|------------------|
+| minimal | < 30 seconds | < 15 seconds | < 20 seconds | < 10 seconds |
+| default | < 2 minutes | < 1 minute | < 90 seconds | < 45 seconds |
+| enterprise | < 5 minutes | < 2.5 minutes | < 3 minutes | < 2 minutes |
 
 ### Output Optimization
 
