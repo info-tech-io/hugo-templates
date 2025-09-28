@@ -62,6 +62,7 @@ ENABLE_CACHE=true
 CACHE_CLEAR=false
 CACHE_STATS=false
 CACHE_HIT=false
+ENABLE_PARALLEL=true
 
 # Function to print colored output
 print_color() {
@@ -123,6 +124,7 @@ OPTIONS:
     --no-cache                  Disable intelligent caching system
     --cache-clear              Clear all cache data before build
     --cache-stats              Show cache statistics after build
+    --no-parallel              Disable parallel processing optimizations
     -h, --help                  Show this help message
 
 EXAMPLES:
@@ -451,83 +453,201 @@ prepare_build_environment() {
     mkdir -p "$OUTPUT"
     log_verbose "Created output directory: $OUTPUT"
 
-    # Copy template files
+    # Parallel copying optimization: template, content, and theme files
     local template_path="$PROJECT_ROOT/templates/$TEMPLATE"
-    log_verbose "Copying template files from: $template_path"
+    local theme_path="$PROJECT_ROOT/themes/$THEME"
+    local copy_pids=()
 
-    # Copy all files except .git directories
-    log_verbose "Attempting to copy template files..."
-    log_verbose "Template path: $template_path"
-    log_verbose "Output path: $OUTPUT"
+    log_verbose "Starting parallel file copying operations..."
 
-    # Try different copy methods with better error reporting
-    if rsync --version >/dev/null 2>&1 && rsync -av --exclude='.git' "$template_path/" "$OUTPUT/" 2>/dev/null; then
-        log_verbose "Template files copied successfully with rsync"
-    elif cp -r "$template_path/"* "$OUTPUT/" 2>/dev/null; then
-        log_verbose "Template files copied successfully with cp -r"
+    # Function to copy template files (background job)
+    copy_template_files() {
+        log_verbose "Copying template files from: $template_path"
+        # Try different copy methods with better error reporting
+        if rsync --version >/dev/null 2>&1 && rsync -av --exclude='.git' "$template_path/" "$OUTPUT/" 2>/dev/null; then
+            log_verbose "Template files copied successfully with rsync"
+            return 0
+        elif cp -r "$template_path/"* "$OUTPUT/" 2>/dev/null; then
+            log_verbose "Template files copied successfully with cp -r"
+            return 0
+        else
+            log_error "Failed to copy template files from $template_path to $OUTPUT"
+            log_verbose "Template directory contents:"
+            ls -la "$template_path" || true
+            return 1
+        fi
+    }
+
+    # Function to copy theme files (background job)
+    copy_theme_files() {
+        if [[ -d "$theme_path" ]]; then
+            log_verbose "Copying theme: $THEME"
+            mkdir -p "$OUTPUT/themes"
+            if cp -r "$theme_path" "$OUTPUT/themes/" 2>/dev/null; then
+                log_verbose "Theme copied successfully"
+                return 0
+            else
+                log_warning "Failed to copy theme: $THEME"
+                return 1
+            fi
+        else
+            log_verbose "Theme directory not found: $theme_path"
+            return 0
+        fi
+    }
+
+    # Function to copy custom content (background job)
+    copy_custom_content() {
+        if [[ -n "$CONTENT" ]]; then
+            log_verbose "Copying custom content from: $CONTENT"
+            mkdir -p "$OUTPUT/content"
+            if cp -r "$CONTENT"/* "$OUTPUT/content/" 2>/dev/null; then
+                log_verbose "Custom content copied successfully"
+                return 0
+            else
+                log_warning "Failed to copy custom content (may be expected if no content files exist)"
+                return 1
+            fi
+        else
+            return 0
+        fi
+    }
+
+    # Function to initialize Git submodules (background job)
+    init_git_submodules() {
+        if [[ -f "$PROJECT_ROOT/.gitmodules" ]]; then
+            log_verbose "Initializing Git submodules..."
+            cd "$PROJECT_ROOT"
+            git submodule update --init --recursive 2>/dev/null || {
+                log_warning "Failed to initialize Git submodules"
+                return 1
+            }
+            cd - >/dev/null
+            return 0
+        else
+            return 0
+        fi
+    }
+
+    # Start template copying (must complete first as other operations depend on it)
+    copy_template_files
+    local template_result=$?
+
+    if [[ $template_result -eq 0 ]]; then
+        # Choose parallel or sequential execution based on ENABLE_PARALLEL
+        if [[ "$ENABLE_PARALLEL" == "true" ]]; then
+            # Start parallel operations for theme, content, and submodules
+            copy_theme_files &
+            copy_pids+=($!)
+
+            copy_custom_content &
+            copy_pids+=($!)
+
+            init_git_submodules &
+            copy_pids+=($!)
+
+            # Wait for all parallel operations to complete
+            local failed_operations=0
+            for pid in "${copy_pids[@]}"; do
+                if ! wait "$pid"; then
+                    ((failed_operations++))
+                fi
+            done
+
+            if [[ $failed_operations -eq 0 ]]; then
+                log_verbose "All file copying operations completed successfully in parallel"
+            else
+                log_warning "$failed_operations parallel file operations encountered issues"
+            fi
+        else
+            # Sequential execution (original behavior)
+            log_verbose "Using sequential file copying (parallel processing disabled)"
+            copy_theme_files
+            copy_custom_content
+            init_git_submodules
+        fi
     else
-        log_error "Failed to copy template files from $template_path to $OUTPUT"
-        log_verbose "Template directory contents:"
-        ls -la "$template_path" || true
+        log_error "Template copying failed, skipping dependent operations"
         return 1
     fi
 
-    # Copy custom content if specified
-    if [[ -n "$CONTENT" ]]; then
-        log_verbose "Copying custom content from: $CONTENT"
-        mkdir -p "$OUTPUT/content"
-        if cp -r "$CONTENT"/* "$OUTPUT/content/" 2>/dev/null; then
-            log_verbose "Custom content copied successfully"
-        else
-            log_warning "Failed to copy custom content (may be expected if no content files exist)"
-        fi
-    fi
-
-    # Initialize Git submodules if they exist
-    if [[ -f "$PROJECT_ROOT/.gitmodules" ]]; then
-        log_verbose "Initializing Git submodules..."
-        cd "$PROJECT_ROOT"
-        git submodule update --init --recursive 2>/dev/null || {
-            log_warning "Failed to initialize Git submodules"
-        }
-        cd - >/dev/null
-    fi
-
-    # Copy theme if it exists as submodule
-    local theme_path="$PROJECT_ROOT/themes/$THEME"
-    if [[ -d "$theme_path" ]]; then
-        log_verbose "Copying theme: $THEME"
-        mkdir -p "$OUTPUT/themes"
-        if cp -r "$theme_path" "$OUTPUT/themes/" 2>/dev/null; then
-            log_verbose "Theme copied successfully"
-        else
-            log_warning "Failed to copy theme: $THEME"
-        fi
-    else
-        log_verbose "Theme directory not found: $theme_path"
-    fi
-
-    # Copy components if they exist
+    # Copy components if they exist (with parallel processing optimization)
     if [[ -n "$COMPONENTS" ]]; then
         IFS=',' read -ra COMP_ARRAY <<< "$COMPONENTS"
-        for component in "${COMP_ARRAY[@]}"; do
-            component=$(echo "$component" | xargs) # trim whitespace
-            local comp_path="$PROJECT_ROOT/components/$component"
-            if [[ -d "$comp_path" ]]; then
-                log_verbose "Copying component: $component"
-                # Copy component files to appropriate locations
-                if [[ -d "$comp_path/static" ]]; then
-                    mkdir -p "$OUTPUT/static"
-                    cp -r "$comp_path/static"/* "$OUTPUT/static/" 2>/dev/null || log_verbose "No static files to copy for component $component"
+        local component_count=${#COMP_ARRAY[@]}
+
+        # Use parallel processing for multiple components (if enabled)
+        if [[ $component_count -gt 1 && "$ENABLE_PARALLEL" == "true" ]]; then
+            log_verbose "Copying $component_count components in parallel..."
+            local pids=()
+            local max_parallel_jobs=4  # Limit concurrent jobs to avoid overwhelming system
+            local current_jobs=0
+
+            # Function to copy a single component (runs in background)
+            copy_component_parallel() {
+                local component="$1"
+                local comp_path="$PROJECT_ROOT/components/$component"
+
+                if [[ -d "$comp_path" ]]; then
+                    # Copy component files to appropriate locations
+                    if [[ -d "$comp_path/static" ]]; then
+                        mkdir -p "$OUTPUT/static"
+                        cp -r "$comp_path/static"/* "$OUTPUT/static/" 2>/dev/null || true
+                    fi
+                    if [[ -d "$comp_path/layouts" ]]; then
+                        mkdir -p "$OUTPUT/layouts"
+                        cp -r "$comp_path/layouts"/* "$OUTPUT/layouts/" 2>/dev/null || true
+                    fi
+                    log_verbose "Component copied: $component"
+                else
+                    log_warning "Component '$component' not found in $PROJECT_ROOT/components/"
                 fi
-                if [[ -d "$comp_path/layouts" ]]; then
-                    mkdir -p "$OUTPUT/layouts"
-                    cp -r "$comp_path/layouts"/* "$OUTPUT/layouts/" 2>/dev/null || log_verbose "No layout files to copy for component $component"
+            }
+
+            # Launch parallel component copying jobs
+            for component in "${COMP_ARRAY[@]}"; do
+                component=$(echo "$component" | xargs) # trim whitespace
+
+                # Wait if we've reached max parallel jobs
+                if [[ $current_jobs -ge $max_parallel_jobs ]]; then
+                    wait "${pids[0]}"  # Wait for first job to complete
+                    pids=("${pids[@]:1}")  # Remove first PID from array
+                    ((current_jobs--))
                 fi
-            else
-                log_warning "Component '$component' not found in $PROJECT_ROOT/components/"
-            fi
-        done
+
+                # Start new background job
+                copy_component_parallel "$component" &
+                pids+=($!)
+                ((current_jobs++))
+            done
+
+            # Wait for all remaining jobs to complete
+            for pid in "${pids[@]}"; do
+                wait "$pid"
+            done
+
+            log_verbose "All $component_count components copied in parallel"
+        else
+            # Single component - use original sequential method
+            for component in "${COMP_ARRAY[@]}"; do
+                component=$(echo "$component" | xargs) # trim whitespace
+                local comp_path="$PROJECT_ROOT/components/$component"
+                if [[ -d "$comp_path" ]]; then
+                    log_verbose "Copying component: $component"
+                    # Copy component files to appropriate locations
+                    if [[ -d "$comp_path/static" ]]; then
+                        mkdir -p "$OUTPUT/static"
+                        cp -r "$comp_path/static"/* "$OUTPUT/static/" 2>/dev/null || log_verbose "No static files to copy for component $component"
+                    fi
+                    if [[ -d "$comp_path/layouts" ]]; then
+                        mkdir -p "$OUTPUT/layouts"
+                        cp -r "$comp_path/layouts"/* "$OUTPUT/layouts/" 2>/dev/null || log_verbose "No layout files to copy for component $component"
+                    fi
+                else
+                    log_warning "Component '$component' not found in $PROJECT_ROOT/components/"
+                fi
+            done
+        fi
     fi
 
     log_success "Build environment prepared"
@@ -723,6 +843,11 @@ show_build_summary() {
     else
         echo "   Cache: ❌ Disabled"
     fi
+    if [[ "$ENABLE_PARALLEL" == "true" ]]; then
+        echo "   Parallel Processing: ✅ Enabled"
+    else
+        echo "   Parallel Processing: ❌ Disabled"
+    fi
 
     # Check build output (Hugo now outputs directly to OUTPUT directory)
     if [[ -d "$OUTPUT" ]]; then
@@ -868,6 +993,10 @@ parse_arguments() {
                 ;;
             --cache-stats)
                 CACHE_STATS=true
+                shift
+                ;;
+            --no-parallel)
+                ENABLE_PARALLEL=false
                 shift
                 ;;
             -h|--help)
