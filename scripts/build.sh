@@ -20,8 +20,26 @@ source "$SCRIPT_DIR/error-handling.sh" || {
     exit 1
 }
 
+# Load intelligent caching system
+source "$SCRIPT_DIR/cache.sh" || {
+    echo "FATAL: Cannot load caching system from $SCRIPT_DIR/cache.sh" >&2
+    exit 1
+}
+
+# Load performance monitoring system
+source "$SCRIPT_DIR/performance.sh" || {
+    echo "FATAL: Cannot load performance monitoring system from $SCRIPT_DIR/performance.sh" >&2
+    exit 1
+}
+
 # Initialize error handling
 init_error_handling
+
+# Initialize cache system
+init_cache_system
+
+# Initialize performance monitoring system
+init_performance_monitoring
 
 # Legacy color definitions (maintained for backward compatibility)
 readonly RED='\033[0;31m'
@@ -49,6 +67,14 @@ LOG_LEVEL="info"
 VALIDATE_ONLY=false
 FORCE=false
 DEBUG_MODE=false
+ENABLE_CACHE=true
+CACHE_CLEAR=false
+CACHE_STATS=false
+CACHE_HIT=false
+ENABLE_PARALLEL=true
+ENABLE_PERFORMANCE_TRACKING=false
+PERFORMANCE_REPORT=false
+PERFORMANCE_HISTORY=false
 
 # Function to print colored output
 print_color() {
@@ -107,6 +133,13 @@ OPTIONS:
     --validate-only             Only validate configuration, don't build
     --force                     Force build even if output directory exists
     --debug                     Enable debug mode with detailed tracing
+    --no-cache                  Disable intelligent caching system
+    --cache-clear              Clear all cache data before build
+    --cache-stats              Show cache statistics after build
+    --no-parallel              Disable parallel processing optimizations
+    --performance-track         Enable performance monitoring and tracking
+    --performance-report        Show detailed performance analysis after build
+    --performance-history       Display historical performance data
     -h, --help                  Show this help message
 
 EXAMPLES:
@@ -127,6 +160,11 @@ EXAMPLES:
 
     # Validate configuration only
     $0 --validate-only --verbose
+
+    # Performance optimization examples
+    $0 --template=minimal --performance-track --performance-report
+    $0 --cache-clear --no-parallel --performance-track
+    $0 --performance-history  # Show historical performance data
 
 AVAILABLE TEMPLATES:
 $(list_templates)
@@ -435,83 +473,204 @@ prepare_build_environment() {
     mkdir -p "$OUTPUT"
     log_verbose "Created output directory: $OUTPUT"
 
-    # Copy template files
+    # Parallel copying optimization: template, content, and theme files
     local template_path="$PROJECT_ROOT/templates/$TEMPLATE"
-    log_verbose "Copying template files from: $template_path"
+    local theme_path="$PROJECT_ROOT/themes/$THEME"
+    local copy_pids=()
 
-    # Copy all files except .git directories
-    log_verbose "Attempting to copy template files..."
-    log_verbose "Template path: $template_path"
-    log_verbose "Output path: $OUTPUT"
+    log_verbose "Starting parallel file copying operations..."
 
-    # Try different copy methods with better error reporting
-    if rsync --version >/dev/null 2>&1 && rsync -av --exclude='.git' "$template_path/" "$OUTPUT/" 2>/dev/null; then
-        log_verbose "Template files copied successfully with rsync"
-    elif cp -r "$template_path/"* "$OUTPUT/" 2>/dev/null; then
-        log_verbose "Template files copied successfully with cp -r"
+    # Function to copy template files (background job)
+    copy_template_files() {
+        log_verbose "Copying template files from: $template_path"
+        # Try different copy methods with better error reporting
+        if rsync --version >/dev/null 2>&1 && rsync -av --exclude='.git' "$template_path/" "$OUTPUT/" 2>/dev/null; then
+            log_verbose "Template files copied successfully with rsync"
+            return 0
+        elif cp -r "$template_path/"* "$OUTPUT/" 2>/dev/null; then
+            log_verbose "Template files copied successfully with cp -r"
+            return 0
+        else
+            log_error "Failed to copy template files from $template_path to $OUTPUT"
+            log_verbose "Template directory contents:"
+            ls -la "$template_path" || true
+            return 1
+        fi
+    }
+
+    # Function to copy theme files (background job)
+    copy_theme_files() {
+        if [[ -d "$theme_path" ]]; then
+            log_verbose "Copying theme: $THEME"
+            mkdir -p "$OUTPUT/themes"
+            if cp -r "$theme_path" "$OUTPUT/themes/" 2>/dev/null; then
+                log_verbose "Theme copied successfully"
+                return 0
+            else
+                log_warning "Failed to copy theme: $THEME"
+                return 1
+            fi
+        else
+            log_verbose "Theme directory not found: $theme_path"
+            return 0
+        fi
+    }
+
+    # Function to copy custom content (background job)
+    copy_custom_content() {
+        if [[ -n "$CONTENT" ]]; then
+            log_verbose "Copying custom content from: $CONTENT"
+            mkdir -p "$OUTPUT/content"
+            if cp -r "$CONTENT"/* "$OUTPUT/content/" 2>/dev/null; then
+                log_verbose "Custom content copied successfully"
+                return 0
+            else
+                log_warning "Failed to copy custom content (may be expected if no content files exist)"
+                return 1
+            fi
+        else
+            return 0
+        fi
+    }
+
+    # Function to initialize Git submodules (background job)
+    init_git_submodules() {
+        if [[ -f "$PROJECT_ROOT/.gitmodules" ]]; then
+            log_verbose "Initializing Git submodules..."
+            cd "$PROJECT_ROOT"
+            git submodule update --init --recursive 2>/dev/null || {
+                log_warning "Failed to initialize Git submodules"
+                return 1
+            }
+            cd - >/dev/null
+            return 0
+        else
+            return 0
+        fi
+    }
+
+    # Start template copying (must complete first as other operations depend on it)
+    copy_template_files
+    local template_result=$?
+
+    if [[ $template_result -eq 0 ]]; then
+        # Choose parallel or sequential execution based on ENABLE_PARALLEL
+        if [[ "$ENABLE_PARALLEL" == "true" ]]; then
+            # Initialize process tracking array
+            local copy_pids=()
+
+            # Start parallel operations for theme, content, and submodules
+            copy_theme_files &
+            copy_pids+=($!)
+
+            copy_custom_content &
+            copy_pids+=($!)
+
+            init_git_submodules &
+            copy_pids+=($!)
+
+            # Wait for all parallel operations to complete
+            local failed_operations=0
+            for pid in "${copy_pids[@]}"; do
+                if ! wait "$pid"; then
+                    ((failed_operations++))
+                fi
+            done
+
+            if [[ $failed_operations -eq 0 ]]; then
+                log_verbose "All file copying operations completed successfully in parallel"
+            else
+                log_warning "$failed_operations parallel file operations encountered issues"
+            fi
+        else
+            # Sequential execution (original behavior)
+            log_verbose "Using sequential file copying (parallel processing disabled)"
+            copy_theme_files
+            copy_custom_content
+            init_git_submodules
+        fi
     else
-        log_error "Failed to copy template files from $template_path to $OUTPUT"
-        log_verbose "Template directory contents:"
-        ls -la "$template_path" || true
+        log_error "Template copying failed, skipping dependent operations"
         return 1
     fi
 
-    # Copy custom content if specified
-    if [[ -n "$CONTENT" ]]; then
-        log_verbose "Copying custom content from: $CONTENT"
-        mkdir -p "$OUTPUT/content"
-        if cp -r "$CONTENT"/* "$OUTPUT/content/" 2>/dev/null; then
-            log_verbose "Custom content copied successfully"
-        else
-            log_warning "Failed to copy custom content (may be expected if no content files exist)"
-        fi
-    fi
-
-    # Initialize Git submodules if they exist
-    if [[ -f "$PROJECT_ROOT/.gitmodules" ]]; then
-        log_verbose "Initializing Git submodules..."
-        cd "$PROJECT_ROOT"
-        git submodule update --init --recursive 2>/dev/null || {
-            log_warning "Failed to initialize Git submodules"
-        }
-        cd - >/dev/null
-    fi
-
-    # Copy theme if it exists as submodule
-    local theme_path="$PROJECT_ROOT/themes/$THEME"
-    if [[ -d "$theme_path" ]]; then
-        log_verbose "Copying theme: $THEME"
-        mkdir -p "$OUTPUT/themes"
-        if cp -r "$theme_path" "$OUTPUT/themes/" 2>/dev/null; then
-            log_verbose "Theme copied successfully"
-        else
-            log_warning "Failed to copy theme: $THEME"
-        fi
-    else
-        log_verbose "Theme directory not found: $theme_path"
-    fi
-
-    # Copy components if they exist
+    # Copy components if they exist (with parallel processing optimization)
     if [[ -n "$COMPONENTS" ]]; then
         IFS=',' read -ra COMP_ARRAY <<< "$COMPONENTS"
-        for component in "${COMP_ARRAY[@]}"; do
-            component=$(echo "$component" | xargs) # trim whitespace
-            local comp_path="$PROJECT_ROOT/components/$component"
-            if [[ -d "$comp_path" ]]; then
-                log_verbose "Copying component: $component"
-                # Copy component files to appropriate locations
-                if [[ -d "$comp_path/static" ]]; then
-                    mkdir -p "$OUTPUT/static"
-                    cp -r "$comp_path/static"/* "$OUTPUT/static/" 2>/dev/null || log_verbose "No static files to copy for component $component"
+        local component_count=${#COMP_ARRAY[@]}
+
+        # Use parallel processing for multiple components (if enabled)
+        if [[ $component_count -gt 1 && "$ENABLE_PARALLEL" == "true" ]]; then
+            log_verbose "Copying $component_count components in parallel..."
+            local pids=()
+            local max_parallel_jobs=4  # Limit concurrent jobs to avoid overwhelming system
+            local current_jobs=0
+
+            # Function to copy a single component (runs in background)
+            copy_component_parallel() {
+                local component="$1"
+                local comp_path="$PROJECT_ROOT/components/$component"
+
+                if [[ -d "$comp_path" ]]; then
+                    # Copy component files to appropriate locations
+                    if [[ -d "$comp_path/static" ]]; then
+                        mkdir -p "$OUTPUT/static"
+                        cp -r "$comp_path/static"/* "$OUTPUT/static/" 2>/dev/null || true
+                    fi
+                    if [[ -d "$comp_path/layouts" ]]; then
+                        mkdir -p "$OUTPUT/layouts"
+                        cp -r "$comp_path/layouts"/* "$OUTPUT/layouts/" 2>/dev/null || true
+                    fi
+                    log_verbose "Component copied: $component"
+                else
+                    log_warning "Component '$component' not found in $PROJECT_ROOT/components/"
                 fi
-                if [[ -d "$comp_path/layouts" ]]; then
-                    mkdir -p "$OUTPUT/layouts"
-                    cp -r "$comp_path/layouts"/* "$OUTPUT/layouts/" 2>/dev/null || log_verbose "No layout files to copy for component $component"
+            }
+
+            # Launch parallel component copying jobs
+            for component in "${COMP_ARRAY[@]}"; do
+                component=$(echo "$component" | xargs) # trim whitespace
+
+                # Wait if we've reached max parallel jobs
+                if [[ $current_jobs -ge $max_parallel_jobs ]]; then
+                    wait "${pids[0]}"  # Wait for first job to complete
+                    pids=("${pids[@]:1}")  # Remove first PID from array
+                    ((current_jobs--))
                 fi
-            else
-                log_warning "Component '$component' not found in $PROJECT_ROOT/components/"
-            fi
-        done
+
+                # Start new background job
+                copy_component_parallel "$component" &
+                pids+=($!)
+                ((current_jobs++))
+            done
+
+            # Wait for all remaining jobs to complete
+            for pid in "${pids[@]}"; do
+                wait "$pid"
+            done
+
+            log_verbose "All $component_count components copied in parallel"
+        else
+            # Single component - use original sequential method
+            for component in "${COMP_ARRAY[@]}"; do
+                component=$(echo "$component" | xargs) # trim whitespace
+                local comp_path="$PROJECT_ROOT/components/$component"
+                if [[ -d "$comp_path" ]]; then
+                    log_verbose "Copying component: $component"
+                    # Copy component files to appropriate locations
+                    if [[ -d "$comp_path/static" ]]; then
+                        mkdir -p "$OUTPUT/static"
+                        cp -r "$comp_path/static"/* "$OUTPUT/static/" 2>/dev/null || log_verbose "No static files to copy for component $component"
+                    fi
+                    if [[ -d "$comp_path/layouts" ]]; then
+                        mkdir -p "$OUTPUT/layouts"
+                        cp -r "$comp_path/layouts"/* "$OUTPUT/layouts/" 2>/dev/null || log_verbose "No layout files to copy for component $component"
+                    fi
+                else
+                    log_warning "Component '$component' not found in $PROJECT_ROOT/components/"
+                fi
+            done
+        fi
     fi
 
     log_success "Build environment prepared"
@@ -551,6 +710,90 @@ EOF
     fi
 
     log_success "Hugo configuration updated"
+}
+
+# Function to check and use cached build if available
+check_build_cache() {
+    if [[ "$ENABLE_CACHE" != "true" ]]; then
+        log_verbose "Cache disabled, skipping cache check"
+        return 1
+    fi
+
+    log_info "Checking build cache..."
+
+    # Generate cache key based on template, theme, components, and config
+    local template_hash
+    template_hash=$(find "$PROJECT_ROOT/templates/$TEMPLATE" -type f \( -name "*.md" -o -name "*.toml" -o -name "*.yml" -o -name "*.yaml" -o -name "*.html" \) -exec sha256sum {} \; 2>/dev/null | sort | sha256sum | cut -d' ' -f1 || echo "notfound")
+
+    local config_hash
+    config_hash=$(echo "${TEMPLATE}_${THEME}_${COMPONENTS}_${MINIFY}_${ENVIRONMENT}_${BASE_URL}" | sha256sum | cut -d' ' -f1)
+
+    local hugo_version
+    hugo_version=$(hugo version 2>/dev/null | head -1 | cut -d' ' -f1 || echo "unknown")
+
+    local cache_key
+    cache_key=$(generate_build_cache_key "${template_hash}_${config_hash}" "$hugo_version" "$ENVIRONMENT" "$MINIFY")
+
+    log_verbose "Generated cache key: $cache_key"
+
+    # Check if cached build exists
+    if cache_exists "$cache_key" "l2"; then
+        log_info "Found cached build, retrieving..."
+        if cache_retrieve "$cache_key" "$OUTPUT" "l2"; then
+            log_success "Build restored from cache"
+            return 0
+        else
+            log_warning "Cache retrieval failed, proceeding with full build"
+            return 1
+        fi
+    else
+        log_verbose "No cached build found"
+        return 1
+    fi
+}
+
+# Function to store build in cache
+store_build_cache() {
+    if [[ "$ENABLE_CACHE" != "true" ]]; then
+        return 0
+    fi
+
+    log_info "Storing build in cache..."
+
+    # Generate same cache key as in check_build_cache
+    local template_hash
+    template_hash=$(find "$PROJECT_ROOT/templates/$TEMPLATE" -type f \( -name "*.md" -o -name "*.toml" -o -name "*.yml" -o -name "*.yaml" -o -name "*.html" \) -exec sha256sum {} \; 2>/dev/null | sort | sha256sum | cut -d' ' -f1 || echo "notfound")
+
+    local config_hash
+    config_hash=$(echo "${TEMPLATE}_${THEME}_${COMPONENTS}_${MINIFY}_${ENVIRONMENT}_${BASE_URL}" | sha256sum | cut -d' ' -f1)
+
+    local hugo_version
+    hugo_version=$(hugo version 2>/dev/null | head -1 | cut -d' ' -f1 || echo "unknown")
+
+    local cache_key
+    cache_key=$(generate_build_cache_key "${template_hash}_${config_hash}" "$hugo_version" "$ENVIRONMENT" "$MINIFY")
+
+    # Create metadata
+    local metadata
+    metadata=$(cat <<EOF
+{
+    "template": "$TEMPLATE",
+    "theme": "$THEME",
+    "components": "$COMPONENTS",
+    "environment": "$ENVIRONMENT",
+    "minify": $MINIFY,
+    "hugo_version": "$hugo_version",
+    "base_url": "$BASE_URL"
+}
+EOF
+    )
+
+    # Store build in cache
+    if cache_store "$cache_key" "$OUTPUT" "l2" "$metadata"; then
+        log_success "Build cached successfully"
+    else
+        log_warning "Failed to cache build"
+    fi
 }
 
 # Function to run Hugo build
@@ -614,6 +857,25 @@ show_build_summary() {
     [[ -n "$COMPONENTS" ]] && echo "   Components: $COMPONENTS"
     echo "   Environment: $ENVIRONMENT"
     echo "   Output: $OUTPUT"
+    if [[ "$ENABLE_CACHE" == "true" ]]; then
+        if [[ "$CACHE_HIT" == "true" ]]; then
+            echo "   Cache: ✅ Hit (restored from cache)"
+        else
+            echo "   Cache: ⚡ Miss (built from source, cached for future)"
+        fi
+    else
+        echo "   Cache: ❌ Disabled"
+    fi
+    if [[ "$ENABLE_PARALLEL" == "true" ]]; then
+        echo "   Parallel Processing: ✅ Enabled"
+    else
+        echo "   Parallel Processing: ❌ Disabled"
+    fi
+    if [[ "$ENABLE_PERFORMANCE_TRACKING" == "true" ]]; then
+        echo "   Performance Tracking: ✅ Enabled"
+    else
+        echo "   Performance Tracking: ❌ Disabled"
+    fi
 
     # Check build output (Hugo now outputs directly to OUTPUT directory)
     if [[ -d "$OUTPUT" ]]; then
@@ -621,7 +883,7 @@ show_build_summary() {
         local size="unknown"
 
         # Safe file counting with error handling
-        if ! file_count=$(safe_execute "find '$OUTPUT' -type f ! -path '*/.git/*' 2>/dev/null | wc -l" "counting generated files" "true"); then
+        if ! file_count=$(find "$OUTPUT" -type f ! -path '*/.git/*' 2>/dev/null | wc -l); then
             log_warning "Could not count generated files in $OUTPUT"
             file_count="unknown"
         fi
@@ -630,7 +892,7 @@ show_build_summary() {
 
         # Safe size calculation
         if command -v du >/dev/null 2>&1; then
-            if ! size=$(safe_execute "du -sh '$OUTPUT' 2>/dev/null | cut -f1" "calculating directory size" "true"); then
+            if ! size=$(du -sh "$OUTPUT" 2>/dev/null | cut -f1); then
                 size="unknown"
             fi
         fi
@@ -642,7 +904,7 @@ show_build_summary() {
             log_info "Generated files:"
 
             local file_list
-            if file_list=$(safe_execute "find '$OUTPUT' -type f ! -path '*/.git/*' 2>/dev/null | head -10" "listing generated files" "true"); then
+            if file_list=$(find "$OUTPUT" -type f ! -path '*/.git/*' 2>/dev/null | head -10); then
                 echo "$file_list" | sed 's|^|   |'
                 if [[ $file_count -gt 10 ]]; then
                     echo "   ... and $((file_count - 10)) more files"
@@ -749,6 +1011,34 @@ parse_arguments() {
                 VERBOSE=true
                 shift
                 ;;
+            --no-cache)
+                ENABLE_CACHE=false
+                shift
+                ;;
+            --cache-clear)
+                CACHE_CLEAR=true
+                shift
+                ;;
+            --cache-stats)
+                CACHE_STATS=true
+                shift
+                ;;
+            --no-parallel)
+                ENABLE_PARALLEL=false
+                shift
+                ;;
+            --performance-track)
+                ENABLE_PERFORMANCE_TRACKING=true
+                shift
+                ;;
+            --performance-report)
+                PERFORMANCE_REPORT=true
+                shift
+                ;;
+            --performance-history)
+                PERFORMANCE_HISTORY=true
+                shift
+                ;;
             -h|--help)
                 show_usage
                 exit 0
@@ -767,6 +1057,30 @@ parse_arguments() {
 main() {
     # Parse command line arguments
     parse_arguments "$@"
+
+    # Handle cache operations
+    if [[ "$CACHE_CLEAR" == "true" ]]; then
+        log_info "Clearing cache..."
+        clear_cache
+    fi
+
+    # Disable caching if requested
+    if [[ "$ENABLE_CACHE" == "false" ]]; then
+        export HUGO_TEMPLATE_CACHE_ENABLED=false
+        log_info "Intelligent caching disabled"
+    fi
+
+    # Handle performance history request
+    if [[ "$PERFORMANCE_HISTORY" == "true" ]]; then
+        show_performance_history
+        exit 0
+    fi
+
+    # Initialize performance session if tracking is enabled
+    if [[ "$ENABLE_PERFORMANCE_TRACKING" == "true" ]]; then
+        init_performance_session "$TEMPLATE" "$THEME" "$COMPONENTS" "$ENVIRONMENT" "$ENABLE_CACHE" "$ENABLE_PARALLEL"
+        log_verbose "Performance tracking initialized"
+    fi
 
     # Show header
     if [[ "$QUIET" != "true" ]]; then
@@ -822,16 +1136,41 @@ main() {
     fi
     log_success "Hugo configuration update completed"
 
-    # Run Hugo build
-    log_info "Starting Hugo build..."
-    if ! run_hugo_build; then
-        log_error "Hugo build failed"
-        exit 1
+    # Check for cached build
+    if check_build_cache; then
+        CACHE_HIT=true
+        log_success "Build completed using cached data"
+    else
+        # Run Hugo build
+        log_info "Starting Hugo build..."
+        if ! run_hugo_build; then
+            log_error "Hugo build failed"
+            exit 1
+        fi
+        log_success "Hugo build completed"
+
+        # Store build in cache for future use
+        store_build_cache
     fi
-    log_success "Hugo build completed"
 
     # Show build summary
     show_build_summary
+
+    # Show cache statistics if requested
+    if [[ "$CACHE_STATS" == "true" || "$VERBOSE" == "true" ]]; then
+        echo ""
+        show_cache_stats
+    fi
+
+    # Finalize performance session and show reports if enabled
+    if [[ "$ENABLE_PERFORMANCE_TRACKING" == "true" ]]; then
+        finalize_performance_session "$CACHE_HIT"
+
+        if [[ "$PERFORMANCE_REPORT" == "true" || "$VERBOSE" == "true" ]]; then
+            echo ""
+            show_performance_analysis
+        fi
+    fi
 
     # Cleanup error handling system
     cleanup_error_handling

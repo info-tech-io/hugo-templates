@@ -34,14 +34,24 @@ This guide helps you diagnose and resolve performance issues in the Hugo Templat
 ### Performance Profiling
 
 ```bash
-# Profile build performance
-time ./scripts/build.sh --template=default --verbose
+# Profile build performance with tracking
+time ./scripts/build.sh --template=default --performance-track --performance-report
 
 # Hugo build metrics
 hugo --templateMetrics --source=./build-directory
 
 # Memory usage monitoring
-./scripts/build.sh --debug --verbose --template=enterprise 2>&1 | grep -i memory
+./scripts/build.sh --debug --verbose --template=enterprise --performance-track 2>&1 | grep -i memory
+
+# Performance history analysis
+./scripts/build.sh --performance-history
+
+# Cache effectiveness analysis
+./scripts/build.sh --cache-stats --template=default
+
+# Direct performance monitoring
+./scripts/performance.sh stats
+./scripts/performance.sh history 10
 
 # System resource usage
 htop  # or top on basic systems
@@ -87,20 +97,32 @@ grep -r "range\|where\|sort" layouts/ | wc -l
 
 **1. Use Minimal Template for Development**
 ```bash
-# Fast development builds
-./scripts/build.sh --template=minimal --environment=development
+# Fast development builds with performance tracking
+./scripts/build.sh --template=minimal --environment=development --performance-track
 
 # Production builds only when needed
-./scripts/build.sh --template=enterprise --environment=production --minify
+./scripts/build.sh --template=enterprise --environment=production --minify --performance-report
+
+# Compare performance between templates
+./scripts/build.sh --template=minimal --performance-track && \
+./scripts/build.sh --template=default --performance-track && \
+./scripts/build.sh --performance-history
 ```
 
-**2. Enable Caching**
+**2. Enable Intelligent Caching (Multi-Level)**
 ```bash
 # Set Hugo cache directory
 export HUGO_CACHEDIR="$HOME/.hugo-cache"
 
-# Verify cache is working
+# Enable intelligent caching with statistics
+./scripts/build.sh --template=default --cache-stats
+
+# Clear cache if needed and monitor effectiveness
+./scripts/build.sh --cache-clear --performance-track --cache-stats
+
+# Verify L1/L2/L3 cache is working
 ls -la $HOME/.hugo-cache/
+ls -la $HOME/.hugo-template-perf/
 ```
 
 **3. Optimize Content Structure**
