@@ -20,8 +20,17 @@ source "$SCRIPT_DIR/error-handling.sh" || {
     exit 1
 }
 
+# Load intelligent caching system
+source "$SCRIPT_DIR/cache.sh" || {
+    echo "FATAL: Cannot load caching system from $SCRIPT_DIR/cache.sh" >&2
+    exit 1
+}
+
 # Initialize error handling
 init_error_handling
+
+# Initialize cache system
+init_cache_system
 
 # Legacy color definitions (maintained for backward compatibility)
 readonly RED='\033[0;31m'
@@ -49,6 +58,10 @@ LOG_LEVEL="info"
 VALIDATE_ONLY=false
 FORCE=false
 DEBUG_MODE=false
+ENABLE_CACHE=true
+CACHE_CLEAR=false
+CACHE_STATS=false
+CACHE_HIT=false
 
 # Function to print colored output
 print_color() {
@@ -107,6 +120,9 @@ OPTIONS:
     --validate-only             Only validate configuration, don't build
     --force                     Force build even if output directory exists
     --debug                     Enable debug mode with detailed tracing
+    --no-cache                  Disable intelligent caching system
+    --cache-clear              Clear all cache data before build
+    --cache-stats              Show cache statistics after build
     -h, --help                  Show this help message
 
 EXAMPLES:
@@ -553,6 +569,90 @@ EOF
     log_success "Hugo configuration updated"
 }
 
+# Function to check and use cached build if available
+check_build_cache() {
+    if [[ "$ENABLE_CACHE" != "true" ]]; then
+        log_verbose "Cache disabled, skipping cache check"
+        return 1
+    fi
+
+    log_info "Checking build cache..."
+
+    # Generate cache key based on template, theme, components, and config
+    local template_hash
+    template_hash=$(find "$PROJECT_ROOT/templates/$TEMPLATE" -type f \( -name "*.md" -o -name "*.toml" -o -name "*.yml" -o -name "*.yaml" -o -name "*.html" \) -exec sha256sum {} \; 2>/dev/null | sort | sha256sum | cut -d' ' -f1 || echo "notfound")
+
+    local config_hash
+    config_hash=$(echo "${TEMPLATE}_${THEME}_${COMPONENTS}_${MINIFY}_${ENVIRONMENT}_${BASE_URL}" | sha256sum | cut -d' ' -f1)
+
+    local hugo_version
+    hugo_version=$(hugo version 2>/dev/null | head -1 | cut -d' ' -f1 || echo "unknown")
+
+    local cache_key
+    cache_key=$(generate_build_cache_key "${template_hash}_${config_hash}" "$hugo_version" "$ENVIRONMENT" "$MINIFY")
+
+    log_verbose "Generated cache key: $cache_key"
+
+    # Check if cached build exists
+    if cache_exists "$cache_key" "l2"; then
+        log_info "Found cached build, retrieving..."
+        if cache_retrieve "$cache_key" "$OUTPUT" "l2"; then
+            log_success "Build restored from cache"
+            return 0
+        else
+            log_warning "Cache retrieval failed, proceeding with full build"
+            return 1
+        fi
+    else
+        log_verbose "No cached build found"
+        return 1
+    fi
+}
+
+# Function to store build in cache
+store_build_cache() {
+    if [[ "$ENABLE_CACHE" != "true" ]]; then
+        return 0
+    fi
+
+    log_info "Storing build in cache..."
+
+    # Generate same cache key as in check_build_cache
+    local template_hash
+    template_hash=$(find "$PROJECT_ROOT/templates/$TEMPLATE" -type f \( -name "*.md" -o -name "*.toml" -o -name "*.yml" -o -name "*.yaml" -o -name "*.html" \) -exec sha256sum {} \; 2>/dev/null | sort | sha256sum | cut -d' ' -f1 || echo "notfound")
+
+    local config_hash
+    config_hash=$(echo "${TEMPLATE}_${THEME}_${COMPONENTS}_${MINIFY}_${ENVIRONMENT}_${BASE_URL}" | sha256sum | cut -d' ' -f1)
+
+    local hugo_version
+    hugo_version=$(hugo version 2>/dev/null | head -1 | cut -d' ' -f1 || echo "unknown")
+
+    local cache_key
+    cache_key=$(generate_build_cache_key "${template_hash}_${config_hash}" "$hugo_version" "$ENVIRONMENT" "$MINIFY")
+
+    # Create metadata
+    local metadata
+    metadata=$(cat <<EOF
+{
+    "template": "$TEMPLATE",
+    "theme": "$THEME",
+    "components": "$COMPONENTS",
+    "environment": "$ENVIRONMENT",
+    "minify": $MINIFY,
+    "hugo_version": "$hugo_version",
+    "base_url": "$BASE_URL"
+}
+EOF
+    )
+
+    # Store build in cache
+    if cache_store "$cache_key" "$OUTPUT" "l2" "$metadata"; then
+        log_success "Build cached successfully"
+    else
+        log_warning "Failed to cache build"
+    fi
+}
+
 # Function to run Hugo build
 run_hugo_build() {
     log_info "Running Hugo build..."
@@ -614,6 +714,15 @@ show_build_summary() {
     [[ -n "$COMPONENTS" ]] && echo "   Components: $COMPONENTS"
     echo "   Environment: $ENVIRONMENT"
     echo "   Output: $OUTPUT"
+    if [[ "$ENABLE_CACHE" == "true" ]]; then
+        if [[ "$CACHE_HIT" == "true" ]]; then
+            echo "   Cache: ✅ Hit (restored from cache)"
+        else
+            echo "   Cache: ⚡ Miss (built from source, cached for future)"
+        fi
+    else
+        echo "   Cache: ❌ Disabled"
+    fi
 
     # Check build output (Hugo now outputs directly to OUTPUT directory)
     if [[ -d "$OUTPUT" ]]; then
@@ -749,6 +858,18 @@ parse_arguments() {
                 VERBOSE=true
                 shift
                 ;;
+            --no-cache)
+                ENABLE_CACHE=false
+                shift
+                ;;
+            --cache-clear)
+                CACHE_CLEAR=true
+                shift
+                ;;
+            --cache-stats)
+                CACHE_STATS=true
+                shift
+                ;;
             -h|--help)
                 show_usage
                 exit 0
@@ -767,6 +888,18 @@ parse_arguments() {
 main() {
     # Parse command line arguments
     parse_arguments "$@"
+
+    # Handle cache operations
+    if [[ "$CACHE_CLEAR" == "true" ]]; then
+        log_info "Clearing cache..."
+        clear_cache
+    fi
+
+    # Disable caching if requested
+    if [[ "$ENABLE_CACHE" == "false" ]]; then
+        export HUGO_TEMPLATE_CACHE_ENABLED=false
+        log_info "Intelligent caching disabled"
+    fi
 
     # Show header
     if [[ "$QUIET" != "true" ]]; then
@@ -822,16 +955,31 @@ main() {
     fi
     log_success "Hugo configuration update completed"
 
-    # Run Hugo build
-    log_info "Starting Hugo build..."
-    if ! run_hugo_build; then
-        log_error "Hugo build failed"
-        exit 1
+    # Check for cached build
+    if check_build_cache; then
+        CACHE_HIT=true
+        log_success "Build completed using cached data"
+    else
+        # Run Hugo build
+        log_info "Starting Hugo build..."
+        if ! run_hugo_build; then
+            log_error "Hugo build failed"
+            exit 1
+        fi
+        log_success "Hugo build completed"
+
+        # Store build in cache for future use
+        store_build_cache
     fi
-    log_success "Hugo build completed"
 
     # Show build summary
     show_build_summary
+
+    # Show cache statistics if requested
+    if [[ "$CACHE_STATS" == "true" || "$VERBOSE" == "true" ]]; then
+        echo ""
+        show_cache_stats
+    fi
 
     # Cleanup error handling system
     cleanup_error_handling
