@@ -14,7 +14,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Define logging functions if not already available
 if ! command -v log_debug &> /dev/null; then
-    log_debug() { [[ "${DEBUG:-false}" == "true" ]] && echo "🔍 $*" >&2; }
+    log_debug() { [[ "${DEBUG:-false}" == "true" ]] && echo "🔍 $*" >&2 || true; }
 fi
 if ! command -v log_info &> /dev/null; then
     log_info() { echo "ℹ️  $*"; }
@@ -380,6 +380,34 @@ clear_performance_history() {
     if [[ -f "$PERF_CURRENT_FILE" ]]; then
         rm -f "$PERF_CURRENT_FILE"
     fi
+}
+
+# Initialize performance session for build.sh integration
+init_performance_session() {
+    local template="$1"
+    local theme="$2"
+    local components="$3"
+    local environment="$4"
+    local cache_enabled="$5"
+    local parallel_enabled="$6"
+
+    init_performance_monitoring
+    start_build_measurement "$template" "$theme" "$components" "$environment" "$cache_enabled" "$parallel_enabled"
+}
+
+# Finalize performance session for build.sh integration
+finalize_performance_session() {
+    local cache_hit="${1:-false}"
+    local output_dir="${OUTPUT:-./site}"
+
+    end_build_measurement "$cache_hit" "$output_dir"
+    save_performance_data
+}
+
+# Show performance analysis for build.sh integration
+show_performance_analysis() {
+    analyze_current_build
+    generate_recommendations
 }
 
 # Main performance command interface

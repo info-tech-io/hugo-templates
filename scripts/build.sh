@@ -26,11 +26,20 @@ source "$SCRIPT_DIR/cache.sh" || {
     exit 1
 }
 
+# Load performance monitoring system
+source "$SCRIPT_DIR/performance.sh" || {
+    echo "FATAL: Cannot load performance monitoring system from $SCRIPT_DIR/performance.sh" >&2
+    exit 1
+}
+
 # Initialize error handling
 init_error_handling
 
 # Initialize cache system
 init_cache_system
+
+# Initialize performance monitoring system
+init_performance_monitoring
 
 # Legacy color definitions (maintained for backward compatibility)
 readonly RED='\033[0;31m'
@@ -63,6 +72,9 @@ CACHE_CLEAR=false
 CACHE_STATS=false
 CACHE_HIT=false
 ENABLE_PARALLEL=true
+ENABLE_PERFORMANCE_TRACKING=false
+PERFORMANCE_REPORT=false
+PERFORMANCE_HISTORY=false
 
 # Function to print colored output
 print_color() {
@@ -125,6 +137,9 @@ OPTIONS:
     --cache-clear              Clear all cache data before build
     --cache-stats              Show cache statistics after build
     --no-parallel              Disable parallel processing optimizations
+    --performance-track         Enable performance monitoring and tracking
+    --performance-report        Show detailed performance analysis after build
+    --performance-history       Display historical performance data
     -h, --help                  Show this help message
 
 EXAMPLES:
@@ -145,6 +160,11 @@ EXAMPLES:
 
     # Validate configuration only
     $0 --validate-only --verbose
+
+    # Performance optimization examples
+    $0 --template=minimal --performance-track --performance-report
+    $0 --cache-clear --no-parallel --performance-track
+    $0 --performance-history  # Show historical performance data
 
 AVAILABLE TEMPLATES:
 $(list_templates)
@@ -536,6 +556,9 @@ prepare_build_environment() {
     if [[ $template_result -eq 0 ]]; then
         # Choose parallel or sequential execution based on ENABLE_PARALLEL
         if [[ "$ENABLE_PARALLEL" == "true" ]]; then
+            # Initialize process tracking array
+            local copy_pids=()
+
             # Start parallel operations for theme, content, and submodules
             copy_theme_files &
             copy_pids+=($!)
@@ -848,6 +871,11 @@ show_build_summary() {
     else
         echo "   Parallel Processing: ❌ Disabled"
     fi
+    if [[ "$ENABLE_PERFORMANCE_TRACKING" == "true" ]]; then
+        echo "   Performance Tracking: ✅ Enabled"
+    else
+        echo "   Performance Tracking: ❌ Disabled"
+    fi
 
     # Check build output (Hugo now outputs directly to OUTPUT directory)
     if [[ -d "$OUTPUT" ]]; then
@@ -855,7 +883,7 @@ show_build_summary() {
         local size="unknown"
 
         # Safe file counting with error handling
-        if ! file_count=$(safe_execute "find '$OUTPUT' -type f ! -path '*/.git/*' 2>/dev/null | wc -l" "counting generated files" "true"); then
+        if ! file_count=$(find "$OUTPUT" -type f ! -path '*/.git/*' 2>/dev/null | wc -l); then
             log_warning "Could not count generated files in $OUTPUT"
             file_count="unknown"
         fi
@@ -864,7 +892,7 @@ show_build_summary() {
 
         # Safe size calculation
         if command -v du >/dev/null 2>&1; then
-            if ! size=$(safe_execute "du -sh '$OUTPUT' 2>/dev/null | cut -f1" "calculating directory size" "true"); then
+            if ! size=$(du -sh "$OUTPUT" 2>/dev/null | cut -f1); then
                 size="unknown"
             fi
         fi
@@ -876,7 +904,7 @@ show_build_summary() {
             log_info "Generated files:"
 
             local file_list
-            if file_list=$(safe_execute "find '$OUTPUT' -type f ! -path '*/.git/*' 2>/dev/null | head -10" "listing generated files" "true"); then
+            if file_list=$(find "$OUTPUT" -type f ! -path '*/.git/*' 2>/dev/null | head -10); then
                 echo "$file_list" | sed 's|^|   |'
                 if [[ $file_count -gt 10 ]]; then
                     echo "   ... and $((file_count - 10)) more files"
@@ -999,6 +1027,18 @@ parse_arguments() {
                 ENABLE_PARALLEL=false
                 shift
                 ;;
+            --performance-track)
+                ENABLE_PERFORMANCE_TRACKING=true
+                shift
+                ;;
+            --performance-report)
+                PERFORMANCE_REPORT=true
+                shift
+                ;;
+            --performance-history)
+                PERFORMANCE_HISTORY=true
+                shift
+                ;;
             -h|--help)
                 show_usage
                 exit 0
@@ -1028,6 +1068,18 @@ main() {
     if [[ "$ENABLE_CACHE" == "false" ]]; then
         export HUGO_TEMPLATE_CACHE_ENABLED=false
         log_info "Intelligent caching disabled"
+    fi
+
+    # Handle performance history request
+    if [[ "$PERFORMANCE_HISTORY" == "true" ]]; then
+        show_performance_history
+        exit 0
+    fi
+
+    # Initialize performance session if tracking is enabled
+    if [[ "$ENABLE_PERFORMANCE_TRACKING" == "true" ]]; then
+        init_performance_session "$TEMPLATE" "$THEME" "$COMPONENTS" "$ENVIRONMENT" "$ENABLE_CACHE" "$ENABLE_PARALLEL"
+        log_verbose "Performance tracking initialized"
     fi
 
     # Show header
@@ -1108,6 +1160,16 @@ main() {
     if [[ "$CACHE_STATS" == "true" || "$VERBOSE" == "true" ]]; then
         echo ""
         show_cache_stats
+    fi
+
+    # Finalize performance session and show reports if enabled
+    if [[ "$ENABLE_PERFORMANCE_TRACKING" == "true" ]]; then
+        finalize_performance_session "$CACHE_HIT"
+
+        if [[ "$PERFORMANCE_REPORT" == "true" || "$VERBOSE" == "true" ]]; then
+            echo ""
+            show_performance_analysis
+        fi
     fi
 
     # Cleanup error handling system
