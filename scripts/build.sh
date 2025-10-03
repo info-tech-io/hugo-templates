@@ -726,7 +726,7 @@ check_build_cache() {
     template_hash=$(find "$PROJECT_ROOT/templates/$TEMPLATE" -type f \( -name "*.md" -o -name "*.toml" -o -name "*.yml" -o -name "*.yaml" -o -name "*.html" \) -exec sha256sum {} \; 2>/dev/null | sort | sha256sum | cut -d' ' -f1 || echo "notfound")
 
     local config_hash
-    config_hash=$(echo "${TEMPLATE}_${THEME}_${COMPONENTS}_${MINIFY}_${ENVIRONMENT}_${BASE_URL}" | sha256sum | cut -d' ' -f1)
+    config_hash=$(echo "${TEMPLATE}_${THEME}_${COMPONENTS}_${MINIFY}_${ENVIRONMENT}_${BASE_URL}_${CONTENT}" | sha256sum | cut -d' ' -f1)
 
     local hugo_version
     hugo_version=$(hugo version 2>/dev/null | head -1 | cut -d' ' -f1 || echo "unknown")
@@ -765,7 +765,7 @@ store_build_cache() {
     template_hash=$(find "$PROJECT_ROOT/templates/$TEMPLATE" -type f \( -name "*.md" -o -name "*.toml" -o -name "*.yml" -o -name "*.yaml" -o -name "*.html" \) -exec sha256sum {} \; 2>/dev/null | sort | sha256sum | cut -d' ' -f1 || echo "notfound")
 
     local config_hash
-    config_hash=$(echo "${TEMPLATE}_${THEME}_${COMPONENTS}_${MINIFY}_${ENVIRONMENT}_${BASE_URL}" | sha256sum | cut -d' ' -f1)
+    config_hash=$(echo "${TEMPLATE}_${THEME}_${COMPONENTS}_${MINIFY}_${ENVIRONMENT}_${BASE_URL}_${CONTENT}" | sha256sum | cut -d' ' -f1)
 
     local hugo_version
     hugo_version=$(hugo version 2>/dev/null | head -1 | cut -d' ' -f1 || echo "unknown")
