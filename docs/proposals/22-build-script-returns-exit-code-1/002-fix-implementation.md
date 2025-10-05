@@ -112,9 +112,86 @@ cleanup_error_handling() {
 
 ## Implementation Steps
 
+### Step 2.0: Audit All Functions for Similar Issues
+
+**Objective**: Identify all functions with potential implicit return code problems
+
+**Rationale**: The bug in `cleanup_error_handling()` could exist in other functions. We should find and fix all similar cases to prevent future issues.
+
+**Action**: Systematically check all functions in error-handling.sh and build.sh
+
+**Analysis Procedure**:
+```bash
+# Find all function definitions in error-handling.sh
+grep -n "^[a-zA-Z_][a-zA-Z0-9_]*() {" scripts/error-handling.sh
+
+# Find all function definitions in build.sh
+grep -n "^[a-zA-Z_][a-zA-Z0-9_]*() {" scripts/build.sh
+
+# For each function, check:
+# 1. Does it end with a conditional statement (if/case)?
+# 2. Is there an explicit return statement?
+# 3. Could the last command fail in normal scenarios?
+```
+
+**Functions to Check**:
+
+1. **error-handling.sh**:
+   - `init_error_handling()` - Check if has explicit return
+   - `cleanup_error_handling()` - **KNOWN BUG** - fix this
+   - `enter_function()` - Check last command
+   - `exit_function()` - Check last command
+   - `set_error_context()` - Check last command
+   - `clear_error_context()` - Check last command
+   - All `log_*` functions - Check return codes
+   - `safe_execute()` - Check error handling
+   - `preserve_error_state()` - Check last command
+
+2. **build.sh**:
+   - `main()` - Check if explicit return/exit after cleanup_error_handling
+   - All helper functions called at end of execution chains
+   - Functions that validate/check conditions
+
+**Risk Assessment for Each Function**:
+
+| Function | Last Statement Type | Has Explicit Return? | Risk Level |
+|----------|-------------------|---------------------|------------|
+| cleanup_error_handling | Conditional (if) | ❌ NO | 🔴 HIGH |
+| init_error_handling | TBD | TBD | ? |
+| Other functions | TBD | TBD | ? |
+
+**What to Look For**:
+- Functions ending with `if [[ condition ]]; then ... fi` without return
+- Functions ending with test commands `[[ ... ]]` or `test`
+- Functions ending with commands that can fail (grep, find, etc.)
+- Functions called at critical points (end of main, cleanup, finalization)
+
+**Fix Priority**:
+1. **Critical**: Functions called at end of main() or script execution
+2. **High**: Functions in error handling/cleanup paths
+3. **Medium**: Utility functions that could affect exit codes
+4. **Low**: Functions with explicit callers checking return codes
+
+**Verification**:
+```bash
+# For each suspect function, trace usage:
+grep -n "function_name" scripts/*.sh
+
+# Check if return code is checked by callers:
+grep -A 2 "function_name" scripts/*.sh | grep -E "if|&&|\|\||$\?"
+```
+
+**Success Criteria**:
+- ✅ All functions audited and documented
+- ✅ Risk level assigned to each function
+- ✅ List of functions needing fixes identified
+- ✅ Fixes prioritized by risk level
+
+**Deliverable**: Table of all functions with risk assessment in 002-progress.md
+
 ### Step 2.1: Implement the Fix
 
-**Action**: Modify `scripts/error-handling.sh` line 457
+**Action**: Modify `scripts/error-handling.sh` line 457 (and any other functions found in Step 2.0)
 
 **Implementation**:
 ```bash
@@ -341,6 +418,9 @@ git push origin main
 | Cache system affected | Very Low (1%) | Medium | Test both cached and non-cached builds |
 | Other callers broken | Very Low (1%) | Medium | Grep for all cleanup_error_handling calls |
 | Workflow still fails | Low (5%) | High | Rollback plan ready |
+| **Additional functions have same bug** | Medium (30%) | Medium | **Step 2.0: Full function audit** |
+| Multiple fixes introduce conflicts | Low (10%) | Medium | Fix one at a time, test each |
+| Miss some problematic functions | Low (15%) | Medium | Systematic audit with checklist |
 
 ## Success Metrics
 
@@ -362,41 +442,50 @@ git push origin main
 
 | Step | Duration | Status |
 |------|----------|--------|
-| Plan creation | 15 min | This document |
-| Fix implementation | 2 min | Pending |
-| Local testing | 10 min | Pending |
-| Push to GitHub | 2 min | Pending |
-| Workflow testing | 5 min | Pending |
+| Plan creation | 20 min | This document |
+| **Step 2.0: Function audit** | **15 min** | **Pending** |
+| Step 2.1: Fix implementation | 5 min | Pending |
+| Step 2.2: Local testing | 10 min | Pending |
+| Step 2.3: Workflow testing | 5 min | Pending |
 | Validation | 5 min | Pending |
 | Documentation | 10 min | Pending |
-| **Total** | **~50 min** | Pending |
+| **Total** | **~70 min** | Pending |
 
 ## Deliverables
 
 ### Code Changes
-- Modified: `scripts/error-handling.sh` (1 line added)
-- No other files changed
+- Modified: `scripts/error-handling.sh` (cleanup_error_handling + any other functions from audit)
+- Possibly: `scripts/build.sh` (if main() or other functions need fixes)
+- Note: Exact number of changes depends on Step 2.0 audit results
 
 ### Documentation
-- [x] This file (`002-fix-implementation.md`) - fix plan
-- [ ] `002-progress.md` - execution results
+- [x] This file (`002-fix-implementation.md`) - fix plan with audit step
+- [ ] `002-progress.md` - execution results including:
+  - **Function audit table** with risk assessment
+  - List of all functions requiring fixes
+  - Test results for each fix
 - [ ] Updated `progress.md` - Stage 2 status
 
 ### Git Commits
-1. **Commit 4**: Stage 2 plan (this file)
-2. **Commit 5**: Fix implementation
-3. **Commit 6**: Stage 2 progress update
+1. **Commit 4**: Stage 2 plan (this file) - DONE
+2. **Commit 5**: Update Stage 2 plan with audit step - PENDING
+3. **Commit 6**: Fix implementation (cleanup_error_handling + other functions)
+4. **Commit 7**: Stage 2 progress update
 
 ## Definition of Done
 
 Stage 2 is complete when:
 
-- ✅ Fix implemented in error-handling.sh
+- ✅ **Function audit completed** (Step 2.0)
+- ✅ **All problematic functions identified** and documented
+- ✅ Fix implemented in error-handling.sh (cleanup_error_handling + others)
+- ✅ Fixes implemented in build.sh (if needed)
 - ✅ Local tests pass (all 3 test scenarios)
 - ✅ Code pushed to GitHub
 - ✅ Workflow run succeeds with exit code 0
 - ✅ Site deployed to GitHub Pages
 - ✅ No regressions in error handling
+- ✅ **Function audit table** in 002-progress.md
 - ✅ Documentation updated (002-progress.md)
 - ✅ progress.md diagram updated (Stage 2 ✅)
 - ✅ Ready to close Issue #22
