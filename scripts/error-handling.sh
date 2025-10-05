@@ -146,6 +146,9 @@ log_structured() {
     if [[ -n "$LOG_FILE" ]]; then
         echo "$log_entry" >> "$LOG_FILE" || true
     fi
+
+    # Explicit return for successful logging
+    return 0
 }
 
 # Convenience logging functions (maintain backward compatibility)
@@ -258,6 +261,9 @@ EOF
         log_structured "INFO" "STATE" "Error state available for artifact collection"
         echo "::notice::Error diagnostics saved to $error_file"
     fi
+
+    # Explicit return for successful state preservation
+    return 0
 }
 
 # Enhanced command execution with error handling
@@ -435,6 +441,9 @@ init_error_handling() {
     fi
 
     log_debug "Error handling system initialized"
+
+    # Explicit return for successful initialization
+    return 0
 }
 
 # Cleanup function
@@ -454,6 +463,9 @@ cleanup_error_handling() {
     if [[ $ERROR_COUNT -eq 0 ]] && [[ -f "$ERROR_STATE_FILE" ]]; then
         rm -f "$ERROR_STATE_FILE" 2>/dev/null || true
     fi
+
+    # Explicit return for successful cleanup
+    return 0
 }
 
 # Export functions for use in main script
