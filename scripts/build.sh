@@ -104,8 +104,9 @@ log_error() {
 }
 
 log_verbose() {
-    [[ "$VERBOSE" == "true" ]] || return
+    [[ "$VERBOSE" == "true" ]] || return 0
     print_color "$GRAY" "🔍 $*"
+    return 0
 }
 
 # Function to show usage
@@ -1181,3 +1182,7 @@ main() {
 
 # Run main function with all arguments
 main "$@"
+
+# Explicitly exit with success code
+# (Required because bash scripts need explicit exit, not just function return)
+exit 0

@@ -44,6 +44,7 @@ enter_function() {
     ERROR_FUNCTION="$func_name"
     ERROR_LINE="${BASH_LINENO[1]}"
     [[ "${DEBUG_MODE:-false}" == "true" ]] && log_debug "ENTER: $func_name:$ERROR_LINE"
+    return 0
 }
 
 exit_function() {
@@ -56,6 +57,7 @@ exit_function() {
 set_error_context() {
     ERROR_CONTEXT="$1"
     [[ "${DEBUG_MODE:-false}" == "true" ]] && log_debug "CONTEXT: $ERROR_CONTEXT"
+    return 0
 }
 
 clear_error_context() {
@@ -180,6 +182,7 @@ log_fatal() {
 
 log_verbose() {
     [[ "${VERBOSE:-false}" == "true" ]] && log_debug "$*"
+    return 0
 }
 
 # Specialized logging functions for different categories
