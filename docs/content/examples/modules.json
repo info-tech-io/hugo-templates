@@ -1,0 +1,77 @@
+{
+  "federation": {
+    "name": "InfoTech.io Documentation Federation",
+    "baseURL": "https://info-tech-io.github.io",
+    "strategy": "download-merge-deploy",
+    "build_settings": {
+      "parallel_builds": false,
+      "preserve_base_site": true,
+      "css_path_resolution": true
+    }
+  },
+  "modules": [
+    {
+      "name": "corporate-site",
+      "source": {
+        "repository": "https://github.com/info-tech-io/info-tech",
+        "path": "docs",
+        "branch": "main"
+      },
+      "module_json": "docs/module.json",
+      "destination": "/",
+      "css_path_prefix": "/",
+      "overrides": {
+        "template": "default",
+        "components": []
+      }
+    },
+    {
+      "name": "quiz-docs",
+      "source": {
+        "repository": "https://github.com/info-tech-io/quiz",
+        "path": "docs",
+        "branch": "main"
+      },
+      "module_json": "docs/module.json",
+      "destination": "/quiz/",
+      "css_path_prefix": "/quiz/",
+      "overrides": {}
+    },
+    {
+      "name": "hugo-templates-docs",
+      "source": {
+        "repository": "https://github.com/info-tech-io/hugo-templates",
+        "path": "docs",
+        "branch": "main"
+      },
+      "module_json": "docs/module.json",
+      "destination": "/hugo-templates/",
+      "css_path_prefix": "/hugo-templates/",
+      "overrides": {}
+    },
+    {
+      "name": "web-terminal-docs",
+      "source": {
+        "repository": "https://github.com/info-tech-io/web-terminal",
+        "path": "docs",
+        "branch": "main"
+      },
+      "module_json": "docs/module.json",
+      "destination": "/web-terminal/",
+      "css_path_prefix": "/web-terminal/",
+      "overrides": {}
+    },
+    {
+      "name": "info-tech-cli-docs",
+      "source": {
+        "repository": "https://github.com/info-tech-io/info-tech-cli",
+        "path": "docs",
+        "branch": "main"
+      },
+      "module_json": "docs/module.json",
+      "destination": "/info-tech-cli/",
+      "css_path_prefix": "/info-tech-cli/",
+      "overrides": {}
+    }
+  ]
+}
