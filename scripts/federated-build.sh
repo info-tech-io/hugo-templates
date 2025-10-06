@@ -566,17 +566,305 @@ EOF
     echo ""
 }
 
+# ============================================================================
+# STAGE 2: BUILD ORCHESTRATION
+# ============================================================================
+
+# Download module source from repository
+# Sets global variable: MODULE_WORK_DIR
+download_module_source() {
+    local module_index=$1
+    local module_name_var="MODULE_${module_index}_NAME"
+    local module_repo_var="MODULE_${module_index}_REPO"
+    local module_path_var="MODULE_${module_index}_PATH"
+    local module_branch_var="MODULE_${module_index}_BRANCH"
+
+    local module_name="${!module_name_var}"
+    local module_repo="${!module_repo_var:-}"
+    local module_path="${!module_path_var:-.}"
+    local module_branch="${!module_branch_var:-main}"
+
+    enter_function "download_module_source"
+    set_error_context "Downloading source for module '$module_name'"
+
+    # Create module working directory
+    if [[ "$DRY_RUN" == "true" ]]; then
+        MODULE_WORK_DIR="/tmp/dry-run/module-$module_index-$module_name"
+        log_info "[DRY RUN] Would download: $module_repo ($module_branch) -> $MODULE_WORK_DIR"
+        exit_function
+        return 0
+    fi
+
+    MODULE_WORK_DIR="$TEMP_DIR/module-$module_index-$module_name"
+
+    mkdir -p "$MODULE_WORK_DIR" || {
+        log_io_error "Failed to create module work directory: $MODULE_WORK_DIR"
+        exit_function
+        return 1
+    }
+
+    # If repository is specified and not "local", clone it
+    if [[ -n "$module_repo" ]] && [[ "$module_repo" != "local" ]]; then
+        log_info "Cloning $module_name from $module_repo (branch: $module_branch)"
+
+        local clone_dir="$MODULE_WORK_DIR/source"
+
+        if ! git clone --depth 1 --branch "$module_branch" "$module_repo" "$clone_dir" 2>&1 | grep -v "^Cloning" || true; then
+            log_error "Failed to clone repository: $module_repo"
+            exit_function
+            return 1
+        fi
+
+        # Extract the specific path if specified
+        if [[ "$module_path" != "." ]]; then
+            local source_path="$clone_dir/$module_path"
+            if [[ ! -d "$source_path" ]]; then
+                log_error "Specified path not found in repository: $module_path"
+                exit_function
+                return 1
+            fi
+
+            # Move the specific path to module work directory
+            cp -r "$source_path"/* "$MODULE_WORK_DIR/" || {
+                log_error "Failed to extract path from repository: $module_path"
+                exit_function
+                return 1
+            }
+
+            # Clean up clone directory
+            rm -rf "$clone_dir"
+        else
+            # Move everything from clone to work directory
+            mv "$clone_dir"/* "$MODULE_WORK_DIR/" 2>/dev/null || true
+            mv "$clone_dir"/.* "$MODULE_WORK_DIR/" 2>/dev/null || true
+            rm -rf "$clone_dir"
+        fi
+
+        log_success "Downloaded: $module_name"
+    else
+        log_warning "No repository specified for $module_name - using local configuration"
+    fi
+
+    exit_function
+    return 0
+}
+
+# Build a single module
+# Takes module_index and module_work_dir as arguments
+# Sets global variable: MODULE_OUTPUT_DIR
+build_module() {
+    local module_index=$1
+    local module_work_dir=$2
+
+    local module_name_var="MODULE_${module_index}_NAME"
+    local module_config_var="MODULE_${module_index}_CONFIG"
+    local module_dest_var="MODULE_${module_index}_DESTINATION"
+
+    local module_name="${!module_name_var}"
+    local module_config="${!module_config_var:-module.json}"
+    local module_dest="${!module_dest_var}"
+
+    enter_function "build_module"
+    set_error_context "Building module '$module_name'"
+
+    log_federation "Building module: $module_name"
+
+    # Prepare output directory for this module
+    if [[ "$DRY_RUN" == "true" ]]; then
+        MODULE_OUTPUT_DIR="/tmp/dry-run/output-$module_index-$module_name"
+        log_info "[DRY RUN] Would build module: $module_name"
+        log_info "[DRY RUN]   Config: $module_config"
+        log_info "[DRY RUN]   Output: $MODULE_OUTPUT_DIR"
+        log_info "[DRY RUN]   Destination: $module_dest"
+        SUCCESSFUL_BUILDS=$((SUCCESSFUL_BUILDS + 1))
+        exit_function
+        return 0
+    fi
+
+    MODULE_OUTPUT_DIR="$TEMP_DIR/output-$module_index-$module_name"
+
+    mkdir -p "$MODULE_OUTPUT_DIR" || {
+        log_io_error "Failed to create module output directory: $MODULE_OUTPUT_DIR"
+        exit_function
+        return 1
+    }
+
+    # Prepare build.sh parameters
+    local build_params=()
+
+    # Add config path (relative to module work directory)
+    if [[ -f "$module_work_dir/$module_config" ]]; then
+        build_params+=("--config=$module_work_dir/$module_config")
+    else
+        log_warning "Module config not found: $module_work_dir/$module_config, using defaults"
+    fi
+
+    # Add output directory
+    build_params+=("--output=$MODULE_OUTPUT_DIR")
+
+    # Add content directory (if module work directory has content)
+    if [[ -d "$module_work_dir/content" ]]; then
+        build_params+=("--content=$module_work_dir/content")
+    fi
+
+    # Add verbosity settings
+    if [[ "$VERBOSE" == "true" ]]; then
+        build_params+=("--verbose")
+    fi
+
+    if [[ "$QUIET" == "true" ]]; then
+        build_params+=("--quiet")
+    fi
+
+    # Add performance tracking if enabled
+    if [[ "$ENABLE_PERFORMANCE_TRACKING" == "true" ]]; then
+        build_params+=("--performance-track")
+    fi
+
+    log_verbose "Executing: build.sh ${build_params[*]}"
+
+    # Execute build.sh
+    local build_start
+    build_start=$(date +%s)
+
+    if "$SCRIPT_DIR/build.sh" "${build_params[@]}"; then
+        local build_end
+        build_end=$(date +%s)
+        local build_time=$((build_end - build_start))
+
+        log_success "Built $module_name in ${build_time}s"
+        SUCCESSFUL_BUILDS=$((SUCCESSFUL_BUILDS + 1))
+
+        exit_function
+        return 0
+    else
+        log_error "Failed to build module: $module_name"
+        FAILED_BUILDS=$((FAILED_BUILDS + 1))
+
+        exit_function
+        return 1
+    fi
+}
+
+# Orchestrate builds for all modules
+orchestrate_builds() {
+    enter_function "orchestrate_builds"
+    set_error_context "Orchestrating federation builds"
+
+    log_federation "Starting build orchestration for $MODULES_COUNT module(s)"
+
+    # Arrays to track module states
+    declare -a module_work_dirs
+    declare -a module_output_dirs
+    declare -a module_build_status
+
+    # Sequential build execution
+    for ((i=0; i<MODULES_COUNT; i++)); do
+        local module_name_var="MODULE_${i}_NAME"
+        local module_name="${!module_name_var}"
+
+        log_info "Processing module $((i+1))/$MODULES_COUNT: $module_name"
+
+        # Download module source
+        if download_module_source "$i"; then
+            module_work_dirs[$i]="$MODULE_WORK_DIR"
+            log_verbose "Module $module_name source: $MODULE_WORK_DIR"
+        else
+            log_error "Failed to download source for module: $module_name"
+            module_build_status[$i]="download_failed"
+            FAILED_BUILDS=$((FAILED_BUILDS + 1))
+            continue
+        fi
+
+        # Build module
+        if build_module "$i" "$MODULE_WORK_DIR"; then
+            module_output_dirs[$i]="$MODULE_OUTPUT_DIR"
+            module_build_status[$i]="success"
+        else
+            module_build_status[$i]="build_failed"
+            # Continue with other modules even if one fails
+        fi
+    done
+
+    # Check if at least one module succeeded
+    if [[ $SUCCESSFUL_BUILDS -eq 0 ]]; then
+        log_error "All module builds failed"
+        exit_function
+        return 1
+    fi
+
+    if [[ $FAILED_BUILDS -gt 0 ]]; then
+        log_warning "Some modules failed to build ($FAILED_BUILDS/$MODULES_COUNT)"
+    else
+        log_success "All modules built successfully ($SUCCESSFUL_BUILDS/$MODULES_COUNT)"
+    fi
+
+    # Export module output directories for Stage 3
+    export MODULE_OUTPUT_DIRS="${module_output_dirs[*]}"
+    export MODULE_BUILD_STATUS="${module_build_status[*]}"
+
+    exit_function
+    return 0
+}
+
+# Generate build report
+generate_build_report() {
+    cat << EOF
+
+╔══════════════════════════════════════════════════════════════╗
+║                  Federation Build Report                     ║
+╚══════════════════════════════════════════════════════════════╝
+
+EOF
+
+    print_color "$CYAN" "Federation: ${FEDERATION_NAME:-Unnamed}"
+    print_color "$BLUE" "Modules:    $MODULES_COUNT"
+    echo ""
+
+    if [[ $SUCCESSFUL_BUILDS -gt 0 ]]; then
+        print_color "$GREEN" "✅ Successful: $SUCCESSFUL_BUILDS"
+    fi
+
+    if [[ $FAILED_BUILDS -gt 0 ]]; then
+        print_color "$RED" "❌ Failed:     $FAILED_BUILDS"
+    fi
+
+    echo ""
+
+    # Per-module status
+    if [[ -n "${MODULE_BUILD_STATUS:-}" ]]; then
+        IFS=' ' read -ra statuses <<< "$MODULE_BUILD_STATUS"
+        for ((i=0; i<MODULES_COUNT; i++)); do
+            local module_name_var="MODULE_${i}_NAME"
+            local module_name="${!module_name_var}"
+            local status="${statuses[$i]:-unknown}"
+
+            case "$status" in
+                success)
+                    print_color "$GREEN" "  ✅ $module_name"
+                    ;;
+                build_failed)
+                    print_color "$RED" "  ❌ $module_name (build failed)"
+                    ;;
+                download_failed)
+                    print_color "$RED" "  ❌ $module_name (download failed)"
+                    ;;
+                *)
+                    print_color "$YELLOW" "  ⚠️  $module_name (unknown)"
+                    ;;
+            esac
+        done
+    fi
+
+    echo ""
+}
+
 # Main execution function
 main() {
     enter_function "main"
 
     # Parse arguments
     parse_arguments "$@"
-
-    # Show header
-    if [[ "$QUIET" == "false" ]]; then
-        show_federation_summary
-    fi
 
     # Load and validate configuration
     if ! load_modules_config; then
@@ -587,6 +875,11 @@ main() {
     if ! validate_configuration; then
         log_error "Configuration validation failed"
         exit 1
+    fi
+
+    # Show header (after config loaded so we have module count)
+    if [[ "$QUIET" == "false" ]]; then
+        show_federation_summary
     fi
 
     # Exit if validation-only mode
@@ -601,14 +894,19 @@ main() {
         exit 1
     fi
 
-    # TODO: Stage 2 - Build orchestration will be implemented here
-    log_info "Build orchestration not yet implemented (Stage 2)"
+    # Stage 2: Build orchestration
+    if ! orchestrate_builds; then
+        log_error "Build orchestration failed"
+        exit 1
+    fi
 
     # TODO: Stage 3 - Output management will be implemented here
     log_info "Output management not yet implemented (Stage 3)"
 
-    log_success "Federation build script initialized successfully"
-    log_info "Stage 1 complete - foundation ready for Stage 2 implementation"
+    # Generate final build report
+    generate_build_report
+
+    log_success "Federation build completed successfully"
 
     exit_function
     return 0
