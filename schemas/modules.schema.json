@@ -17,7 +17,7 @@
         "name": {
           "type": "string",
           "description": "Human-readable name for this federation",
-          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9 _-]*[a-zA-Z0-9]$",
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9 ._-]*[a-zA-Z0-9]$",
           "minLength": 3,
           "maxLength": 100,
           "examples": [
@@ -179,10 +179,11 @@
           },
           "css_path_prefix": {
             "type": "string",
-            "description": "CSS path prefix for theme assets in subdirectory deployments",
-            "pattern": "^/[a-zA-Z0-9/_-]*$",
+            "description": "CSS path prefix for theme assets in subdirectory deployments (empty string or path starting with /)",
+            "pattern": "^(/[a-zA-Z0-9/_-]*)?$",
             "default": "",
             "examples": [
+              "",
               "/",
               "/quiz",
               "/docs/hugo-templates"
