@@ -1,13 +1,13 @@
 {
-  "$schema": "./schemas/modules.schema.json",
+  "$schema": "../../schemas/modules.schema.json",
   "federation": {
-    "name": "Test Federation",
+    "name": "Simple Test Federation",
     "baseURL": "http://localhost:1313",
     "strategy": "download-merge-deploy"
   },
   "modules": [
     {
-      "name": "test-module-1",
+      "name": "main-site",
       "source": {
         "repository": "local",
         "path": "./docs",
@@ -18,7 +18,7 @@
       "css_path_prefix": ""
     },
     {
-      "name": "test-module-2",
+      "name": "sub-project",
       "source": {
         "repository": "local",
         "path": "./examples",

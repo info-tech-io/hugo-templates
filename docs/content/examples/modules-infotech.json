@@ -1,12 +1,13 @@
 {
+  "$schema": "../../schemas/modules.schema.json",
   "federation": {
     "name": "InfoTech.io Documentation Federation",
     "baseURL": "https://info-tech-io.github.io",
     "strategy": "download-merge-deploy",
     "build_settings": {
-      "parallel_builds": false,
-      "preserve_base_site": true,
-      "css_path_resolution": true
+      "parallel": false,
+      "cache_enabled": true,
+      "performance_tracking": true
     }
   },
   "modules": [
@@ -17,11 +18,10 @@
         "path": "docs",
         "branch": "main"
       },
-      "module_json": "docs/module.json",
+      "module_json": "module.json",
       "destination": "/",
-      "css_path_prefix": "/",
+      "css_path_prefix": "",
       "overrides": {
-        "template": "default",
         "components": []
       }
     },
@@ -32,10 +32,9 @@
         "path": "docs",
         "branch": "main"
       },
-      "module_json": "docs/module.json",
+      "module_json": "module.json",
       "destination": "/quiz/",
-      "css_path_prefix": "/quiz/",
-      "overrides": {}
+      "css_path_prefix": "/quiz"
     },
     {
       "name": "hugo-templates-docs",
@@ -44,10 +43,9 @@
         "path": "docs",
         "branch": "main"
       },
-      "module_json": "docs/module.json",
+      "module_json": "module.json",
       "destination": "/hugo-templates/",
-      "css_path_prefix": "/hugo-templates/",
-      "overrides": {}
+      "css_path_prefix": "/hugo-templates"
     },
     {
       "name": "web-terminal-docs",
@@ -56,10 +54,9 @@
         "path": "docs",
         "branch": "main"
       },
-      "module_json": "docs/module.json",
+      "module_json": "module.json",
       "destination": "/web-terminal/",
-      "css_path_prefix": "/web-terminal/",
-      "overrides": {}
+      "css_path_prefix": "/web-terminal"
     },
     {
       "name": "info-tech-cli-docs",
@@ -68,10 +65,9 @@
         "path": "docs",
         "branch": "main"
       },
-      "module_json": "docs/module.json",
+      "module_json": "module.json",
       "destination": "/info-tech-cli/",
-      "css_path_prefix": "/info-tech-cli/",
-      "overrides": {}
+      "css_path_prefix": "/info-tech-cli"
     }
   ]
 }

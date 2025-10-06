@@ -1,0 +1,76 @@
+{
+  "$schema": "../../schemas/modules.schema.json",
+  "federation": {
+    "name": "Advanced Federation Example",
+    "baseURL": "https://example.com",
+    "strategy": "download-merge-deploy",
+    "build_settings": {
+      "parallel": true,
+      "max_parallel_builds": 5,
+      "cache_enabled": true,
+      "performance_tracking": true,
+      "fail_fast": false
+    }
+  },
+  "modules": [
+    {
+      "name": "corporate-site",
+      "source": {
+        "repository": "https://github.com/example/corporate",
+        "path": "docs",
+        "branch": "main"
+      },
+      "module_json": "module.json",
+      "destination": "/",
+      "css_path_prefix": "",
+      "overrides": {
+        "baseURL": "https://example.com",
+        "theme": "compose",
+        "title": "Example Corporation"
+      },
+      "build_options": {
+        "cache_enabled": true,
+        "skip_on_error": false,
+        "build_timeout": 600,
+        "priority": 100
+      }
+    },
+    {
+      "name": "product-docs",
+      "source": {
+        "repository": "https://github.com/example/product-a",
+        "path": "docs",
+        "branch": "main"
+      },
+      "module_json": "docs/module.json",
+      "destination": "/products/product-a/",
+      "css_path_prefix": "/products/product-a",
+      "overrides": {
+        "baseURL": "https://example.com",
+        "components": ["quiz-engine", "code-highlighter"]
+      },
+      "build_options": {
+        "cache_enabled": true,
+        "skip_on_error": true,
+        "priority": 75
+      }
+    },
+    {
+      "name": "api-reference",
+      "source": {
+        "repository": "https://github.com/example/api-docs",
+        "path": "content",
+        "branch": "develop"
+      },
+      "module_json": "module.json",
+      "destination": "/api/",
+      "css_path_prefix": "/api",
+      "build_options": {
+        "cache_enabled": false,
+        "skip_on_error": true,
+        "build_timeout": 300,
+        "priority": 50
+      }
+    }
+  ]
+}

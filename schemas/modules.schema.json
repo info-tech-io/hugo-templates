@@ -1,0 +1,296 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/info-tech-io/hugo-templates/schemas/modules.schema.json",
+  "title": "Hugo Templates Federated Build Configuration",
+  "description": "Schema for modules.json - configuration file for federated GitHub Pages builds",
+  "version": "1.0.0",
+  "type": "object",
+  "required": ["federation", "modules"],
+  "additionalProperties": false,
+  "properties": {
+    "federation": {
+      "type": "object",
+      "description": "Federation-level configuration for the entire build",
+      "required": ["name", "baseURL", "strategy"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Human-readable name for this federation",
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9 _-]*[a-zA-Z0-9]$",
+          "minLength": 3,
+          "maxLength": 100,
+          "examples": [
+            "InfoTech.io Pages",
+            "Corporate Documentation",
+            "Multi-Project Federation"
+          ]
+        },
+        "baseURL": {
+          "type": "string",
+          "description": "Base URL for the federation deployment (must not end with slash)",
+          "format": "uri",
+          "pattern": "^https?://[^/]+[^/]$",
+          "examples": [
+            "https://info-tech-io.github.io",
+            "https://example.com",
+            "http://localhost:1313"
+          ]
+        },
+        "strategy": {
+          "type": "string",
+          "description": "Federation build strategy",
+          "enum": ["download-merge-deploy", "preserve-base-site"],
+          "default": "download-merge-deploy",
+          "examples": ["download-merge-deploy"]
+        },
+        "build_settings": {
+          "type": "object",
+          "description": "Optional federation-wide build settings",
+          "additionalProperties": false,
+          "properties": {
+            "parallel": {
+              "type": "boolean",
+              "description": "Enable parallel module builds (experimental)",
+              "default": false
+            },
+            "max_parallel_builds": {
+              "type": "integer",
+              "description": "Maximum number of parallel builds",
+              "minimum": 1,
+              "maximum": 10,
+              "default": 3
+            },
+            "cache_enabled": {
+              "type": "boolean",
+              "description": "Enable build caching system",
+              "default": true
+            },
+            "performance_tracking": {
+              "type": "boolean",
+              "description": "Enable performance monitoring and reporting",
+              "default": false
+            },
+            "fail_fast": {
+              "type": "boolean",
+              "description": "Stop federation build on first module failure",
+              "default": false
+            }
+          }
+        }
+      }
+    },
+    "modules": {
+      "type": "array",
+      "description": "Array of modules to include in the federation",
+      "minItems": 1,
+      "maxItems": 50,
+      "items": {
+        "type": "object",
+        "required": ["name", "source", "destination", "module_json"],
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Unique identifier for this module (lowercase, numbers, hyphens only)",
+            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+            "minLength": 2,
+            "maxLength": 50,
+            "examples": [
+              "corporate-site",
+              "quiz-docs",
+              "hugo-templates-docs"
+            ]
+          },
+          "source": {
+            "type": "object",
+            "description": "Source location for module content",
+            "required": ["repository", "path", "branch"],
+            "additionalProperties": false,
+            "properties": {
+              "repository": {
+                "type": "string",
+                "description": "Git repository URL (GitHub format) or 'local' for local sources",
+                "oneOf": [
+                  {
+                    "pattern": "^(https://github\\.com/|git@github\\.com:)[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+(\\.git)?$",
+                    "examples": [
+                      "https://github.com/info-tech-io/info-tech",
+                      "https://github.com/info-tech-io/quiz"
+                    ]
+                  },
+                  {
+                    "const": "local",
+                    "examples": ["local"]
+                  }
+                ]
+              },
+              "path": {
+                "type": "string",
+                "description": "Path within repository to content directory",
+                "pattern": "^[^/].*[^/]$",
+                "minLength": 1,
+                "maxLength": 200,
+                "examples": [
+                  "docs",
+                  "content",
+                  "site/content"
+                ]
+              },
+              "branch": {
+                "type": "string",
+                "description": "Git branch name",
+                "pattern": "^[a-zA-Z0-9/_.-]+$",
+                "minLength": 1,
+                "maxLength": 100,
+                "default": "main",
+                "examples": [
+                  "main",
+                  "master",
+                  "develop",
+                  "feature/docs-update"
+                ]
+              }
+            }
+          },
+          "destination": {
+            "type": "string",
+            "description": "URL path where this module will be deployed (must start with /)",
+            "pattern": "^/[a-zA-Z0-9/_-]*$",
+            "minLength": 1,
+            "maxLength": 200,
+            "examples": [
+              "/",
+              "/quiz/",
+              "/docs/hugo-templates/",
+              "/products/web-terminal/"
+            ]
+          },
+          "module_json": {
+            "type": "string",
+            "description": "Relative path to module.json configuration file within source",
+            "pattern": "^[^/].*\\.json$",
+            "default": "module.json",
+            "examples": [
+              "module.json",
+              "docs/module.json",
+              "config/module.json"
+            ]
+          },
+          "css_path_prefix": {
+            "type": "string",
+            "description": "CSS path prefix for theme assets in subdirectory deployments",
+            "pattern": "^/[a-zA-Z0-9/_-]*$",
+            "default": "",
+            "examples": [
+              "/",
+              "/quiz",
+              "/docs/hugo-templates"
+            ]
+          },
+          "overrides": {
+            "type": "object",
+            "description": "Override specific module.json settings for this module",
+            "additionalProperties": false,
+            "properties": {
+              "baseURL": {
+                "type": "string",
+                "description": "Override module baseURL",
+                "format": "uri",
+                "examples": ["https://info-tech-io.github.io"]
+              },
+              "theme": {
+                "type": "string",
+                "description": "Override Hugo theme",
+                "examples": ["compose", "docsy", "hugo-book"]
+              },
+              "components": {
+                "type": "array",
+                "description": "Override component list",
+                "items": {
+                  "type": "string"
+                },
+                "examples": [
+                  ["quiz-engine", "code-highlighter"]
+                ]
+              },
+              "title": {
+                "type": "string",
+                "description": "Override site title",
+                "examples": ["InfoTech.io Documentation"]
+              }
+            }
+          },
+          "build_options": {
+            "type": "object",
+            "description": "Per-module build options",
+            "additionalProperties": false,
+            "properties": {
+              "cache_enabled": {
+                "type": "boolean",
+                "description": "Enable caching for this module",
+                "default": true
+              },
+              "skip_on_error": {
+                "type": "boolean",
+                "description": "Continue federation build if this module fails",
+                "default": true
+              },
+              "build_timeout": {
+                "type": "integer",
+                "description": "Build timeout in seconds",
+                "minimum": 30,
+                "maximum": 3600,
+                "default": 300
+              },
+              "priority": {
+                "type": "integer",
+                "description": "Build priority (higher builds first)",
+                "minimum": 0,
+                "maximum": 100,
+                "default": 50
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "federation": {
+        "name": "InfoTech.io Pages",
+        "baseURL": "https://info-tech-io.github.io",
+        "strategy": "download-merge-deploy",
+        "build_settings": {
+          "cache_enabled": true,
+          "performance_tracking": true
+        }
+      },
+      "modules": [
+        {
+          "name": "corporate-site",
+          "source": {
+            "repository": "https://github.com/info-tech-io/info-tech",
+            "path": "docs",
+            "branch": "main"
+          },
+          "module_json": "module.json",
+          "destination": "/",
+          "css_path_prefix": ""
+        },
+        {
+          "name": "quiz-docs",
+          "source": {
+            "repository": "https://github.com/info-tech-io/quiz",
+            "path": "docs",
+            "branch": "main"
+          },
+          "module_json": "module.json",
+          "destination": "/quiz/",
+          "css_path_prefix": "/quiz"
+        }
+      ]
+    }
+  ]
+}
