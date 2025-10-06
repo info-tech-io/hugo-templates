@@ -859,6 +859,222 @@ EOF
     echo ""
 }
 
+# ==========================================
+# Stage 3: Output Management Functions
+# ==========================================
+
+# Merge all module outputs into the final federation structure
+merge_federation_output() {
+    enter_function "merge_federation_output"
+    set_error_context "Merging federation output"
+
+    log_federation "Merging module outputs into federation structure"
+
+    # Convert exported space-separated strings back to arrays
+    local -a output_dirs
+    local -a build_status
+    read -ra output_dirs <<< "$MODULE_OUTPUT_DIRS"
+    read -ra build_status <<< "$MODULE_BUILD_STATUS"
+
+    local merged_count=0
+    local skipped_count=0
+
+    # Process each module
+    for ((i=0; i<MODULES_COUNT; i++)); do
+        local module_name_var="MODULE_${i}_NAME"
+        local module_dest_var="MODULE_${i}_DESTINATION"
+        local module_name="${!module_name_var}"
+        local module_dest="${!module_dest_var:-/}"
+
+        # Skip failed builds
+        if [[ "${build_status[$i]}" != "success" ]]; then
+            log_warning "Skipping merge for failed module: $module_name"
+            skipped_count=$((skipped_count + 1))
+            continue
+        fi
+
+        local module_output="${output_dirs[$i]}"
+
+        # Determine target directory
+        # Remove leading slash for path joining
+        local dest_path="${module_dest#/}"
+        local target_dir="$OUTPUT"
+
+        if [[ -n "$dest_path" && "$dest_path" != "/" ]]; then
+            target_dir="$OUTPUT/$dest_path"
+        fi
+
+        log_info "Merging $module_name → $target_dir"
+
+        # In dry-run mode, just show what would happen
+        if [[ "$DRY_RUN" == "true" ]]; then
+            log_verbose "[DRY-RUN] Would merge: $module_output → $target_dir"
+            merged_count=$((merged_count + 1))
+            continue
+        fi
+
+        # Create target directory
+        if ! mkdir -p "$target_dir"; then
+            log_error "Failed to create target directory: $target_dir"
+            continue
+        fi
+
+        # Merge module output to target
+        if [[ -d "$module_output" ]]; then
+            # Use cp -r for recursive copy, preserving structure
+            if cp -r "$module_output"/* "$target_dir/" 2>/dev/null; then
+                log_success "Merged $module_name successfully"
+                merged_count=$((merged_count + 1))
+            else
+                log_error "Failed to merge module: $module_name"
+            fi
+        else
+            log_warning "Module output directory not found: $module_output"
+        fi
+    done
+
+    log_info "Merge complete: $merged_count modules merged, $skipped_count skipped"
+
+    if [[ $merged_count -eq 0 ]]; then
+        log_error "No modules were merged successfully"
+        exit_function
+        return 1
+    fi
+
+    exit_function
+    return 0
+}
+
+# Validate the final federation output structure
+validate_federation_output() {
+    enter_function "validate_federation_output"
+    set_error_context "Validating federation output"
+
+    log_info "Validating federation output structure"
+
+    # Convert exported space-separated strings back to arrays
+    local -a build_status
+    read -ra build_status <<< "$MODULE_BUILD_STATUS"
+
+    local validation_passed=true
+
+    # Check each successful module has content in its destination
+    for ((i=0; i<MODULES_COUNT; i++)); do
+        # Skip failed builds
+        if [[ "${build_status[$i]}" != "success" ]]; then
+            continue
+        fi
+
+        local module_name_var="MODULE_${i}_NAME"
+        local module_dest_var="MODULE_${i}_DESTINATION"
+        local module_name="${!module_name_var}"
+        local module_dest="${!module_dest_var:-/}"
+
+        # Determine target directory
+        local dest_path="${module_dest#/}"
+        local target_dir="$OUTPUT"
+
+        if [[ -n "$dest_path" && "$dest_path" != "/" ]]; then
+            target_dir="$OUTPUT/$dest_path"
+        fi
+
+        # In dry-run mode, skip validation
+        if [[ "$DRY_RUN" == "true" ]]; then
+            log_verbose "[DRY-RUN] Would validate: $target_dir"
+            continue
+        fi
+
+        # Check if target directory exists and has content
+        if [[ ! -d "$target_dir" ]]; then
+            log_error "Validation failed: Missing directory for $module_name at $target_dir"
+            validation_passed=false
+        elif [[ -z "$(ls -A "$target_dir" 2>/dev/null)" ]]; then
+            log_error "Validation failed: Empty directory for $module_name at $target_dir"
+            validation_passed=false
+        else
+            log_verbose "✓ $module_name validated at $target_dir"
+        fi
+    done
+
+    if [[ "$validation_passed" == "true" ]]; then
+        log_success "Federation output validation passed"
+        exit_function
+        return 0
+    else
+        log_error "Federation output validation failed"
+        exit_function
+        return 1
+    fi
+}
+
+# Create federation manifest file
+create_federation_manifest() {
+    enter_function "create_federation_manifest"
+    set_error_context "Creating federation manifest"
+
+    log_info "Creating federation manifest"
+
+    local manifest_file="$OUTPUT/federation-manifest.json"
+
+    # In dry-run mode, skip manifest creation
+    if [[ "$DRY_RUN" == "true" ]]; then
+        log_verbose "[DRY-RUN] Would create manifest at: $manifest_file"
+        exit_function
+        return 0
+    fi
+
+    # Convert exported space-separated strings back to arrays
+    local -a build_status
+    read -ra build_status <<< "$MODULE_BUILD_STATUS"
+
+    # Build JSON manifest
+    local json_content='{\n'
+    json_content+='  "federation": {\n'
+    json_content+="    \"name\": \"$FEDERATION_NAME\",\n"
+    json_content+="    \"baseURL\": \"$FEDERATION_BASE_URL\",\n"
+    json_content+="    \"buildDate\": \"$(date -u +"%Y-%m-%dT%H:%M:%SZ")\",\n"
+    json_content+="    \"totalModules\": $MODULES_COUNT,\n"
+    json_content+="    \"successfulBuilds\": $SUCCESSFUL_BUILDS,\n"
+    json_content+="    \"failedBuilds\": $FAILED_BUILDS\n"
+    json_content+='  },\n'
+    json_content+='  "modules": [\n'
+
+    # Add each module to manifest
+    for ((i=0; i<MODULES_COUNT; i++)); do
+        local module_name_var="MODULE_${i}_NAME"
+        local module_dest_var="MODULE_${i}_DESTINATION"
+        local module_repo_var="MODULE_${i}_REPO"
+        local module_name="${!module_name_var}"
+        local module_dest="${!module_dest_var:-/}"
+        local module_repo="${!module_repo_var:-unknown}"
+        local module_status="${build_status[$i]}"
+
+        json_content+='    {\n'
+        json_content+="      \"name\": \"$module_name\",\n"
+        json_content+="      \"destination\": \"$module_dest\",\n"
+        json_content+="      \"repository\": \"$module_repo\",\n"
+        json_content+="      \"buildStatus\": \"$module_status\"\n"
+
+        # Add comma if not last module
+        if [[ $i -lt $((MODULES_COUNT - 1)) ]]; then
+            json_content+='    },\n'
+        else
+            json_content+='    }\n'
+        fi
+    done
+
+    json_content+='  ]\n'
+    json_content+='}\n'
+
+    # Write manifest file
+    echo -e "$json_content" > "$manifest_file"
+
+    log_success "Federation manifest created: $manifest_file"
+
+    exit_function
+    return 0
+}
+
 # Main execution function
 main() {
     enter_function "main"
@@ -900,8 +1116,25 @@ main() {
         exit 1
     fi
 
-    # TODO: Stage 3 - Output management will be implemented here
-    log_info "Output management not yet implemented (Stage 3)"
+    # Stage 3: Output management
+    log_federation "Stage 3: Output Management"
+
+    # Merge module outputs into federation structure
+    if ! merge_federation_output; then
+        log_error "Failed to merge federation output"
+        exit 1
+    fi
+
+    # Validate the merged output
+    if ! validate_federation_output; then
+        log_error "Federation output validation failed"
+        exit 1
+    fi
+
+    # Create federation manifest
+    if ! create_federation_manifest; then
+        log_warning "Failed to create federation manifest (non-critical)"
+    fi
 
     # Generate final build report
     generate_build_report
