@@ -700,6 +700,141 @@ EOF
 }
 
 # ============================================================================
+# CSS PATH RESOLUTION SYSTEM
+# ============================================================================
+# Functions for detecting and analyzing asset paths in HTML files to support
+# subdirectory deployment with correct CSS/JS path prefixes.
+# Part of Child Issue #18 - CSS Path Resolution System
+
+# Detect local asset paths requiring rewriting in an HTML file
+# Arguments:
+#   $1 - HTML file path
+#   $2 - Output variable name (array of paths)
+# Returns:
+#   Populates the named array with detected local asset paths
+detect_asset_paths() {
+    local html_file="$1"
+    local -n paths_array="$2"
+
+    # Check if file exists
+    if [[ ! -f "$html_file" ]]; then
+        log_error "HTML file not found: $html_file"
+        return 1
+    fi
+
+    # Pattern: matches href="/...", src="/...", or data-*="/..."
+    # Excludes: protocol-relative URLs (//), external URLs, data URIs
+    # Uses grep for reliable extraction
+
+    # Track unique paths to avoid duplicates
+    declare -A seen_paths
+
+    # Extract all href="/path", src="/path", data-*="/path" patterns using grep
+    # grep -oE extracts only matching parts, one per line
+    local matches
+    matches=$(grep -oE '(href|src|data-[a-zA-Z-]+)=["\x27](/[^/][^"\x27]*)' "$html_file" 2>/dev/null || true)
+
+    # Process each match
+    while IFS= read -r match; do
+        # Extract the path part (after =" or =')
+        if [[ "$match" =~ =[\"\'](/[^\"\']+) ]]; then
+            local path="${BASH_REMATCH[1]}"
+
+            # Skip if it's an external URL, data URI, or SVG fragment
+            if [[ ! "$path" =~ ^(https?:|data:|#) ]] && [[ -z "${seen_paths[$path]:-}" ]]; then
+                paths_array+=("$path")
+                seen_paths["$path"]=1
+            fi
+        fi
+    done <<< "$matches"
+
+    return 0
+}
+
+# Calculate CSS path prefix from module destination path
+# Arguments:
+#   $1 - Module destination path (e.g., "/quiz/", "/", "/docs/product/")
+# Returns:
+#   CSS prefix string via stdout (e.g., "/quiz", "", "/docs/product")
+calculate_css_prefix() {
+    local destination="$1"
+
+    # Root destination "/" needs empty prefix
+    if [[ "$destination" == "/" ]]; then
+        echo ""
+        return 0
+    fi
+
+    # Remove trailing slash, ensure single leading slash
+    local prefix="${destination%/}"  # Remove trailing /
+    prefix="${prefix#/}"             # Remove leading /
+    prefix="/${prefix}"              # Add back single leading /
+
+    echo "$prefix"
+}
+
+# Analyze module asset paths and generate report
+# Arguments:
+#   $1 - Module output directory
+#   $2 - CSS path prefix
+# Returns:
+#   0 on success, 1 on error
+analyze_module_paths() {
+    local output_dir="$1"
+    local css_prefix="$2"
+
+    if [[ ! -d "$output_dir" ]]; then
+        log_error "Output directory not found: $output_dir"
+        return 1
+    fi
+
+    log_info "Analyzing asset paths in: $output_dir"
+    if [[ -n "$css_prefix" ]]; then
+        log_info "CSS prefix: $css_prefix"
+    else
+        log_info "CSS prefix: (none - root deployment)"
+    fi
+
+    local html_count=0
+    local asset_count=0
+    declare -A unique_patterns
+
+    # Scan all HTML files
+    while IFS= read -r html_file; do
+        ((html_count++))
+
+        declare -a paths=()
+        if detect_asset_paths "$html_file" paths; then
+            for path in "${paths[@]}"; do
+                ((asset_count++))
+                # Track unique path patterns (first part of path)
+                local pattern
+                pattern="$(echo "$path" | cut -d'/' -f2)"
+                unique_patterns["$pattern"]=1
+            done
+        fi
+    done < <(find "$output_dir" -name "*.html" -type f 2>/dev/null)
+
+    log_info "Analysis complete:"
+    log_info "  - HTML files scanned: $html_count"
+    log_info "  - Asset references found: $asset_count"
+    log_info "  - Unique path types: ${#unique_patterns[@]}"
+
+    if [[ ${#unique_patterns[@]} -gt 0 ]]; then
+        log_info "  - Path types: ${!unique_patterns[*]}"
+    fi
+
+    # Estimate rewrite operations
+    if [[ -n "$css_prefix" ]]; then
+        log_info "  - Rewrite operations required: $asset_count"
+    else
+        log_info "  - No rewrites needed (root deployment)"
+    fi
+
+    return 0
+}
+
+# ============================================================================
 # STAGE 2: BUILD ORCHESTRATION
 # ============================================================================
 
