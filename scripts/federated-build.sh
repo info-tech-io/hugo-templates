@@ -273,9 +273,10 @@ load_modules_config() {
         return 1
     }
 
-    # Enhanced Node.js script for modules.json parsing
+    # Enhanced Node.js script for modules.json parsing with JSON Schema validation
     cat > "$temp_script" << 'EOF'
 const fs = require('fs');
+const path = require('path');
 
 try {
     // Read and validate file
@@ -299,6 +300,138 @@ try {
         console.error(`ERROR: Invalid JSON in ${configFile}:`);
         console.error(`  ${parseError.message}`);
         process.exit(1);
+    }
+
+    // Load JSON Schema if available
+    let schema = null;
+    const schemaPath = path.join(path.dirname(configFile), 'schemas', 'modules.schema.json');
+    const altSchemaPath = path.join(process.cwd(), 'schemas', 'modules.schema.json');
+
+    if (fs.existsSync(schemaPath)) {
+        try {
+            schema = JSON.parse(fs.readFileSync(schemaPath, 'utf8'));
+        } catch (e) {
+            // Schema file exists but couldn't be loaded - non-fatal
+        }
+    } else if (fs.existsSync(altSchemaPath)) {
+        try {
+            schema = JSON.parse(fs.readFileSync(altSchemaPath, 'utf8'));
+        } catch (e) {
+            // Schema file exists but couldn't be loaded - non-fatal
+        }
+    }
+
+    // Simple JSON Schema validation function
+    function validateSchema(schema, data, path = 'root') {
+        const errors = [];
+
+        // Type validation
+        if (schema.type) {
+            const actualType = Array.isArray(data) ? 'array' : typeof data;
+            if (schema.type === 'object' && actualType !== 'object') {
+                errors.push(`${path}: Expected object, got ${actualType}`);
+                return errors;
+            }
+            if (schema.type === 'array' && !Array.isArray(data)) {
+                errors.push(`${path}: Expected array, got ${actualType}`);
+                return errors;
+            }
+            if (schema.type === 'integer') {
+                if (typeof data !== 'number' || !Number.isInteger(data)) {
+                    errors.push(`${path}: Expected integer, got ${actualType}`);
+                    return errors;
+                }
+            } else if (schema.type !== 'object' && schema.type !== 'array' && actualType !== schema.type) {
+                errors.push(`${path}: Expected ${schema.type}, got ${actualType}`);
+                return errors;
+            }
+        }
+
+        // Required properties
+        if (schema.required && typeof data === 'object') {
+            for (const req of schema.required) {
+                if (!(req in data)) {
+                    errors.push(`${path}: Missing required property "${req}"`);
+                }
+            }
+        }
+
+        // Object properties
+        if (schema.properties && typeof data === 'object' && !Array.isArray(data)) {
+            for (const [key, value] of Object.entries(data)) {
+                if (schema.properties[key]) {
+                    errors.push(...validateSchema(schema.properties[key], value, `${path}.${key}`));
+                }
+            }
+        }
+
+        // Array items
+        if (schema.items && Array.isArray(data)) {
+            if (schema.minItems && data.length < schema.minItems) {
+                errors.push(`${path}: Array must have at least ${schema.minItems} items, got ${data.length}`);
+            }
+            if (schema.maxItems && data.length > schema.maxItems) {
+                errors.push(`${path}: Array must have at most ${schema.maxItems} items, got ${data.length}`);
+            }
+            data.forEach((item, idx) => {
+                errors.push(...validateSchema(schema.items, item, `${path}[${idx}]`));
+            });
+        }
+
+        // Pattern validation
+        if (schema.pattern && typeof data === 'string') {
+            const regex = new RegExp(schema.pattern);
+            if (!regex.test(data)) {
+                errors.push(`${path}: String "${data}" does not match required pattern`);
+            }
+        }
+
+        // Const validation
+        if (schema.const !== undefined && data !== schema.const) {
+            errors.push(`${path}: Value must be exactly "${schema.const}"`);
+        }
+
+        // Enum validation
+        if (schema.enum && !schema.enum.includes(data)) {
+            errors.push(`${path}: Value must be one of: ${schema.enum.join(', ')}`);
+        }
+
+        // MinLength/MaxLength
+        if (schema.minLength && typeof data === 'string' && data.length < schema.minLength) {
+            errors.push(`${path}: String length must be at least ${schema.minLength}`);
+        }
+        if (schema.maxLength && typeof data === 'string' && data.length > schema.maxLength) {
+            errors.push(`${path}: String length must be at most ${schema.maxLength}`);
+        }
+
+        // oneOf validation
+        if (schema.oneOf && Array.isArray(schema.oneOf)) {
+            const matchCount = schema.oneOf.filter(subSchema => {
+                const subErrors = validateSchema(subSchema, data, path);
+                return subErrors.length === 0;
+            }).length;
+
+            if (matchCount === 0) {
+                errors.push(`${path}: Value does not match any of the allowed schemas`);
+            } else if (matchCount > 1) {
+                errors.push(`${path}: Value matches multiple schemas (should match exactly one)`);
+            }
+        }
+
+        return errors;
+    }
+
+    // Perform schema validation if schema is available
+    if (schema) {
+        const validationErrors = validateSchema(schema, config);
+        if (validationErrors.length > 0) {
+            console.error(`ERROR: Configuration validation failed against JSON Schema:`);
+            validationErrors.forEach(err => console.error(`  • ${err}`));
+            console.error(``);
+            console.error(`Please fix these errors and try again.`);
+            console.error(`Schema reference: schemas/modules.schema.json`);
+            process.exit(1);
+        }
     }
 
     // Validate top-level structure
