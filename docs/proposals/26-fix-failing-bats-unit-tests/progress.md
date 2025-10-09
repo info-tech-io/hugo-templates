@@ -4,10 +4,10 @@
 
 ```mermaid
 graph LR
-    A[Stage 1: Timeline Investigation] -->|⏳ Pending| B[Stage 2: Root Cause Analysis]
+    A[Stage 1: Timeline Investigation] -->|✅ Complete| B[Stage 2: Root Cause Analysis]
     B -->|⏳ Pending| C[Stage 3: Fix Implementation]
 
-    style A fill:#eeeeee,stroke:#9e9e9e
+    style A fill:#c8e6c9,stroke:#2e7d32
     style B fill:#eeeeee,stroke:#9e9e9e
     style C fill:#eeeeee,stroke:#9e9e9e
 
@@ -20,7 +20,7 @@ graph LR
 
 | Stage | Status | Started | Completed | Duration | Commits |
 |-------|--------|---------|-----------|----------|---------|
-| 1. Timeline Investigation | ⏳ Planned | - | - | Est: 1h | - |
+| 1. Timeline Investigation | ✅ Complete | Oct 9, 2025 | Oct 9, 2025 | 0.5h | [docs(issue-26): update Stage 1 progress](COMMIT_HASH) |
 | 2. Root Cause Analysis | ⏳ Planned | - | - | Est: 1-2h | - |
 | 3. Fix Implementation | ⏳ Planned | - | - | Est: 2-3h | - |
 
