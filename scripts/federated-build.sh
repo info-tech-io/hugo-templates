@@ -834,6 +834,175 @@ analyze_module_paths() {
     return 0
 }
 
+# Rewrite asset paths in HTML files with CSS prefix
+# Arguments:
+#   $1 - Output directory path
+#   $2 - CSS path prefix (e.g., "/quiz", empty for root)
+# Returns:
+#   0 on success, 1 on failure
+rewrite_asset_paths() {
+    local output_dir="$1"
+    local css_prefix="$2"
+
+    enter_function "rewrite_asset_paths"
+    set_error_context "Rewriting asset paths in '$output_dir'"
+
+    # Skip if root deployment (no prefix needed)
+    if [[ -z "$css_prefix" ]]; then
+        log_info "Root deployment - no path rewriting needed"
+        exit_function
+        return 0
+    fi
+
+    log_info "Rewriting asset paths with prefix: $css_prefix"
+
+    if [[ ! -d "$output_dir" ]]; then
+        log_error "Output directory does not exist: $output_dir"
+        exit_function
+        return 1
+    fi
+
+    local files_processed=0
+    local rewrites_made=0
+
+    # Find all HTML files and process them
+    shopt -s globstar nullglob
+    local html_files=("$output_dir"/**/*.html)
+
+    if [[ ${#html_files[@]} -eq 0 ]]; then
+        log_warning "No HTML files found in: $output_dir"
+        exit_function
+        return 0
+    fi
+
+    for html_file in "${html_files[@]}"; do
+        [[ -f "$html_file" ]] || continue
+
+        files_processed=$((files_processed + 1))
+
+        # Count paths before rewriting (for metrics)
+        local before_count=$(grep -cE '(href|src)="/' "$html_file" 2>/dev/null || echo 0)
+
+        # Rewrite href="/..." to href="/prefix/..."
+        # Pattern matches: href="/path" or href='/path'
+        # Excludes: href="//..." (protocol-relative URLs)
+        sed -i -E \
+            "s|href=(['\"])/([ ^/][^'\"]*)\1|href=\"${css_prefix}/\2\"|g" \
+            "$html_file"
+
+        # Rewrite src="/..." to src="/prefix/..."
+        sed -i -E \
+            "s|src=(['\"])/([ ^/][^'\"]*)\1|src=\"${css_prefix}/\2\"|g" \
+            "$html_file"
+
+        # Rewrite data-* attributes with paths
+        sed -i -E \
+            "s|data-([a-zA-Z-]+)=(['\"])/([ ^/][^'\"]*)\2|data-\1=\"${css_prefix}/\3\"|g" \
+            "$html_file"
+
+        # Rewrite CSS url(/...) to url(/prefix/...)
+        sed -i -E \
+            "s|url\(/([ ^/)][^\)]*)\)|url(${css_prefix}/\1)|g" \
+            "$html_file"
+
+        # Count paths after rewriting
+        local after_count=$(grep -cE "(href|src)=\"${css_prefix}/" "$html_file" 2>/dev/null || echo 0)
+        rewrites_made=$((rewrites_made + after_count))
+
+    done
+
+    log_success "Path rewriting complete:"
+    log_info "  - Files processed: $files_processed"
+    log_info "  - Paths rewritten: $rewrites_made"
+
+    exit_function
+    return 0
+}
+
+# Validate rewritten paths for common issues
+# Arguments:
+#   $1 - Output directory path
+#   $2 - CSS path prefix
+# Returns:
+#   0 if validation passes, 1 if issues found
+validate_rewritten_paths() {
+    local output_dir="$1"
+    local css_prefix="$2"
+
+    enter_function "validate_rewritten_paths"
+    set_error_context "Validating rewritten paths in '$output_dir'"
+
+    log_info "Validating rewritten asset paths..."
+
+    local errors=0
+    local warnings=0
+
+    # Check for double slashes (rewriting error) - excluding protocol URLs
+    local double_slash_count=0
+    while IFS= read -r line; do
+        # Skip lines with https:// or http://
+        if [[ "$line" =~ https?:// ]]; then
+            continue
+        fi
+        double_slash_count=$((double_slash_count + 1))
+        if [[ $double_slash_count -le 3 ]]; then
+            log_error "Found double slash: $line"
+        fi
+    done < <(grep -r 'href="//' "$output_dir" --include="*.html" 2>/dev/null || true)
+
+    if [[ $double_slash_count -gt 0 ]]; then
+        log_error "Found $double_slash_count double slashes in href attributes (rewriting error)"
+        errors=$((errors + 1))
+    fi
+
+    # Check src attributes for double slashes
+    double_slash_count=0
+    while IFS= read -r line; do
+        if [[ "$line" =~ https?:// ]]; then
+            continue
+        fi
+        double_slash_count=$((double_slash_count + 1))
+    done < <(grep -r 'src="//' "$output_dir" --include="*.html" 2>/dev/null || true)
+
+    if [[ $double_slash_count -gt 0 ]]; then
+        log_error "Found $double_slash_count double slashes in src attributes (rewriting error)"
+        errors=$((errors + 1))
+    fi
+
+    # Check for missing prefix (incomplete rewriting) - only if prefix expected
+    if [[ -n "$css_prefix" ]]; then
+        local expected_prefix="href=\"${css_prefix}/"
+        local total_prefixed=$(grep -r "$expected_prefix" "$output_dir" --include="*.html" 2>/dev/null | wc -l)
+
+        if [[ $total_prefixed -eq 0 ]]; then
+            log_warning "No paths with expected prefix found - possible rewriting failure or no local assets"
+            warnings=$((warnings + 1))
+        else
+            log_info "Found $total_prefixed paths with expected prefix: $css_prefix"
+        fi
+    fi
+
+    # Check for malformed paths (paths with spaces - possible encoding issue)
+    local malformed_count=$(grep -r 'href="[^"]*\s[^"]*"' "$output_dir" --include="*.html" 2>/dev/null | wc -l)
+    if [[ $malformed_count -gt 0 ]]; then
+        log_error "Found $malformed_count paths with spaces (possible encoding issue)"
+        errors=$((errors + 1))
+    fi
+
+    if [[ $errors -eq 0 ]]; then
+        log_success "Path validation passed - no issues detected"
+        if [[ $warnings -gt 0 ]]; then
+            log_info "  - Warnings: $warnings (non-critical)"
+        fi
+        exit_function
+        return 0
+    else
+        log_error "Path validation failed - $errors issue(s) detected"
+        exit_function
+        return 1
+    fi
+}
+
 # ============================================================================
 # STAGE 2: BUILD ORCHESTRATION
 # ============================================================================
@@ -1002,6 +1171,39 @@ build_module() {
 
         log_success "Built $module_name in ${build_time}s"
         SUCCESSFUL_BUILDS=$((SUCCESSFUL_BUILDS + 1))
+
+        # Apply CSS path resolution (Stage 2)
+        local css_prefix=$(calculate_css_prefix "$module_dest")
+
+        if [[ -n "$css_prefix" ]]; then
+            log_section "Applying CSS Path Resolution"
+            log_info "Module: $module_name"
+            log_info "Destination: $module_dest"
+            log_info "CSS Prefix: $css_prefix"
+
+            # Analyze paths before rewriting (if verbose)
+            if [[ "$VERBOSE" == "true" ]]; then
+                analyze_module_paths "$MODULE_OUTPUT_DIR" "$css_prefix"
+            fi
+
+            # Perform path rewriting
+            if ! rewrite_asset_paths "$MODULE_OUTPUT_DIR" "$css_prefix"; then
+                log_error "CSS path rewriting failed for module: $module_name"
+                FAILED_BUILDS=$((FAILED_BUILDS + 1))
+                exit_function
+                return 1
+            fi
+
+            # Validate rewritten paths
+            if ! validate_rewritten_paths "$MODULE_OUTPUT_DIR" "$css_prefix"; then
+                log_warning "CSS path validation failed for module: $module_name (non-critical)"
+                # Don't fail the build, just warn
+            fi
+
+            log_success "CSS path resolution complete for module: $module_name"
+        else
+            log_info "Module deployed at root - no CSS path rewriting needed"
+        fi
 
         exit_function
         return 0
