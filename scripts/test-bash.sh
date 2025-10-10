@@ -118,6 +118,7 @@ setup_test_environment() {
     # Set test-specific environment variables
     export BATS_TEST_TIMEOUT=${BATS_TEST_TIMEOUT:-300}  # 5 minutes per test
     export HUGO_TEMPLATES_TEST_MODE=true
+    export DISABLE_ERROR_TRAP=true
 
     # Create mock binaries directory
     export MOCK_BINS_DIR="$BATS_TMPDIR/mock-bins"

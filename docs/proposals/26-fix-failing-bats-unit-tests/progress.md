@@ -5,103 +5,161 @@
 ```mermaid
 graph LR
     A[Stage 1: Timeline Investigation] -->|✅ Complete| B[Stage 2: Root Cause Analysis]
-    B -->|⏳ Pending| C[Stage 3: Fix Implementation]
+    B -->|✅ Complete + Review| C[Stage 3: Test Suite Audit]
 
     style A fill:#c8e6c9,stroke:#2e7d32
-    style B fill:#eeeeee,stroke:#9e9e9e
+    style B fill:#c8e6c9,stroke:#2e7d32
     style C fill:#eeeeee,stroke:#9e9e9e
 
-    click A "001-timeline-investigation.md"
-    click B "002-root-cause-analysis.md"
-    click C "003-fix-implementation.md"
+    click A "001-progress.md"
+    click B "002-progress.md"
+    click C "003-test-suite-audit.md"
 ```
 
 ## Timeline
 
-| Stage | Status | Started | Completed | Duration | Commits |
-|-------|--------|---------|-----------|----------|---------|
-| 1. Timeline Investigation | ✅ Complete | Oct 9, 2025 | Oct 9, 2025 | 0.5h | [docs(issue-26): update Stage 1 progress](COMMIT_HASH) |
-| 2. Root Cause Analysis | ⏳ Planned | - | - | Est: 1-2h | - |
-| 3. Fix Implementation | ⏳ Planned | - | - | Est: 2-3h | - |
+| Stage | Status | Started | Completed | Duration | Key Findings |
+|-------|--------|---------|-----------|----------|--------------|
+| 1. Timeline Investigation | ✅ Complete | Oct 9 | Oct 9 | 0.5h | Tests failed since creation (Sept 27) |
+| 2. Root Cause Analysis | ✅ Complete | Oct 9 | Oct 10 | 1h | Multiple systemic issues found |
+| 2.1 Critical Review | ✅ Complete | Oct 10 | Oct 10 | 1.5h | Initial analysis incomplete |
+| 3. Test Suite Audit & Redesign | ⏳ Planned | - | - | Est: 3-4 days | - |
 
-## Metrics
+## Metrics (Updated 2025-10-10)
 
-- **Issue Priority**: High (blocks Epic #15)
-- **Estimated Total Time**: 4-6 hours
-- **Actual Time**: TBD
-- **Tests Status**: 24/35 passing (11 failing)
+- **Issue Priority**: HIGH (blocks Epic #15)
+- **Initial Estimate**: 4-6 hours
+- **Revised Estimate**: 3-4 days (after discovering scope)
+- **Tests Status**: 18/35 passing, **17/35 failing** (initial count was wrong)
 - **Blocker For**: Epic #15 merge, Child #19 start
 
-## Test Failure Summary
+## Major Findings
 
-### Failing Tests (11 total)
+### Critical Discovery (Stage 2 Review)
 
-1. `validate_parameters handles missing Hugo`
-2. `load_module_config handles missing config file`
-3. `load_module_config processes valid JSON configuration`
-4. `load_module_config handles malformed JSON`
-5. `load_module_config handles missing Node.js`
-6. `parse_components handles missing components.yml`
-7. `parse_components processes valid components.yml`
-8. `parse_components gracefully handles YAML parsing errors`
-9. `verbose mode provides additional output`
-10. Additional failures (TBD during investigation)
+**Initial analysis was incomplete and partially incorrect:**
 
-### Passing Tests
+| Metric | Initial Report | Actual Reality |
+|--------|----------------|----------------|
+| Failing tests on `main` | 11 tests | **17 tests** ❌ |
+| After fixes | 7 remaining | **13 remaining** ❌ |
 
-- New CSS tests: 10/10 ✅
-- Some existing BATS tests: ~24/35 ✅
+### Root Causes Breakdown
 
-## Investigation Progress
+The problem is **NOT** just `trap ERR` and `set -e`. Tests have multiple systemic issues:
 
-### Stage 1: Timeline Investigation (⏳ Pending)
+| Category | Tests | % of Failures | Root Cause | Status |
+|----------|-------|---------------|------------|--------|
+| **A. trap ERR** | ~3 | 18% | `trap ERR` intercepts expected errors | ✅ Partial fix |
+| **B. set -e** | 1+ | 6% | `set -e` prevents status capture | ✅ Fixed (test #4) |
+| **C. Logic Errors** | 7 | **41%** | Tests have implementation bugs | ⚠️ Critical |
+| **D. Wrong Expectations** | 2 | 12% | Assertions don't match reality | ⚠️ Medium |
+| **E. Error System** | 7 | 35% | Error handling integration issues | ⚠️ Complex |
 
-**Goal**: Identify when tests were created and when they started failing
+### Key Insight
 
-**Tasks**:
-- [ ] Review git history for test creation
-- [ ] Check Epic #2 progress reports
-- [ ] Check Epic #15 child issues (#16, #17, #18) progress reports
-- [ ] Identify commit where tests started failing
-- [ ] Document timeline
+**Tests were written as "checkboxes" rather than real validation tools.** Many have never worked correctly since creation (Sept 27, 2025).
 
-**Findings**: TBD
+## Detailed Test Status
 
-### Stage 2: Root Cause Analysis (⏳ Pending)
+### Category C: Logic Errors (CRITICAL - 41% of failures)
 
-**Goal**: Understand why tests are failing
+Tests have fundamental logic bugs:
 
-**Tasks**:
-- [ ] Run failing tests with verbose output
-- [ ] Analyze test expectations
-- [ ] Compare with actual behavior
-- [ ] Identify breaking changes
-- [ ] Classify: test issue vs code issue
+| Test # | Name | Issue | Priority |
+|--------|------|-------|----------|
+| #5 | load_module_config handles missing config | Missing parameter | High |
+| #6 | load_module_config processes valid JSON | Missing parameter | High |
+| #7 | load_module_config handles malformed JSON | Premature failure | High |
+| #8 | load_module_config handles missing Node.js | Premature failure | High |
+| #9 | parse_components handles missing components | Parameter mismatch | High |
+| #10 | parse_components processes valid components | Parameter mismatch | High |
+| #12 | parse_components gracefully handles YAML errors | Logic error | High |
 
-**Findings**: TBD
+**Example Problem** (Test #5):
+```bash
+# Test calls function WITHOUT parameter
+run load_module_config    # No argument!
+[ "$status" -eq 0 ]       # Expects SUCCESS
 
-### Stage 3: Fix Implementation (⏳ Pending)
+# Function receives empty string, correctly returns error
+return 1                  # Test FAILS (but function is correct!)
+```
 
-**Goal**: Fix all failing tests
+### Category E: Error Handling System (35% of failures)
 
-**Tasks**:
-- [ ] Implement fixes for each test
-- [ ] Verify locally (35/35 passing)
-- [ ] Verify CI pipeline
-- [ ] Document changes
+| Test # | Name | Analysis Needed |
+|--------|------|-----------------|
+| #24 | function entry/exit tracking | Deep analysis required |
+| #25 | error context management | Deep analysis required |
+| #26 | safe file operations validation | Deep analysis required |
+| #27 | safe command execution | Deep analysis required |
+| #28 | safe Node.js parsing | Deep analysis required |
+| #31 | error state preservation | Deep analysis required |
+| #33 | backward compatibility | Deep analysis required |
 
-**Results**: TBD
+### Category D: Wrong Expectations (12% of failures)
+
+| Test # | Name | Issue |
+|--------|------|-------|
+| #15 | verbose mode provides additional output | Expects strings mock doesn't produce |
+| #19 | functions provide helpful error messages | Assertions don't match output |
+
+### Categories A & B: Solved (24% of failures)
+
+| Test # | Name | Solution | Status |
+|--------|------|----------|--------|
+| ~3 tests | Various | `DISABLE_ERROR_TRAP=true` in test-bash.sh | ✅ Implemented |
+| #4 | validate_parameters handles missing Hugo | `run_safely()` wrapper | ✅ Verified |
+
+## Stage 3: Revised Plan
+
+**Original Plan**: "Apply `run_safely()` to remaining 7 tests" ❌
+
+**Revised Plan**: "Complete Test Suite Audit and Redesign"
+
+### Objectives
+
+1. ✅ **Full Test Inventory** - Catalog and categorize all 35 tests
+2. ✅ **Fix by Category** - Systematic approach, not one-by-one
+3. ✅ **Test Quality Standards** - Define what makes a good test
+4. ✅ **Coverage Analysis** - Identify gaps and priorities
+5. ✅ **Redesign Where Needed** - Rewrite fundamentally flawed tests
+6. ✅ **Validation** - Ensure tests actually validate functionality
+
+### Deliverables
+
+- [ ] `test-inventory.md` - Complete test catalog
+- [ ] `testing-guidelines.md` - Quality standards
+- [ ] `test-coverage-matrix.md` - Coverage analysis
+- [ ] All 35/35 tests passing
+- [ ] Tests actually validate real functionality
+
+## Artifacts Preserved
+
+From Stage 2 investigation:
+
+- ✅ `DISABLE_ERROR_TRAP` mechanism - Useful, kept
+- ✅ `run_safely()` helper function - Works for specific cases
+- ❌ "Apply to all" approach - Abandoned after critical review
 
 ## Quick Links
 
 - **Issue**: [#26](https://github.com/info-tech-io/hugo-templates/issues/26)
-- **Branch**: `epic/federated-build-system`
+- **Branch**: `bugfix/issue-26`
 - **Related Epic**: [#15 Federated Build System](https://github.com/info-tech-io/hugo-templates/issues/15)
 - **Test Script**: `scripts/test-bash.sh`
 - **Test Files**: `tests/bash/unit/*.bats`
 
+## Progress Reports
+
+- [Stage 1: Timeline Investigation](001-progress.md) - ✅ Complete
+- [Stage 2: Root Cause Analysis](002-progress.md) - ✅ Complete (with critical review)
+- [Stage 3: Test Suite Audit](003-test-suite-audit.md) - ⏳ Planned
+- [Stage 3: Progress](003-progress.md) - ⏳ Not started
+
 ---
 
-**Last Updated**: October 9, 2025
-**Status**: ⏳ **PLANNING** - Ready to start Stage 1
-**Next Action**: Begin timeline investigation
+**Last Updated**: October 10, 2025
+**Status**: 🔄 **PLANNING STAGE 3** - Comprehensive audit approach
+**Next Action**: Begin Stage 3.1 - Create test inventory

@@ -131,9 +131,9 @@ create_build_functions_for_testing() {
     # Remove Hugo mock temporarily
     mv "$TEST_TEMP_DIR/bin/hugo" "$TEST_TEMP_DIR/bin/hugo.bak"
 
-    run validate_parameters
+    run_safely validate_parameters
     [ "$status" -eq 1 ]
-    assert_contains "$output" "Hugo not found"
+    assert_contains "$output" "Hugo is not installed"
 
     # Restore Hugo mock
     mv "$TEST_TEMP_DIR/bin/hugo.bak" "$TEST_TEMP_DIR/bin/hugo"

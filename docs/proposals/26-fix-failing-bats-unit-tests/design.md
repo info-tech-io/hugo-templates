@@ -9,10 +9,11 @@
 
 During Epic #15 (Federated Build System) development, BATS unit tests in the `epic/federated-build-system` branch are failing. These failures are blocking the epic merge to main and must be resolved before Epic #15 can be completed.
 
-**Current State**:
-- ~11 out of 35 unit tests failing
+**Current State** (Updated 2025-10-10):
+- **17 out of 35 unit tests failing** (initial estimate was incorrect)
 - New CSS tests (Child #18): 10/10 passing ✅
-- Old BATS tests: ~11/35 failing ❌
+- Old BATS tests: 17/35 failing ❌
+- **Root causes identified**: Multiple systemic issues, not just trap/set -e
 
 **Impact**:
 - Blocks Epic #15 merge to main
@@ -68,21 +69,31 @@ Three-stage approach to identify, analyze, and fix the failing tests:
 - Classification: test issue vs code issue
 - Fix strategy for each test
 
-### Stage 3: Fix Implementation
+### Stage 3: Complete Test Suite Audit and Redesign (REVISED)
 
-**Objective**: Fix all failing tests
+**Objective**: Conduct comprehensive audit and redesign test suite
+
+**Background**: Stage 2 revealed that the problem is far more complex than initially thought. Tests have multiple systemic issues:
+- 41% have logic errors in implementation
+- 12% have wrong expectations/assertions
+- 18% affected by trap ERR (partially solved)
+- 6% affected by set -e (one case solved)
+- 35% require deep analysis
 
 **Method**:
-- Implement fixes based on root cause analysis
-- Update tests if expectations changed
-- Fix code if behavior is incorrect
-- Verify all tests pass locally
-- Verify CI passes
+1. Create comprehensive test inventory
+2. Categorize all tests by root cause
+3. Fix systematically by category (not one-by-one)
+4. Redesign tests that are fundamentally flawed
+5. Establish test quality standards
+6. Document test coverage
 
 **Deliverables**:
-- All 35/35 tests passing
-- Documentation of changes made
-- Verification report
+- Complete test inventory and categorization
+- Test quality standards document
+- Test coverage matrix
+- All 35/35 tests passing and actually validating functionality
+- Documentation of all changes
 
 ## Implementation Stages
 
@@ -96,10 +107,10 @@ Three-stage approach to identify, analyze, and fix the failing tests:
 - **Actions**: Test execution, code analysis, comparison
 - **Success Criteria**: Root cause identified for each failing test
 
-### Stage 3: Fix Implementation (Estimated: 2-3 hours)
-- **Objective**: Resolve all test failures
-- **Actions**: Code/test fixes, verification
-- **Success Criteria**: 35/35 tests passing, CI green
+### Stage 3: Complete Test Suite Audit and Redesign (Estimated: 3-4 days)
+- **Objective**: Create functional, maintainable test suite
+- **Actions**: Full audit, categorization, systematic fixes, quality standards, coverage analysis
+- **Success Criteria**: 35/35 tests passing, quality standards met, coverage documented
 
 ## Dependencies
 
@@ -137,10 +148,10 @@ Three-stage approach to identify, analyze, and fix the failing tests:
 
 ## Timeline
 
-- **Stage 1**: 1 hour
-- **Stage 2**: 1-2 hours
-- **Stage 3**: 2-3 hours
-- **Total**: 4-6 hours estimated
+- **Stage 1**: 1 hour (✅ Complete)
+- **Stage 2**: 1-2 hours (✅ Complete, with critical review)
+- **Stage 3**: 3-4 days (~39 hours)
+- **Total**: 3-4 days estimated (revised from initial 4-6 hours after discovering scope)
 
 ## Context
 
@@ -154,6 +165,6 @@ This issue emerged during Epic #15 development. Child #18 (CSS Path Resolution) 
 
 ---
 
-**Version**: 1.0
+**Version**: 2.0
 **Created**: October 9, 2025
-**Last Updated**: October 9, 2025
+**Last Updated**: October 10, 2025 (Major revision after Stage 2 critical review)

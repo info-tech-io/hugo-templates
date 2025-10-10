@@ -430,8 +430,10 @@ error_trap_handler() {
 
 # Initialize error handling system
 init_error_handling() {
-    # Set up trap for unexpected errors
-    trap 'error_trap_handler $LINENO' ERR
+    # Set up trap for unexpected errors, unless disabled for testing
+    if [[ "${DISABLE_ERROR_TRAP:-false}" != "true" ]]; then
+        trap 'error_trap_handler $LINENO' ERR
+    fi
 
     # Initialize error counters
     ERROR_COUNT=0

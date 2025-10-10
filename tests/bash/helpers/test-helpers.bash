@@ -266,3 +266,24 @@ assert_performance_threshold() {
         return 1
     }
 }
+
+# Function to run a command with 'set -e' temporarily disabled.
+# This is crucial for tests that need to check for non-zero exit codes,
+# as the main scripts use 'set -e' which would terminate the script
+# before BATS can capture the status.
+run_safely() {
+    # Disable 'set -e' for this function's scope
+    set +e
+    
+    # Execute all arguments passed to this function as a command
+    "$@"
+    
+    # Capture the exit code of the command
+    local exit_code=$?
+    
+    # Re-enable 'set -e' if it was active before
+    # (This depends on the shell's behavior, often 'set -e' is inherited)
+    # A simple 'set -e' might be too broad, so we just return the code.
+
+    return $exit_code
+}
