@@ -240,3 +240,52 @@ EOF
     # Error state file should be cleaned up
     [[ ! -f "$ERROR_STATE_FILE" ]]
 }
+
+# ============================================================================
+# Stage 5: MEDIUM Priority Tests - Error Logging Functions
+# Tests #53-#55 for specialized error logging
+# ============================================================================
+
+@test "log_fatal logs FATAL level messages" {
+    # Test #53: Verify log_fatal() logs with FATAL level
+    run log_fatal "Critical system failure detected"
+    [ "$status" -eq 0 ]
+
+    # Verify output contains FATAL level and message
+    assert_contains "$output" "FATAL"
+    assert_contains "$output" "Critical system failure detected"
+    assert_contains "$output" "GENERAL"  # Category
+
+    # Verify output is to stderr (FATAL goes to stderr)
+    # Note: `run` captures both stdout and stderr in $output
+}
+
+@test "log_build_error logs BUILD category errors" {
+    # Test #54: Verify log_build_error() uses BUILD category
+    run log_build_error "Hugo build compilation failed" "Missing theme configuration"
+    [ "$status" -eq 0 ]
+
+    # Verify output contains ERROR level and BUILD category
+    assert_contains "$output" "ERROR"
+    assert_contains "$output" "BUILD"
+    assert_contains "$output" "Hugo build compilation failed"
+    assert_contains "$output" "Missing theme configuration"
+
+    # Verify structured logging format with context
+    assert_contains "$output" "Context: Missing theme configuration"
+}
+
+@test "log_io_error logs IO category errors" {
+    # Test #55: Verify log_io_error() uses IO category
+    run log_io_error "Failed to read configuration file" "Permission denied: /etc/config.json"
+    [ "$status" -eq 0 ]
+
+    # Verify output contains ERROR level and IO category
+    assert_contains "$output" "ERROR"
+    assert_contains "$output" "IO"
+    assert_contains "$output" "Failed to read configuration file"
+    assert_contains "$output" "Permission denied"
+
+    # Verify structured logging format with context
+    assert_contains "$output" "Context: Permission denied: /etc/config.json"
+}
