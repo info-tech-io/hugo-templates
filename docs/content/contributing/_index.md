@@ -198,26 +198,30 @@ Components integrate with templates through:
 
 ### Testing Requirements
 
-All contributions must include appropriate tests:
+All contributions must include appropriate tests.
 
+📚 **See our comprehensive [Testing Documentation](../developer-docs/testing/)** for:
+- **[Test Inventory](../developer-docs/testing/test-inventory/)** - Complete catalog of all 35+ tests
+- **[Testing Guidelines](../developer-docs/testing/guidelines/)** - Detailed standards with DO/DON'T examples
+- **[Coverage Matrix](../developer-docs/testing/coverage-matrix/)** - Function coverage analysis and gap identification
+
+**Quick Start**:
 ```bash
-# Run all tests
-npm test
+# Run all unit tests
+./scripts/test-bash.sh --suite unit
 
-# Run specific test suite
-npm test -- templates
-npm test -- components
-npm test -- build-scripts
+# Run with verbose output
+./scripts/test-bash.sh --suite unit --verbose
 
-# Test with coverage
-npm run test:coverage
+# Run specific test file
+./scripts/test-bash.sh --suite unit --file tests/bash/unit/build-functions.bats
 ```
 
-**Testing guidelines:**
-- Unit tests for utility functions
-- Integration tests for templates and components
-- Build tests for all template combinations
-- Documentation tests for example configurations
+**Testing Guidelines Summary:**
+- All contributions must include appropriate tests
+- Follow [Testing Guidelines](../developer-docs/testing/guidelines/) for patterns and best practices
+- Check [Test Inventory](../developer-docs/testing/test-inventory/) to avoid duplicating existing coverage
+- Use [Coverage Matrix](../developer-docs/testing/coverage-matrix/) to identify testing priorities
 
 ### Documentation Standards
 

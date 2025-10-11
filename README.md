@@ -122,6 +122,10 @@ hugo-templates/
 - **[Deployment Guide](docs/user-guides/deployment.md)** - Production deployment
 
 ### 🛠️ Developer Documentation
+- **[Testing Documentation](docs/content/developer-docs/testing/)** - Comprehensive testing guide with 35+ tests
+  - [Test Inventory](docs/content/developer-docs/testing/test-inventory.md) - Complete test catalog
+  - [Testing Guidelines](docs/content/developer-docs/testing/guidelines.md) - Standards and best practices
+  - [Coverage Matrix](docs/content/developer-docs/testing/coverage-matrix.md) - Function coverage analysis
 - **[Alternatives Analysis](docs/developer-docs/alternatives.md)** - How we compare to other Hugo tools
 - **[Component Development](docs/developer-docs/components.md)** - Creating custom components
 - **[GitHub Actions Guide](docs/developer-docs/github-actions.md)** - CI/CD workflows and optimization

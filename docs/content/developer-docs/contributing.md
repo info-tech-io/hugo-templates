@@ -267,62 +267,82 @@ validate_template() {
 
 ## Testing Requirements
 
-### Test Coverage
+### Comprehensive Testing Documentation
+
+📚 **We have comprehensive testing documentation!** See:
+- **[Testing Documentation Hub](./testing/)** - Complete testing guide
+- **[Test Inventory](./testing/test-inventory/)** - Catalog of all 35+ tests with metadata
+- **[Testing Guidelines](./testing/guidelines/)** - Detailed standards with DO/DON'T examples
+- **[Coverage Matrix](./testing/coverage-matrix/)** - Function coverage and gap analysis
+
+### Test Coverage Requirements
 
 All contributions must include appropriate tests:
 
 #### Bash Scripts (BATS Tests)
 
+See [Testing Guidelines](./testing/guidelines/) for comprehensive patterns and examples.
+
+**Quick Example**:
 ```bash
-# tests/bash/test_build.bats
+# tests/bash/unit/build-functions.bats
 
-@test "build script validates template parameter" {
-    run ./scripts/build.sh --template=nonexistent
-    [ "$status" -eq 1 ]
-    [[ "$output" =~ "Template 'nonexistent' not found" ]]
-}
+@test "validate_parameters accepts valid template" {
+    TEMPLATE="corporate"
+    mkdir -p "$PROJECT_ROOT/templates/corporate"
 
-@test "build script creates output directory" {
-    run ./scripts/build.sh --template=minimal --output=test-output
+    run validate_parameters
+
     [ "$status" -eq 0 ]
-    [ -d "test-output" ]
-    [ -f "test-output/index.html" ]
+    assert_contains "$output" "Parameter validation completed"
+}
+
+@test "validate_parameters rejects invalid template" {
+    TEMPLATE="nonexistent"
+
+    run validate_parameters
+
+    [ "$status" -eq 1 ]
+    assert_contains "$output" "Template directory not found"
 }
 ```
 
-#### Node.js Scripts (Jest Tests)
-
-```javascript
-// tests/node/validate.test.js
-
-const { validateTemplate } = require('../../scripts/validate');
-
-describe('validateTemplate', () => {
-    test('should validate existing template', () => {
-        expect(() => validateTemplate('minimal')).not.toThrow();
-    });
-
-    test('should throw error for non-existent template', () => {
-        expect(() => validateTemplate('nonexistent')).toThrow('Template not found');
-    });
-});
-```
+**Key Patterns** (from [Guidelines](./testing/guidelines/)):
+- Use `run` for capturing output and exit codes
+- Use direct call when checking variables (no `run`)
+- Use `run_safely` for error scenarios with `set -e`
+- Always pass required parameters explicitly
+- Use TEST_TEMP_DIR for test isolation
 
 ### Running Tests
 
 ```bash
-# Run all tests
-npm run test
+# Run all unit tests
+./scripts/test-bash.sh --suite unit
 
-# Run bash tests only
-./scripts/test-bash.sh
+# Run with verbose output
+./scripts/test-bash.sh --suite unit --verbose
 
-# Run Node.js tests only
-npm run test:node
+# Run specific test file
+./scripts/test-bash.sh --suite unit --file tests/bash/unit/build-functions.bats
 
-# Run tests for specific component
-./scripts/test-bash.sh --suite build
+# Run single test by name
+bats -f "validate_parameters accepts valid template" tests/bash/unit/build-functions.bats
 ```
+
+### Before Submitting
+
+1. **Write tests for your changes** - Follow [Testing Guidelines](./testing/guidelines/)
+2. **Run the test suite** - Ensure all tests pass
+3. **Check test coverage** - Review [Coverage Matrix](./testing/coverage-matrix/)
+4. **Update test inventory** - Add new tests to [Test Inventory](./testing/test-inventory/)
+
+**Quality Checklist**:
+- [ ] Tests validate real functionality (not just execution)
+- [ ] Both success and failure cases tested
+- [ ] Tests are isolated and independent
+- [ ] Test names are clear and descriptive
+- [ ] Followed established patterns from guidelines
 
 ## Component Development
 
