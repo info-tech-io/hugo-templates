@@ -47,8 +47,14 @@ create_build_functions_for_testing() {
 
         # Check if template exists
         if [[ ! -d "$PROJECT_ROOT/templates/$TEMPLATE" ]]; then
-            log_validation_error "Template directory not found: $TEMPLATE" ""
+            log_validation_error "Template directory not found: $TEMPLATE" "Check available templates in templates/ directory"
             return 1
+        fi
+
+        # Verbose output
+        if [[ "$VERBOSE" == "true" ]]; then
+            log_info "Template path: $PROJECT_ROOT/templates/$TEMPLATE"
+            log_info "Found template: $TEMPLATE"
         fi
 
         # Check Hugo availability
@@ -295,7 +301,7 @@ create_build_functions_for_testing() {
     create_test_module_config "$CONFIG"
     simulate_permission_error "$CONFIG"
 
-    run load_module_config "$CONFIG"
+    run_safely load_module_config "$CONFIG"
     [ "$status" -eq 1 ]
 
     # Restore permissions for cleanup
