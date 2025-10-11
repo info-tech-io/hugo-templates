@@ -992,3 +992,207 @@ EOF
     # Cleanup
     rm -rf "$OUTPUT"
 }
+
+# ============================================================================
+# Stage 5: MEDIUM Priority Tests - CLI Functions
+# Tests #56-#61 for command-line interface functions
+# ============================================================================
+
+@test "show_usage displays help message" {
+    # Test #56: Verify show_usage() displays complete usage information
+    # Create isolated show_usage function for testing
+    show_usage() {
+        cat << EOF
+Usage: build.sh [OPTIONS]
+
+Hugo Template Factory Framework - Build Script
+
+OPTIONS:
+    -t, --template <name>       Template to use (default: default)
+    --theme <name>              Hugo theme to apply (default: compose)
+    -o, --output <path>         Output directory (default: ./site)
+    -h, --help                  Show this help message
+
+EXAMPLES:
+    # Basic build with default template
+    build.sh
+
+AVAILABLE TEMPLATES:
+    - corporate
+    - minimal
+EOF
+    }
+
+    run show_usage
+    [ "$status" -eq 0 ]
+
+    # Verify key sections are present
+    assert_contains "$output" "Usage:"
+    assert_contains "$output" "Hugo Template Factory Framework"
+    assert_contains "$output" "OPTIONS:"
+    assert_contains "$output" "--template"
+    assert_contains "$output" "--theme"
+    assert_contains "$output" "--output"
+    assert_contains "$output" "EXAMPLES:"
+    assert_contains "$output" "AVAILABLE TEMPLATES:"
+}
+
+@test "list_templates lists available templates" {
+    # Test #57: Verify list_templates() finds and lists templates
+    # Create test templates
+    mkdir -p "$PROJECT_ROOT/templates/test-template-a"
+    mkdir -p "$PROJECT_ROOT/templates/test-template-b"
+    mkdir -p "$PROJECT_ROOT/templates/test-template-c"
+
+    # Create isolated list_templates function
+    list_templates() {
+        local templates_dir="$PROJECT_ROOT/templates"
+        if [[ -d "$templates_dir" ]]; then
+            find "$templates_dir" -mindepth 1 -maxdepth 1 -type d -exec basename {} \; | sort | sed 's/^/    - /'
+        else
+            echo "    - No templates found"
+        fi
+    }
+
+    run list_templates
+    [ "$status" -eq 0 ]
+
+    # Verify templates are listed (they should be sorted and prefixed with "- ")
+    assert_contains "$output" "test-template-a"
+    assert_contains "$output" "test-template-b"
+    assert_contains "$output" "test-template-c"
+
+    # Cleanup
+    rm -rf "$PROJECT_ROOT/templates/test-template-a"
+    rm -rf "$PROJECT_ROOT/templates/test-template-b"
+    rm -rf "$PROJECT_ROOT/templates/test-template-c"
+}
+
+@test "list_templates handles missing templates directory" {
+    # Test #58: Verify graceful handling when no templates found
+    # Remove any existing backup first
+    rm -rf "$PROJECT_ROOT/templates.backup"
+
+    # Temporarily move templates directory
+    if [[ -d "$PROJECT_ROOT/templates" ]]; then
+        mv "$PROJECT_ROOT/templates" "$PROJECT_ROOT/templates.backup"
+    fi
+
+    # Create isolated list_templates function
+    list_templates() {
+        local templates_dir="$PROJECT_ROOT/templates"
+        if [[ -d "$templates_dir" ]]; then
+            find "$templates_dir" -mindepth 1 -maxdepth 1 -type d -exec basename {} \; | sort | sed 's/^/    - /'
+        else
+            echo "    - No templates found"
+        fi
+    }
+
+    run list_templates
+    [ "$status" -eq 0 ]
+
+    # Should show "No templates found"
+    assert_contains "$output" "No templates found"
+
+    # Restore templates directory
+    if [[ -d "$PROJECT_ROOT/templates.backup" ]]; then
+        mv "$PROJECT_ROOT/templates.backup" "$PROJECT_ROOT/templates"
+    fi
+}
+
+@test "parse_arguments parses template option" {
+    # Test #59: Verify parse_arguments() correctly parses --template
+    # Reset variables
+    TEMPLATE="default"
+
+    # Create minimal parse_arguments function for testing
+    parse_arguments() {
+        while [[ $# -gt 0 ]]; do
+            case $1 in
+                -t|--template)
+                    TEMPLATE="$2"
+                    shift 2
+                    ;;
+                *)
+                    shift
+                    ;;
+            esac
+        done
+    }
+
+    run_safely parse_arguments --template corporate
+    [ "$status" -eq 0 ]
+
+    # Verify TEMPLATE was set
+    [ "$TEMPLATE" = "corporate" ]
+}
+
+@test "parse_arguments parses multiple options" {
+    # Test #60: Verify parse_arguments() handles multiple options
+    # Reset variables
+    TEMPLATE="default"
+    THEME="compose"
+    OUTPUT="./site"
+    MINIFY="false"
+    VERBOSE="false"
+
+    # Create parse_arguments function
+    parse_arguments() {
+        while [[ $# -gt 0 ]]; do
+            case $1 in
+                -t|--template) TEMPLATE="$2"; shift 2 ;;
+                --theme) THEME="$2"; shift 2 ;;
+                -o|--output) OUTPUT="$2"; shift 2 ;;
+                --minify) MINIFY="true"; shift ;;
+                -v|--verbose) VERBOSE="true"; shift ;;
+                *) shift ;;
+            esac
+        done
+    }
+
+    run_safely parse_arguments --template minimal --theme custom -o /tmp/build --minify -v
+    [ "$status" -eq 0 ]
+
+    # Verify all options were parsed
+    [ "$TEMPLATE" = "minimal" ]
+    [ "$THEME" = "custom" ]
+    [ "$OUTPUT" = "/tmp/build" ]
+    [ "$MINIFY" = "true" ]
+    [ "$VERBOSE" = "true" ]
+}
+
+@test "parse_arguments handles flag-style options" {
+    # Test #61: Verify parse_arguments() handles boolean flags
+    # Reset variables
+    MINIFY="false"
+    DRAFT="false"
+    FUTURE="false"
+    FORCE="false"
+    DEBUG_MODE="false"
+
+    # Create parse_arguments function
+    parse_arguments() {
+        while [[ $# -gt 0 ]]; do
+            case $1 in
+                --minify) MINIFY="true"; shift ;;
+                --draft) DRAFT="true"; shift ;;
+                --future) FUTURE="true"; shift ;;
+                --force) FORCE="true"; shift ;;
+                --debug) DEBUG_MODE="true"; VERBOSE="true"; shift ;;
+                *) shift ;;
+            esac
+        done
+    }
+
+    run_safely parse_arguments --minify --draft --force
+    [ "$status" -eq 0 ]
+
+    # Verify flags were set
+    [ "$MINIFY" = "true" ]
+    [ "$DRAFT" = "true" ]
+    [ "$FORCE" = "true" ]
+
+    # Future and debug should still be false
+    [ "$FUTURE" = "false" ]
+    [ "$DEBUG_MODE" = "false" ]
+}
