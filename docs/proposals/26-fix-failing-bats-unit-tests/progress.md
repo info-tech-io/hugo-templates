@@ -6,14 +6,23 @@
 graph LR
     A[Stage 1: Timeline Investigation] -->|✅ Complete| B[Stage 2: Root Cause Analysis]
     B -->|✅ Complete + Review| C[Stage 3: Test Suite Audit]
+    C -->|✅ Complete| D[Stage 4: Testing Documentation]
+    D -->|⏳ Planned| E[Stage 5: Coverage Enhancement]
+    E -->|⏳ Planned| F[Stage 6: CI/CD Validation]
 
     style A fill:#c8e6c9,stroke:#2e7d32
     style B fill:#c8e6c9,stroke:#2e7d32
     style C fill:#c8e6c9,stroke:#2e7d32
+    style D fill:#fff9c4,stroke:#f57c00
+    style E fill:#eeeeee,stroke:#9e9e9e
+    style F fill:#eeeeee,stroke:#9e9e9e
 
     click A "001-progress.md"
     click B "002-progress.md"
     click C "003-progress.md"
+    click D "004-progress.md"
+    click E "005-progress.md"
+    click F "006-progress.md"
 ```
 
 ## Timeline
@@ -24,15 +33,20 @@ graph LR
 | 2. Root Cause Analysis | ✅ Complete | Oct 9 | Oct 10 | 1h | Multiple systemic issues found |
 | 2.1 Critical Review | ✅ Complete | Oct 10 | Oct 10 | 1.5h | Initial analysis incomplete |
 | 3. Test Suite Audit & Redesign | ✅ Complete | Oct 10 | Oct 11 | ~2 days | All 35 tests passing (100%) |
+| 4. Testing Documentation | ⏳ Planned | - | - | Est: 4-6h | Create comprehensive testing docs |
+| 5. Coverage Enhancement | ⏳ Planned | - | - | Est: 1-3 days | Add tests for ≥95% coverage |
+| 6. CI/CD Validation | ⏳ Planned | - | - | Est: 2-3h | Final QA and issue closure |
 
 ## Metrics (Updated 2025-10-11)
 
-- **Issue Priority**: HIGH (blocks Epic #15) - ✅ **RESOLVED**
-- **Initial Estimate**: 4-6 hours
-- **Revised Estimate**: 3-4 days (after discovering scope)
-- **Actual Duration**: ~2 days
+- **Issue Priority**: HIGH (blocks Epic #15) - ✅ **TESTS FIXED, DOCUMENTATION IN PROGRESS**
+- **Initial Estimate**: 4-6 hours (Stage 1-3 only)
+- **Stage 1-3 Duration**: ~2 days (test fixes)
+- **Revised Total Estimate**: 4-7 days (all 6 stages)
+- **Current Progress**: Stage 3 complete, Stage 4-6 planned
 - **Tests Status**: **35/35 passing (100%)** 🎉
-- **Blocker For**: Epic #15 merge, Child #19 start - ✅ **UNBLOCKED**
+- **Blocker For**: Epic #15 merge - ✅ **UNBLOCKED** (tests passing)
+- **Remaining Work**: Documentation (Stage 4), Coverage (Stage 5), Validation (Stage 6)
 
 ## Major Findings
 
@@ -130,11 +144,31 @@ return 1                  # Test FAILS (but function is correct!)
 
 ### Deliverables
 
-- [ ] `test-inventory.md` - Complete test catalog
-- [ ] `testing-guidelines.md` - Quality standards
-- [ ] `test-coverage-matrix.md` - Coverage analysis
-- [ ] All 35/35 tests passing
-- [ ] Tests actually validate real functionality
+**Stage 3 (Complete)**:
+- [x] All 35/35 tests passing
+- [x] Tests actually validate real functionality
+- [x] Test fixes documented
+
+**Stage 4 (Planned)**:
+- [ ] `docs/content/developer-docs/testing/_index.md` - Testing overview
+- [ ] `docs/content/developer-docs/testing/test-inventory.md` - Complete test catalog
+- [ ] `docs/content/developer-docs/testing/guidelines.md` - Testing standards (~500-700 lines)
+- [ ] `docs/content/developer-docs/testing/coverage-matrix.md` - Coverage analysis
+- [ ] Updated contributing.md, README.md with testing links
+
+**Stage 5 (Planned)**:
+- [ ] New tests for HIGH priority coverage gaps
+- [ ] New tests for MEDIUM priority coverage gaps
+- [ ] Integration and edge case tests
+- [ ] ≥95% test coverage achieved
+- [ ] Updated test inventory and coverage matrix
+
+**Stage 6 (Planned)**:
+- [ ] CI/CD pipeline validated
+- [ ] Documentation quality verified
+- [ ] Optional break tests completed
+- [ ] Final report created
+- [ ] Issue ready for closure
 
 ## Artifacts Preserved
 
@@ -154,13 +188,25 @@ From Stage 2 investigation:
 
 ## Progress Reports
 
+### Completed Stages
 - [Stage 1: Timeline Investigation](001-progress.md) - ✅ Complete
 - [Stage 2: Root Cause Analysis](002-progress.md) - ✅ Complete (with critical review)
-- [Stage 3: Test Suite Audit](003-test-suite-audit.md) - ⏳ Planned
-- [Stage 3: Progress](003-progress.md) - ⏳ Not started
+- [Stage 3: Test Suite Audit & Redesign](003-progress.md) - ✅ Complete
+
+### Planned Stages
+- [Stage 4: Testing Documentation](004-progress.md) - ⏳ Planned
+- [Stage 5: Coverage Enhancement](005-progress.md) - ⏳ Planned
+- [Stage 6: CI/CD Validation](006-progress.md) - ⏳ Planned
+
+### Planning Documents
+- [Overall Design Document](design.md) - Version 3.0 (includes all 6 stages)
+- [Stage 3 Plan](003-test-suite-audit.md)
+- [Stage 4 Plan](004-testing-documentation.md)
+- [Stage 5 Plan](005-coverage-enhancement.md)
+- [Stage 6 Plan](006-cicd-validation.md)
 
 ---
 
-**Last Updated**: October 10, 2025
-**Status**: 🔄 **PLANNING STAGE 3** - Comprehensive audit approach
-**Next Action**: Begin Stage 3.1 - Create test inventory
+**Last Updated**: October 11, 2025
+**Status**: 🎉 **STAGE 3 COMPLETE** - All tests passing! Moving to Stage 4: Documentation
+**Next Action**: Begin Stage 4 implementation - Create testing documentation structure

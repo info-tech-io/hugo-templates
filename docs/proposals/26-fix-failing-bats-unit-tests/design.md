@@ -29,12 +29,15 @@ The tests were likely:
 
 ## Solution Overview
 
-Three-stage approach to identify, analyze, and fix the failing tests:
+**Six-stage comprehensive approach** to identify, fix, document, and validate the test suite:
 
 ### High-Level Approach
 1. **Timeline Investigation** (Stage 1): Find when tests were created and when they started failing
 2. **Root Cause Analysis** (Stage 2): Analyze why tests are failing
-3. **Fix Implementation** (Stage 3): Implement fixes and verify
+3. **Fix Implementation** (Stage 3): Implement fixes and verify all tests passing
+4. **Testing Documentation** (Stage 4): Create comprehensive testing documentation
+5. **Coverage Enhancement** (Stage 5): Add missing tests based on coverage analysis
+6. **CI/CD Validation** (Stage 6): Final validation and quality assurance
 
 ## Technical Design
 
@@ -69,31 +72,68 @@ Three-stage approach to identify, analyze, and fix the failing tests:
 - Classification: test issue vs code issue
 - Fix strategy for each test
 
-### Stage 3: Complete Test Suite Audit and Redesign (REVISED)
+### Stage 3: Complete Test Suite Audit and Redesign
 
-**Objective**: Conduct comprehensive audit and redesign test suite
+**Objective**: Fix all failing tests and achieve 100% pass rate
 
-**Background**: Stage 2 revealed that the problem is far more complex than initially thought. Tests have multiple systemic issues:
-- 41% have logic errors in implementation
-- 12% have wrong expectations/assertions
-- 18% affected by trap ERR (partially solved)
-- 6% affected by set -e (one case solved)
-- 35% require deep analysis
+**Background**: Stage 2 revealed multiple systemic issues requiring systematic fixes by category.
 
 **Method**:
-1. Create comprehensive test inventory
-2. Categorize all tests by root cause
-3. Fix systematically by category (not one-by-one)
-4. Redesign tests that are fundamentally flawed
-5. Establish test quality standards
-6. Document test coverage
+1. Fix tests by category (C → E → D)
+2. Apply systematic solutions (run_safely, parameter fixes, mock enhancements)
+3. Verify all 35 tests passing
 
 **Deliverables**:
-- Complete test inventory and categorization
-- Test quality standards document
-- Test coverage matrix
-- All 35/35 tests passing and actually validating functionality
-- Documentation of all changes
+- All 35/35 tests passing
+- Test fixes documented in 003-progress.md
+
+### Stage 4: Testing Documentation
+
+**Objective**: Create comprehensive testing documentation for long-term maintainability
+
+**Method**:
+1. Create `docs/content/developer-docs/testing/` directory structure
+2. Write test inventory with all 35 tests catalogued
+3. Write detailed testing guidelines with DO/DON'T examples
+4. Create test coverage matrix
+5. Integrate with existing contributing documentation
+
+**Deliverables**:
+- `docs/content/developer-docs/testing/_index.md` - Testing overview
+- `docs/content/developer-docs/testing/test-inventory.md` - Complete test catalog
+- `docs/content/developer-docs/testing/guidelines.md` - Detailed testing standards
+- `docs/content/developer-docs/testing/coverage-matrix.md` - Coverage analysis
+- Updated `contributing.md` and `README.md` with testing links
+
+### Stage 5: Test Coverage Enhancement
+
+**Objective**: Add missing tests based on coverage analysis from Stage 4
+
+**Method**:
+1. Analyze coverage matrix to identify critical gaps
+2. Prioritize missing tests by importance
+3. Implement high-priority test cases
+4. Validate coverage meets ≥95% target
+
+**Deliverables**:
+- New test cases for uncovered functions
+- Updated test-inventory.md
+- Coverage validation report
+
+### Stage 6: CI/CD Validation & Quality Assurance
+
+**Objective**: Final validation and integration testing
+
+**Method**:
+1. Push to remote and verify GitHub Actions
+2. Run intentional break tests (optional)
+3. Final documentation review
+4. Update all progress tracking
+
+**Deliverables**:
+- CI/CD integration validated
+- Final progress report
+- Issue #26 ready for closure
 
 ## Implementation Stages
 
@@ -101,16 +141,37 @@ Three-stage approach to identify, analyze, and fix the failing tests:
 - **Objective**: Find when tests were created and when they started failing
 - **Actions**: Git log analysis, progress report review
 - **Success Criteria**: Complete timeline documented
+- **Status**: ✅ Complete
 
 ### Stage 2: Root Cause Analysis (Estimated: 1-2 hours)
 - **Objective**: Understand failure reasons
 - **Actions**: Test execution, code analysis, comparison
 - **Success Criteria**: Root cause identified for each failing test
+- **Status**: ✅ Complete
 
-### Stage 3: Complete Test Suite Audit and Redesign (Estimated: 3-4 days)
-- **Objective**: Create functional, maintainable test suite
-- **Actions**: Full audit, categorization, systematic fixes, quality standards, coverage analysis
-- **Success Criteria**: 35/35 tests passing, quality standards met, coverage documented
+### Stage 3: Test Suite Fixes (Estimated: ~2 days)
+- **Objective**: Fix all failing tests
+- **Actions**: Systematic fixes by category, verification
+- **Success Criteria**: 35/35 tests passing
+- **Status**: ✅ Complete
+
+### Stage 4: Testing Documentation (Estimated: 4-6 hours)
+- **Objective**: Create comprehensive testing documentation
+- **Actions**: Write test inventory, guidelines, coverage matrix; integrate with docs
+- **Success Criteria**: Complete testing documentation in `docs/content/developer-docs/testing/`
+- **Status**: ⏳ Planned
+
+### Stage 5: Coverage Enhancement (Estimated: 1-3 days, depends on gaps)
+- **Objective**: Add missing tests based on coverage analysis
+- **Actions**: Gap analysis, prioritization, implementation
+- **Success Criteria**: ≥95% test coverage achieved
+- **Status**: ⏳ Planned
+
+### Stage 6: CI/CD Validation (Estimated: 2-3 hours)
+- **Objective**: Final validation and quality assurance
+- **Actions**: CI integration testing, optional break tests, final review
+- **Success Criteria**: All validation checks pass, Issue ready for closure
+- **Status**: ⏳ Planned
 
 ## Dependencies
 
@@ -140,18 +201,36 @@ Three-stage approach to identify, analyze, and fix the failing tests:
 
 ## Success Metrics
 
+**Stage 1-3 (Test Fixes)**:
 - ✅ All BATS unit tests passing (35/35)
-- ✅ CI pipeline green on epic/federated-build-system
-- ✅ No regressions in other functionality
-- ✅ Tests pass on all platforms (ubuntu, macos)
 - ✅ Root cause documented and understood
+
+**Stage 4 (Documentation)**:
+- [ ] Complete testing documentation created
+- [ ] Test inventory catalogues all 35 tests
+- [ ] Detailed guidelines with examples
+- [ ] Coverage matrix identifies gaps
+
+**Stage 5 (Coverage Enhancement)**:
+- [ ] Test coverage ≥95%
+- [ ] Critical gaps covered
+- [ ] New tests documented
+
+**Stage 6 (Final Validation)**:
+- [ ] CI pipeline green on epic/federated-build-system
+- [ ] No regressions in other functionality
+- [ ] Tests pass on all platforms (ubuntu, macos)
+- [ ] All documentation complete and integrated
 
 ## Timeline
 
-- **Stage 1**: 1 hour (✅ Complete)
-- **Stage 2**: 1-2 hours (✅ Complete, with critical review)
-- **Stage 3**: 3-4 days (~39 hours)
-- **Total**: 3-4 days estimated (revised from initial 4-6 hours after discovering scope)
+- **Stage 1**: 1 hour (✅ Complete - Oct 9)
+- **Stage 2**: 1-2 hours (✅ Complete - Oct 9-10)
+- **Stage 3**: ~2 days (✅ Complete - Oct 10-11)
+- **Stage 4**: 4-6 hours (⏳ Planned)
+- **Stage 5**: 1-3 days depending on gaps (⏳ Planned)
+- **Stage 6**: 2-3 hours (⏳ Planned)
+- **Total**: 4-7 days (revised from initial 4-6 hours after discovering full scope)
 
 ## Context
 
@@ -165,6 +244,6 @@ This issue emerged during Epic #15 development. Child #18 (CSS Path Resolution) 
 
 ---
 
-**Version**: 2.0
+**Version**: 3.0
 **Created**: October 9, 2025
-**Last Updated**: October 10, 2025 (Major revision after Stage 2 critical review)
+**Last Updated**: October 11, 2025 (Added Stages 4-6: Documentation, Coverage, Validation)
