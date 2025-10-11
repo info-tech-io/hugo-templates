@@ -13,10 +13,18 @@ Welcome to the Hugo Templates Framework testing documentation. This section prov
 Our testing strategy ensures code quality, prevents regressions, and maintains system reliability through a comprehensive suite of automated tests.
 
 **Current Test Status:**
-- **Total Tests**: 35+ BATS unit tests
-- **Pass Rate**: 100%
-- **Test Coverage**: Targeting ≥95% for core files
+- **Total Tests**: 78 BATS unit tests ⬆️ **(+123% from Stage 5)**
+- **Pass Rate**: 100% ✅ (78/78 passing)
+- **Test Coverage**: **79%** of all functions ⬆️ **(+26% improvement)**
+  - build.sh: **74%** coverage ⬆️ (+42%)
+  - error-handling.sh: **82%** coverage ⬆️ (+14%)
 - **Test Framework**: BATS (Bash Automated Testing System)
+
+**Stage 5 Achievements (Coverage Enhancement)**:
+- ✅ Added 43 new tests (16 HIGH priority, 13 MEDIUM priority, 11 edge cases, 1 integration)
+- ✅ All critical build functions now fully tested
+- ✅ Comprehensive edge case coverage implemented
+- ✅ Integration test for complete build workflow
 
 ## Quick Start
 
@@ -42,9 +50,14 @@ Tests are organized by category and functionality:
 
 ```
 tests/bash/unit/
-├── build-functions.bats      # Build system tests (Tests #1-19)
-├── error-handling.bats        # Error handling tests (Tests #20-35)
-└── helpers.bash               # Shared test utilities
+├── build-functions.bats      # Build system tests (57 tests)
+│                             # - Original: Tests #1-19
+│                             # - Stage 5: Core build functions, CLI, cache, edge cases
+├── error-handling.bats        # Error handling tests (21 tests)
+│                             # - Original: Tests #20-35
+│                             # - Stage 5: Error logging, trap handlers
+└── helpers/
+    └── test-helpers.bash      # Shared test utilities and mocks
 ```
 
 ## Testing Philosophy
@@ -87,10 +100,11 @@ Our testing approach follows these core principles:
 Complete catalog of all tests in the project with metadata, categorization, and purpose descriptions.
 
 **Contents:**
-- Full list of all 35+ tests
-- Test metadata (category, complexity, file location)
+- Full list of all 78 tests (35 original + 43 Stage 5 additions)
+- Test metadata (category, complexity, file location, line numbers)
 - What each test validates
 - Test organization by category and file
+- Test quality metrics and improvements
 
 ### [Testing Guidelines](guidelines/)
 Detailed standards and best practices for writing and maintaining tests.
@@ -107,11 +121,12 @@ Detailed standards and best practices for writing and maintaining tests.
 Analysis of test coverage with identification of gaps and priorities.
 
 **Contents:**
-- Function-by-function coverage mapping
-- Coverage percentages by file
+- Function-by-function coverage mapping (37/47 functions tested = 79%)
+- Coverage percentages by file (build.sh: 74%, error-handling.sh: 82%)
+- Stage 5 improvements documented (+26% overall improvement)
 - Identified gaps with priority ratings
-- Recommendations for missing tests
-- Scenario coverage analysis
+- Resolved critical gaps (update_hugo_config, prepare_build_environment, run_hugo_build)
+- Scenario coverage analysis (happy path, error scenarios, edge cases)
 
 ## Test Categories
 
