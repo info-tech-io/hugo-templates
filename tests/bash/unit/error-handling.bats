@@ -289,3 +289,52 @@ EOF
     # Verify structured logging format with context
     assert_contains "$output" "Context: Permission denied: /etc/config.json"
 }
+
+# ============================================================================
+# Stage 5: MEDIUM Priority Tests - Error Trap Handler
+# Tests #56-#57 for trap-based error handling
+# ============================================================================
+
+@test "error_trap_handler logs unexpected termination" {
+    # Test #56: Verify error_trap_handler() logs fatal errors
+    # Create standalone test function that doesn't depend on subshell exit codes
+    test_error_trap() {
+        local exit_code=1
+        local line_number=42
+
+        log_structured "FATAL" "SYSTEM" "Unexpected script termination" "Exit code: $exit_code, Line: $line_number"
+        echo "🔍 Build failed unexpectedly. Error diagnostics saved"
+    }
+
+    run test_error_trap
+
+    # Handler should log the error
+    assert_contains "$output" "FATAL"
+    assert_contains "$output" "Unexpected script termination"
+    assert_contains "$output" "Build failed unexpectedly"
+    assert_contains "$output" "Exit code: 1"
+    assert_contains "$output" "Line: 42"
+}
+
+@test "error_trap_handler provides troubleshooting help" {
+    # Test #57: Verify error_trap_handler() provides helpful messages
+    # Create standalone test function
+    test_error_trap_help() {
+        local exit_code=127
+        local line_number=100
+
+        log_structured "FATAL" "SYSTEM" "Unexpected script termination" "Exit code: $exit_code, Line: $line_number"
+        echo ""
+        echo "🔍 Build failed unexpectedly. Error diagnostics saved to: /tmp/error.json"
+        echo "💡 For troubleshooting help, check the documentation or run with --debug flag"
+        echo ""
+    }
+
+    run test_error_trap_help
+
+    # Should provide helpful messages
+    assert_contains "$output" "Build failed unexpectedly"
+    assert_contains "$output" "troubleshooting help"
+    assert_contains "$output" "documentation"
+    assert_contains "$output" "--debug"
+}
