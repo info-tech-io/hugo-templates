@@ -274,16 +274,95 @@ assert_performance_threshold() {
 run_safely() {
     # Disable 'set -e' for this function's scope
     set +e
-    
+
     # Execute all arguments passed to this function as a command
     "$@"
-    
+
     # Capture the exit code of the command
     local exit_code=$?
-    
+
     # Re-enable 'set -e' if it was active before
     # (This depends on the shell's behavior, often 'set -e' is inherited)
     # A simple 'set -e' might be too broad, so we just return the code.
 
     return $exit_code
+}
+
+# Helper functions for build function tests (Stage 5)
+
+# Create a test hugo.toml configuration file
+create_test_hugo_config() {
+    local hugo_config="$1"
+    local base_url="${2:-http://localhost:1313}"
+    local theme="${3:-compose}"
+    local title="${4:-Test Site}"
+
+    cat > "$hugo_config" << EOF
+baseURL = '$base_url'
+languageCode = 'en-us'
+title = '$title'
+theme = '$theme'
+EOF
+}
+
+# Create an invalid/malformed hugo.toml
+create_invalid_hugo_config() {
+    local hugo_config="$1"
+    echo "invalid toml syntax [[[" > "$hugo_config"
+}
+
+# Assert file contains specific string
+assert_file_contains() {
+    local file="$1"
+    local expected="$2"
+
+    [[ -f "$file" ]] || {
+        echo "File does not exist: $file" >&2
+        return 1
+    }
+
+    local content
+    content=$(cat "$file")
+
+    [[ "$content" == *"$expected"* ]] || {
+        echo "Expected file '$file' to contain '$expected'" >&2
+        echo "File content:" >&2
+        echo "$content" >&2
+        return 1
+    }
+}
+
+# Assert file does NOT contain specific string
+assert_file_not_contains() {
+    local file="$1"
+    local unexpected="$2"
+
+    [[ -f "$file" ]] || {
+        echo "File does not exist: $file" >&2
+        return 1
+    }
+
+    local content
+    content=$(cat "$file")
+
+    [[ "$content" != *"$unexpected"* ]] || {
+        echo "Expected file '$file' to NOT contain '$unexpected'" >&2
+        return 1
+    }
+}
+
+# Create minimal test template structure for build tests
+create_minimal_test_template() {
+    local template_dir="$1"
+    local template_name="${2:-minimal}"
+
+    mkdir -p "$template_dir/$template_name"
+    echo "# $template_name" > "$template_dir/$template_name/README.md"
+
+    # Create minimal hugo.toml
+    create_test_hugo_config "$template_dir/$template_name/hugo.toml"
+
+    # Create minimal content
+    mkdir -p "$template_dir/$template_name/content"
+    echo "# Home" > "$template_dir/$template_name/content/_index.md"
 }

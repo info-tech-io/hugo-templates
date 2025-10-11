@@ -107,6 +107,43 @@ create_build_functions_for_testing() {
         log_info "Components processed successfully"
         return 0
     }
+
+    # Real update_hugo_config() function from build.sh (lines 681-714)
+    # Added in Stage 5 for test coverage
+    update_hugo_config() {
+        log_info "Updating Hugo configuration..."
+
+        local hugo_config="$OUTPUT/hugo.toml"
+        if [[ ! -f "$hugo_config" ]]; then
+            log_warning "No hugo.toml found, creating minimal configuration"
+            cat > "$hugo_config" << EOF
+baseURL = '${BASE_URL:-http://localhost:1313}'
+languageCode = 'en-us'
+title = 'Hugo Template Factory Site'
+theme = '$THEME'
+EOF
+        fi
+
+        # Update configuration based on parameters
+        if [[ -n "$BASE_URL" ]]; then
+            log_verbose "Setting baseURL to: $BASE_URL"
+            sed -i "s|baseURL = .*|baseURL = '$BASE_URL'|" "$hugo_config"
+        fi
+
+        if [[ "$THEME" != "compose" ]]; then
+            log_verbose "Setting theme to: $THEME"
+            sed -i "s|theme = .*|theme = '$THEME'|" "$hugo_config"
+        fi
+
+        # Add environment-specific settings
+        if [[ "$ENVIRONMENT" == "production" ]]; then
+            echo "" >> "$hugo_config"
+            echo "# Production environment settings" >> "$hugo_config"
+            echo "environment = \"production\"" >> "$hugo_config"
+        fi
+
+        log_success "Hugo configuration updated"
+    }
 }
 
 @test "validate_parameters accepts valid template" {
@@ -319,4 +356,132 @@ create_build_functions_for_testing() {
 
     # Should suggest a solution
     assert_contains "$output" "Check" || assert_contains "$output" "template"
+}
+
+# ============================================================================
+# Stage 5: HIGH Priority Tests - update_hugo_config()
+# Tests #47-#51 for core Hugo configuration management
+# ============================================================================
+
+@test "update_hugo_config creates minimal configuration" {
+    # Test #47: Verify config creation when file missing
+    OUTPUT="$TEST_TEMP_DIR/output"
+    BASE_URL="http://test.example.com"
+    THEME="minimal"
+
+    # Ensure OUTPUT directory exists but no hugo.toml
+    mkdir -p "$OUTPUT"
+    [[ ! -f "$OUTPUT/hugo.toml" ]]
+
+    # Call function (use run_safely to avoid error trap issues)
+    run_safely update_hugo_config
+    [ "$status" -eq 0 ]
+
+    # Verify hugo.toml created
+    assert_file_exists "$OUTPUT/hugo.toml"
+
+    # Verify file contains expected values
+    assert_file_contains "$OUTPUT/hugo.toml" "baseURL = 'http://test.example.com'"
+    assert_file_contains "$OUTPUT/hugo.toml" "languageCode = 'en-us'"
+    assert_file_contains "$OUTPUT/hugo.toml" "title = 'Hugo Template Factory Site'"
+    assert_file_contains "$OUTPUT/hugo.toml" "theme = 'minimal'"
+
+    # Verify success message in output
+    assert_contains "$output" "Hugo configuration updated"
+}
+
+@test "update_hugo_config updates existing baseURL" {
+    # Test #48: Verify baseURL update in existing config
+    OUTPUT="$TEST_TEMP_DIR/output"
+    BASE_URL="https://production.example.com"
+    THEME="compose"
+
+    # Create OUTPUT directory with existing hugo.toml
+    mkdir -p "$OUTPUT"
+    create_test_hugo_config "$OUTPUT/hugo.toml" "http://localhost:1313" "compose"
+
+    # Verify initial baseURL
+    assert_file_contains "$OUTPUT/hugo.toml" "http://localhost:1313"
+
+    # Call function to update baseURL (use run_safely)
+    run_safely update_hugo_config
+    [ "$status" -eq 0 ]
+
+    # Verify baseURL was updated
+    assert_file_contains "$OUTPUT/hugo.toml" "baseURL = 'https://production.example.com'"
+
+    # Verify old baseURL is gone
+    assert_file_not_contains "$OUTPUT/hugo.toml" "http://localhost:1313"
+
+    # Verify other values unchanged
+    assert_file_contains "$OUTPUT/hugo.toml" "languageCode = 'en-us'"
+}
+
+@test "update_hugo_config updates theme setting" {
+    # Test #49: Verify theme update works
+    OUTPUT="$TEST_TEMP_DIR/output"
+    BASE_URL=""
+    THEME="custom-theme"
+
+    # Create OUTPUT with existing hugo.toml
+    mkdir -p "$OUTPUT"
+    create_test_hugo_config "$OUTPUT/hugo.toml" "http://localhost:1313" "compose"
+
+    # Verify initial theme
+    assert_file_contains "$OUTPUT/hugo.toml" "theme = 'compose'"
+
+    # Call function with different theme (use run_safely)
+    run_safely update_hugo_config
+    [ "$status" -eq 0 ]
+
+    # Verify theme was updated
+    assert_file_contains "$OUTPUT/hugo.toml" "theme = 'custom-theme'"
+
+    # Verify old theme is gone
+    assert_file_not_contains "$OUTPUT/hugo.toml" "theme = 'compose'"
+}
+
+@test "update_hugo_config adds production settings" {
+    # Test #50: Verify production environment settings added
+    OUTPUT="$TEST_TEMP_DIR/output"
+    BASE_URL="https://prod.example.com"
+    THEME="compose"
+    ENVIRONMENT="production"
+
+    # Create OUTPUT with existing hugo.toml
+    mkdir -p "$OUTPUT"
+    create_test_hugo_config "$OUTPUT/hugo.toml"
+
+    # Call function with production environment (use run_safely)
+    run_safely update_hugo_config
+    [ "$status" -eq 0 ]
+
+    # Verify production settings added
+    assert_file_contains "$OUTPUT/hugo.toml" "# Production environment settings"
+    assert_file_contains "$OUTPUT/hugo.toml" "environment = \"production\""
+
+    # Verify success message
+    assert_contains "$output" "Hugo configuration updated"
+}
+
+@test "update_hugo_config works without BASE_URL parameter" {
+    # Test #51a: Verify function works when BASE_URL not set
+    OUTPUT="$TEST_TEMP_DIR/output"
+    BASE_URL=""  # Empty BASE_URL
+    THEME="compose"
+    ENVIRONMENT="development"
+
+    # Ensure OUTPUT directory exists but no hugo.toml
+    mkdir -p "$OUTPUT"
+
+    # Call function without BASE_URL (use run_safely)
+    run_safely update_hugo_config
+    [ "$status" -eq 0 ]
+
+    # Verify hugo.toml created with default baseURL
+    assert_file_exists "$OUTPUT/hugo.toml"
+    assert_file_contains "$OUTPUT/hugo.toml" "baseURL = 'http://localhost:1313'"
+
+    # Verify function completed successfully
+    assert_contains "$output" "Hugo configuration updated"
 }
