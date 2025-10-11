@@ -144,6 +144,121 @@ EOF
 
         log_success "Hugo configuration updated"
     }
+
+    # Simplified prepare_build_environment() function from build.sh (lines 469-678)
+    # Simplified version for testing - removes parallel processing complexity
+    prepare_build_environment() {
+        log_info "Preparing build environment..."
+
+        # Create output directory
+        mkdir -p "$OUTPUT" || {
+            log_error "Failed to create output directory: $OUTPUT"
+            return 1
+        }
+        log_verbose "Created output directory: $OUTPUT"
+
+        # Validate template path
+        local template_path="$PROJECT_ROOT/templates/$TEMPLATE"
+        if [[ ! -d "$template_path" ]]; then
+            log_error "Template directory not found: $template_path"
+            return 1
+        fi
+
+        # Copy template files to OUTPUT
+        log_verbose "Copying template files from: $template_path"
+        if cp -r "$template_path"/* "$OUTPUT/" 2>/dev/null; then
+            log_verbose "Template files copied successfully"
+        else
+            log_error "Failed to copy template files from $template_path to $OUTPUT"
+            return 1
+        fi
+
+        # Copy theme files if theme directory exists
+        local theme_path="$PROJECT_ROOT/themes/$THEME"
+        if [[ -d "$theme_path" ]]; then
+            log_verbose "Copying theme: $THEME"
+            mkdir -p "$OUTPUT/themes"
+            if cp -r "$theme_path" "$OUTPUT/themes/" 2>/dev/null; then
+                log_verbose "Theme copied successfully"
+            else
+                log_warning "Failed to copy theme: $THEME"
+            fi
+        else
+            log_verbose "Theme directory not found: $theme_path (skipping)"
+        fi
+
+        # Copy custom content if specified
+        if [[ -n "$CONTENT" && -d "$CONTENT" ]]; then
+            log_verbose "Copying custom content from: $CONTENT"
+            mkdir -p "$OUTPUT/content"
+            if cp -r "$CONTENT"/* "$OUTPUT/content/" 2>/dev/null; then
+                log_verbose "Custom content copied successfully"
+            else
+                log_warning "Failed to copy custom content"
+            fi
+        fi
+
+        log_success "Build environment prepared"
+    }
+
+    # Simplified run_hugo_build() function from build.sh (lines 801-848)
+    # Simplified version for testing - focuses on core build logic
+    run_hugo_build() {
+        log_info "Running Hugo build..."
+
+        # Save current directory and change to OUTPUT
+        local original_dir="$PWD"
+        cd "$OUTPUT" || {
+            log_error "Failed to change to output directory: $OUTPUT"
+            return 1
+        }
+
+        # Check Hugo availability
+        if ! command -v hugo >/dev/null 2>&1; then
+            log_error "Hugo is not installed or not in PATH"
+            cd "$original_dir"
+            return 1
+        fi
+
+        # Build Hugo command
+        local hugo_cmd="hugo"
+
+        # Add flags based on parameters
+        [[ "$MINIFY" == "true" ]] && hugo_cmd+=" --minify"
+        [[ "$DRAFT" == "true" ]] && hugo_cmd+=" --draft"
+        [[ "$FUTURE" == "true" ]] && hugo_cmd+=" --future"
+        [[ -n "$BASE_URL" ]] && hugo_cmd+=" --baseURL \"$BASE_URL\""
+        [[ "$ENVIRONMENT" != "development" ]] && hugo_cmd+=" --environment $ENVIRONMENT"
+
+        # Set log level (Hugo 0.110+ uses different flags)
+        case "$LOG_LEVEL" in
+            debug) hugo_cmd+=" --verboseLog" ;;
+            warn) hugo_cmd+=" --quiet" ;;
+            error) hugo_cmd+=" --quiet" ;;
+            *) # info level - no special flags needed
+                ;;
+        esac
+
+        # Set destination (output to current directory since we're already in OUTPUT)
+        hugo_cmd+=" --destination ."
+
+        log_verbose "Running: $hugo_cmd"
+
+        # Execute Hugo build
+        local build_output
+        build_output=$(eval "$hugo_cmd" 2>&1) || {
+            log_error "Hugo build failed with output:"
+            echo "$build_output" | sed 's/^/   /' >&2
+            cd "$original_dir"
+            return 1
+        }
+
+        # Return to original directory
+        cd "$original_dir"
+
+        log_success "Hugo build completed"
+        return 0
+    }
 }
 
 @test "validate_parameters accepts valid template" {
@@ -484,4 +599,340 @@ EOF
 
     # Verify function completed successfully
     assert_contains "$output" "Hugo configuration updated"
+}
+
+# ============================================================================
+# Stage 5: HIGH Priority Tests - prepare_build_environment()
+# Tests #41-#46 for build environment preparation
+# ============================================================================
+
+@test "prepare_build_environment creates output directory" {
+    # Test #41: Verify OUTPUT directory is created
+    OUTPUT="$TEST_TEMP_DIR/build-output"
+    TEMPLATE="corporate"
+    THEME="compose"
+    CONTENT=""
+
+    # Create template directory with files
+    create_minimal_test_template "$PROJECT_ROOT/templates" "corporate"
+
+    # Verify OUTPUT doesn't exist yet
+    [[ ! -d "$OUTPUT" ]]
+
+    # Call function
+    run_safely prepare_build_environment
+    [ "$status" -eq 0 ]
+
+    # Verify OUTPUT directory was created
+    assert_directory_exists "$OUTPUT"
+
+    # Verify success message
+    assert_contains "$output" "Build environment prepared"
+}
+
+@test "prepare_build_environment copies template files" {
+    # Test #42: Verify template files are copied to OUTPUT
+    OUTPUT="$TEST_TEMP_DIR/build-output"
+    TEMPLATE="minimal"
+    THEME="compose"
+
+    # Create template with known files
+    mkdir -p "$PROJECT_ROOT/templates/minimal"
+    echo "# Test Template" > "$PROJECT_ROOT/templates/minimal/README.md"
+    echo "test content" > "$PROJECT_ROOT/templates/minimal/test.txt"
+    create_test_hugo_config "$PROJECT_ROOT/templates/minimal/hugo.toml"
+
+    # Call function
+    run_safely prepare_build_environment
+    [ "$status" -eq 0 ]
+
+    # Verify template files were copied to OUTPUT
+    assert_file_exists "$OUTPUT/README.md"
+    assert_file_exists "$OUTPUT/test.txt"
+    assert_file_exists "$OUTPUT/hugo.toml"
+
+    # Verify file contents match
+    assert_file_contains "$OUTPUT/README.md" "Test Template"
+    assert_file_contains "$OUTPUT/test.txt" "test content"
+}
+
+@test "prepare_build_environment handles missing template" {
+    # Test #43: Verify error handling for non-existent template
+    OUTPUT="$TEST_TEMP_DIR/build-output"
+    TEMPLATE="nonexistent-template"
+    THEME="compose"
+
+    # Ensure template directory doesn't exist
+    [[ ! -d "$PROJECT_ROOT/templates/$TEMPLATE" ]]
+
+    # Call function
+    run_safely prepare_build_environment
+    [ "$status" -eq 1 ]
+
+    # Verify error message logged
+    assert_contains "$output" "Template directory not found" || assert_contains "$output" "ERROR"
+
+    # OUTPUT directory might be created but should be empty or not exist
+    if [[ -d "$OUTPUT" ]]; then
+        # If directory exists, it should be empty (only the dir itself was created)
+        local file_count=$(find "$OUTPUT" -type f 2>/dev/null | wc -l)
+        [ "$file_count" -eq 0 ]
+    fi
+}
+
+@test "prepare_build_environment copies theme files" {
+    # Test #44: Verify theme copying works
+    OUTPUT="$TEST_TEMP_DIR/build-output"
+    TEMPLATE="minimal"
+    THEME="test-theme"
+
+    # Create template
+    create_minimal_test_template "$PROJECT_ROOT/templates" "minimal"
+
+    # Create theme directory with files
+    mkdir -p "$PROJECT_ROOT/themes/$THEME"
+    echo "# Theme" > "$PROJECT_ROOT/themes/$THEME/README.md"
+    echo "theme content" > "$PROJECT_ROOT/themes/$THEME/theme.txt"
+
+    # Call function
+    run_safely prepare_build_environment
+    [ "$status" -eq 0 ]
+
+    # Verify theme files copied to OUTPUT/themes/
+    assert_directory_exists "$OUTPUT/themes/$THEME"
+    assert_file_exists "$OUTPUT/themes/$THEME/README.md"
+    assert_file_exists "$OUTPUT/themes/$THEME/theme.txt"
+
+    # Verify theme file content
+    assert_file_contains "$OUTPUT/themes/$THEME/README.md" "Theme"
+}
+
+@test "prepare_build_environment handles missing theme gracefully" {
+    # Test #45: Verify non-existent theme doesn't break build
+    OUTPUT="$TEST_TEMP_DIR/build-output"
+    TEMPLATE="minimal"
+    THEME="nonexistent-theme"
+
+    # Create template but no theme
+    create_minimal_test_template "$PROJECT_ROOT/templates" "minimal"
+
+    # Ensure theme doesn't exist
+    [[ ! -d "$PROJECT_ROOT/themes/$THEME" ]]
+
+    # Call function - should succeed with warning
+    run_safely prepare_build_environment
+    [ "$status" -eq 0 ]
+
+    # Verify template files still copied
+    assert_file_exists "$OUTPUT/README.md"
+
+    # Verify warning about missing theme or verbose message
+    assert_contains "$output" "Theme directory not found" || assert_contains "$output" "skipping"
+
+    # Verify build completed successfully despite missing theme
+    assert_contains "$output" "Build environment prepared"
+}
+
+@test "prepare_build_environment copies custom content" {
+    # Test #46: Verify CONTENT parameter works
+    OUTPUT="$TEST_TEMP_DIR/build-output"
+    TEMPLATE="minimal"
+    THEME="compose"
+    CONTENT="$TEST_TEMP_DIR/custom-content"
+
+    # Create template
+    create_minimal_test_template "$PROJECT_ROOT/templates" "minimal"
+
+    # Create custom content directory with files
+    mkdir -p "$CONTENT"
+    echo "# Custom Page" > "$CONTENT/page.md"
+    echo "# Another Page" > "$CONTENT/another.md"
+
+    # Call function
+    run_safely prepare_build_environment
+    [ "$status" -eq 0 ]
+
+    # Verify content files copied to OUTPUT/content/
+    assert_file_exists "$OUTPUT/content/page.md"
+    assert_file_exists "$OUTPUT/content/another.md"
+
+    # Verify content
+    assert_file_contains "$OUTPUT/content/page.md" "Custom Page"
+    assert_file_contains "$OUTPUT/content/another.md" "Another Page"
+
+    # Verify success
+    assert_contains "$output" "Build environment prepared"
+}
+
+# ============================================================================
+# Stage 5: HIGH Priority Tests - run_hugo_build()
+# Tests #36-#40 for core Hugo build execution (MOST CRITICAL)
+# ============================================================================
+
+@test "run_hugo_build executes basic build" {
+    # Test #36: Basic Hugo build with minimal configuration
+    OUTPUT="$TEST_TEMP_DIR/build-output"
+    TEMPLATE="minimal"
+    THEME="compose"
+    MINIFY="false"
+    DRAFT="false"
+    FUTURE="false"
+    BASE_URL=""
+    ENVIRONMENT="development"
+    LOG_LEVEL="info"
+
+    # Create complete build environment
+    create_minimal_test_template "$PROJECT_ROOT/templates" "minimal"
+
+    # Prepare the environment first
+    run_safely prepare_build_environment
+    [ "$status" -eq 0 ]
+
+    # Verify OUTPUT exists and has hugo.toml
+    assert_directory_exists "$OUTPUT"
+    assert_file_exists "$OUTPUT/hugo.toml"
+
+    # Call run_hugo_build
+    run_safely run_hugo_build
+    [ "$status" -eq 0 ]
+
+    # Verify success message
+    assert_contains "$output" "Hugo build completed"
+
+    # Verify build ran (Hugo mock should execute)
+    assert_contains "$output" "Running Hugo build"
+}
+
+@test "run_hugo_build handles missing Hugo" {
+    # Test #37: Verify error handling when Hugo not available
+    OUTPUT="$TEST_TEMP_DIR/build-output"
+    TEMPLATE="minimal"
+    THEME="compose"
+
+    # Create build environment
+    create_minimal_test_template "$PROJECT_ROOT/templates" "minimal"
+    run_safely prepare_build_environment
+    [ "$status" -eq 0 ]
+
+    # Remove Hugo mock temporarily
+    mv "$TEST_TEMP_DIR/bin/hugo" "$TEST_TEMP_DIR/bin/hugo.bak"
+
+    # Call run_hugo_build - should fail
+    run_safely run_hugo_build
+    [ "$status" -eq 1 ]
+
+    # Verify error message
+    assert_contains "$output" "Hugo is not installed" || assert_contains "$output" "not in PATH"
+
+    # Restore Hugo mock
+    mv "$TEST_TEMP_DIR/bin/hugo.bak" "$TEST_TEMP_DIR/bin/hugo"
+}
+
+@test "run_hugo_build applies minify flag" {
+    # Test #38: Verify --minify flag is applied correctly
+    OUTPUT="$TEST_TEMP_DIR/build-output"
+    TEMPLATE="minimal"
+    THEME="compose"
+    MINIFY="true"  # Enable minify
+    BASE_URL=""
+    ENVIRONMENT="development"
+
+    # Create build environment
+    create_minimal_test_template "$PROJECT_ROOT/templates" "minimal"
+    run_safely prepare_build_environment
+    [ "$status" -eq 0 ]
+
+    # Create enhanced Hugo mock that echoes command
+    cat > "$TEST_TEMP_DIR/bin/hugo" << 'EOF'
+#!/bin/bash
+# Enhanced Hugo mock that shows what command was run
+echo "Mock Hugo called with: $@"
+if [[ "$*" == *"--minify"* ]]; then
+    echo "Minify flag detected"
+fi
+echo "Hugo Static Site Generator v0.148.0"
+exit 0
+EOF
+    chmod +x "$TEST_TEMP_DIR/bin/hugo"
+
+    # Call run_hugo_build with MINIFY=true
+    run_safely run_hugo_build
+    [ "$status" -eq 0 ]
+
+    # Verify minify flag was used
+    assert_contains "$output" "--minify" || assert_contains "$output" "Minify flag"
+
+    # Verify build completed
+    assert_contains "$output" "Hugo build completed"
+}
+
+@test "run_hugo_build applies environment setting" {
+    # Test #39: Verify --environment flag works
+    OUTPUT="$TEST_TEMP_DIR/build-output"
+    TEMPLATE="minimal"
+    THEME="compose"
+    ENVIRONMENT="production"  # Set production environment
+    MINIFY="false"
+
+    # Create build environment
+    create_minimal_test_template "$PROJECT_ROOT/templates" "minimal"
+    run_safely prepare_build_environment
+    [ "$status" -eq 0 ]
+
+    # Create enhanced Hugo mock that shows environment
+    cat > "$TEST_TEMP_DIR/bin/hugo" << 'EOF'
+#!/bin/bash
+echo "Mock Hugo called with: $@"
+if [[ "$*" == *"--environment production"* ]]; then
+    echo "Production environment detected"
+fi
+echo "Hugo Static Site Generator v0.148.0"
+exit 0
+EOF
+    chmod +x "$TEST_TEMP_DIR/bin/hugo"
+
+    # Call run_hugo_build with ENVIRONMENT=production
+    run_safely run_hugo_build
+    [ "$status" -eq 0 ]
+
+    # Verify environment flag was used
+    assert_contains "$output" "--environment production" || assert_contains "$output" "Production environment"
+
+    # Verify build completed
+    assert_contains "$output" "Hugo build completed"
+}
+
+@test "run_hugo_build handles build failure" {
+    # Test #40: Verify graceful handling of Hugo build errors
+    OUTPUT="$TEST_TEMP_DIR/build-output"
+    TEMPLATE="minimal"
+    THEME="compose"
+    ENVIRONMENT="development"
+
+    # Create build environment
+    create_minimal_test_template "$PROJECT_ROOT/templates" "minimal"
+    run_safely prepare_build_environment
+    [ "$status" -eq 0 ]
+
+    # Create Hugo mock that fails
+    cat > "$TEST_TEMP_DIR/bin/hugo" << 'EOF'
+#!/bin/bash
+echo "Error: Template not found" >&2
+echo "Build failed at stage: template-processing" >&2
+exit 1
+EOF
+    chmod +x "$TEST_TEMP_DIR/bin/hugo"
+
+    # Call run_hugo_build - should fail gracefully
+    run_safely run_hugo_build
+    [ "$status" -eq 1 ]
+
+    # Verify error was logged
+    assert_contains "$output" "Hugo build failed" || assert_contains "$output" "ERROR"
+
+    # Verify error output was captured
+    assert_contains "$output" "Template not found" || assert_contains "$output" "Build failed"
+
+    # Function should return to original directory even on error
+    # (This is implicit in the function implementation)
 }
