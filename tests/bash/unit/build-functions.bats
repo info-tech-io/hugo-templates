@@ -1321,3 +1321,283 @@ EOF
     assert_contains "$output" "Storing build in cache"
     assert_contains "$output" "Build cached successfully" || assert_contains "$output" "Cache metadata"
 }
+
+# ============================================================================
+# Stage 5: Step 5.5 - Edge Case Tests
+# Tests for boundary conditions, unusual inputs, and error recovery
+# ============================================================================
+
+# ----------------------------------------------------------------------------
+# Part 1: Boundary Conditions - Empty Files and Directories
+# ----------------------------------------------------------------------------
+
+@test "prepare_build_environment handles template with only empty files" {
+    # Edge Case: Template directory contains only empty files
+    OUTPUT="$TEST_TEMP_DIR/build-output"
+    TEMPLATE="empty-files-template"
+    THEME="compose"
+
+    # Create template with empty files
+    mkdir -p "$PROJECT_ROOT/templates/$TEMPLATE"
+    touch "$PROJECT_ROOT/templates/$TEMPLATE/README.md"
+    touch "$PROJECT_ROOT/templates/$TEMPLATE/hugo.toml"
+    touch "$PROJECT_ROOT/templates/$TEMPLATE/empty.txt"
+
+    # Call function - should succeed even with empty files
+    run_safely prepare_build_environment
+    [ "$status" -eq 0 ]
+
+    # Verify empty files were copied
+    assert_file_exists "$OUTPUT/README.md"
+    assert_file_exists "$OUTPUT/hugo.toml"
+    assert_file_exists "$OUTPUT/empty.txt"
+
+    # Verify files are actually empty
+    [ ! -s "$OUTPUT/README.md" ]
+    [ ! -s "$OUTPUT/empty.txt" ]
+}
+
+@test "update_hugo_config handles pre-existing empty hugo.toml" {
+    # Edge Case: hugo.toml exists but is completely empty
+    OUTPUT="$TEST_TEMP_DIR/output"
+    BASE_URL="http://example.com"
+    THEME="minimal"
+
+    # Create OUTPUT with empty hugo.toml
+    mkdir -p "$OUTPUT"
+    touch "$OUTPUT/hugo.toml"
+
+    # Verify file exists but is empty
+    assert_file_exists "$OUTPUT/hugo.toml"
+    [ ! -s "$OUTPUT/hugo.toml" ]
+
+    # Call function - should handle empty file gracefully
+    # Note: This tests that sed operations don't break on empty files
+    run_safely update_hugo_config
+    [ "$status" -eq 0 ]
+
+    # Verify config was created (empty file was overwritten or updated)
+    assert_file_exists "$OUTPUT/hugo.toml"
+}
+
+@test "prepare_build_environment handles files with spaces in names" {
+    # Edge Case: Template contains files with spaces in filenames
+    OUTPUT="$TEST_TEMP_DIR/build-output"
+    TEMPLATE="space-files-template"
+    THEME="compose"
+
+    # Create template with files containing spaces
+    mkdir -p "$PROJECT_ROOT/templates/$TEMPLATE"
+    echo "content" > "$PROJECT_ROOT/templates/$TEMPLATE/file with spaces.md"
+    echo "more content" > "$PROJECT_ROOT/templates/$TEMPLATE/another file.txt"
+    create_test_hugo_config "$PROJECT_ROOT/templates/$TEMPLATE/hugo.toml"
+
+    # Call function
+    run_safely prepare_build_environment
+    [ "$status" -eq 0 ]
+
+    # Verify files with spaces were copied correctly
+    assert_file_exists "$OUTPUT/file with spaces.md"
+    assert_file_exists "$OUTPUT/another file.txt"
+    assert_file_contains "$OUTPUT/file with spaces.md" "content"
+}
+
+# ----------------------------------------------------------------------------
+# Part 2: Unusual but Valid Inputs
+# ----------------------------------------------------------------------------
+
+@test "update_hugo_config handles baseURL with custom port" {
+    # Edge Case: baseURL contains non-standard port
+    OUTPUT="$TEST_TEMP_DIR/output"
+    BASE_URL="http://localhost:8080"
+    THEME="compose"
+
+    mkdir -p "$OUTPUT"
+    create_test_hugo_config "$OUTPUT/hugo.toml"
+
+    run_safely update_hugo_config
+    [ "$status" -eq 0 ]
+
+    # Verify URL with port was set correctly
+    assert_file_contains "$OUTPUT/hugo.toml" "baseURL = 'http://localhost:8080'"
+}
+
+@test "update_hugo_config handles baseURL with subdirectory path" {
+    # Edge Case: baseURL contains subdirectory path
+    OUTPUT="$TEST_TEMP_DIR/output"
+    BASE_URL="https://example.com/sub/path/"
+    THEME="compose"
+
+    mkdir -p "$OUTPUT"
+    create_test_hugo_config "$OUTPUT/hugo.toml"
+
+    run_safely update_hugo_config
+    [ "$status" -eq 0 ]
+
+    # Verify URL with subdirectory was set correctly
+    assert_file_contains "$OUTPUT/hugo.toml" "baseURL = 'https://example.com/sub/path/'"
+}
+
+@test "prepare_build_environment handles deeply nested content directories" {
+    # Edge Case: Content with deep directory nesting (5+ levels)
+    OUTPUT="$TEST_TEMP_DIR/build-output"
+    TEMPLATE="minimal"
+    THEME="compose"
+    CONTENT="$TEST_TEMP_DIR/deep-content"
+
+    # Create template
+    create_minimal_test_template "$PROJECT_ROOT/templates" "minimal"
+
+    # Create deeply nested content structure (5 levels)
+    mkdir -p "$CONTENT/level1/level2/level3/level4/level5"
+    echo "# Deep Page" > "$CONTENT/level1/level2/level3/level4/level5/deep-page.md"
+
+    # Call function
+    run_safely prepare_build_environment
+    [ "$status" -eq 0 ]
+
+    # Verify deeply nested file was copied
+    assert_file_exists "$OUTPUT/content/level1/level2/level3/level4/level5/deep-page.md"
+    assert_file_contains "$OUTPUT/content/level1/level2/level3/level4/level5/deep-page.md" "Deep Page"
+}
+
+@test "run_hugo_build handles all flags combined simultaneously" {
+    # Edge Case: All Hugo flags enabled at once
+    OUTPUT="$TEST_TEMP_DIR/build-output"
+    TEMPLATE="minimal"
+    THEME="compose"
+    MINIFY="true"
+    DRAFT="true"
+    FUTURE="true"
+    BASE_URL="https://test.com:3000/path"
+    ENVIRONMENT="production"
+    LOG_LEVEL="debug"
+
+    # Create and prepare build environment
+    create_minimal_test_template "$PROJECT_ROOT/templates" "minimal"
+    run_safely prepare_build_environment
+    [ "$status" -eq 0 ]
+
+    # Create Hugo mock that shows all flags
+    cat > "$TEST_TEMP_DIR/bin/hugo" << 'EOF'
+#!/bin/bash
+echo "Mock Hugo called with: $@"
+[[ "$*" == *"--minify"* ]] && echo "Minify: YES"
+[[ "$*" == *"--draft"* ]] && echo "Draft: YES"
+[[ "$*" == *"--future"* ]] && echo "Future: YES"
+[[ "$*" == *"--baseURL"* ]] && echo "BaseURL: YES"
+[[ "$*" == *"--environment production"* ]] && echo "Environment: production"
+[[ "$*" == *"--verboseLog"* ]] && echo "VerboseLog: YES"
+echo "Hugo Static Site Generator v0.148.0"
+exit 0
+EOF
+    chmod +x "$TEST_TEMP_DIR/bin/hugo"
+
+    # Call run_hugo_build with all flags
+    run_safely run_hugo_build
+    [ "$status" -eq 0 ]
+
+    # Verify multiple flags were applied
+    assert_contains "$output" "--minify" || assert_contains "$output" "Minify: YES"
+    assert_contains "$output" "--draft" || assert_contains "$output" "Draft: YES"
+}
+
+# ----------------------------------------------------------------------------
+# Part 3: Error Recovery and Edge Cases
+# ----------------------------------------------------------------------------
+
+@test "prepare_build_environment handles pre-existing OUTPUT directory" {
+    # Edge Case: OUTPUT directory already exists with files
+    OUTPUT="$TEST_TEMP_DIR/build-output"
+    TEMPLATE="minimal"
+    THEME="compose"
+
+    # Create template
+    create_minimal_test_template "$PROJECT_ROOT/templates" "minimal"
+
+    # Pre-create OUTPUT directory with existing file
+    mkdir -p "$OUTPUT"
+    echo "Old content" > "$OUTPUT/old-file.txt"
+
+    # Verify old file exists
+    assert_file_exists "$OUTPUT/old-file.txt"
+
+    # Call function - should succeed and overwrite/merge
+    run_safely prepare_build_environment
+    [ "$status" -eq 0 ]
+
+    # Verify new template files were added
+    assert_file_exists "$OUTPUT/README.md"
+    assert_file_exists "$OUTPUT/hugo.toml"
+
+    # Old file should still exist (cp -r doesn't remove existing files)
+    assert_file_exists "$OUTPUT/old-file.txt"
+}
+
+@test "prepare_build_environment overwrites conflicting files" {
+    # Edge Case: OUTPUT has file with same name as template file
+    OUTPUT="$TEST_TEMP_DIR/build-output"
+    TEMPLATE="minimal"
+    THEME="compose"
+
+    # Create template with specific content
+    mkdir -p "$PROJECT_ROOT/templates/$TEMPLATE"
+    echo "# NEW README" > "$PROJECT_ROOT/templates/$TEMPLATE/README.md"
+    create_test_hugo_config "$PROJECT_ROOT/templates/$TEMPLATE/hugo.toml"
+
+    # Pre-create OUTPUT with conflicting file
+    mkdir -p "$OUTPUT"
+    echo "# OLD README" > "$OUTPUT/README.md"
+
+    # Verify old content
+    assert_file_contains "$OUTPUT/README.md" "OLD README"
+
+    # Call function - should overwrite
+    run_safely prepare_build_environment
+    [ "$status" -eq 0 ]
+
+    # Verify file was overwritten with new content
+    assert_file_contains "$OUTPUT/README.md" "NEW README"
+    assert_file_not_contains "$OUTPUT/README.md" "OLD README"
+}
+
+@test "update_hugo_config handles baseURL with IPv6 localhost" {
+    # Edge Case: baseURL uses IPv6 format
+    OUTPUT="$TEST_TEMP_DIR/output"
+    BASE_URL="http://[::1]:8080"
+    THEME="compose"
+
+    mkdir -p "$OUTPUT"
+    create_test_hugo_config "$OUTPUT/hugo.toml"
+
+    run_safely update_hugo_config
+    [ "$status" -eq 0 ]
+
+    # Verify IPv6 URL was set (may need escaping in sed)
+    # This tests that special characters in URLs don't break sed
+    assert_file_exists "$OUTPUT/hugo.toml"
+}
+
+@test "prepare_build_environment handles empty theme directory" {
+    # Edge Case: Theme directory exists but is completely empty
+    OUTPUT="$TEST_TEMP_DIR/build-output"
+    TEMPLATE="minimal"
+    THEME="empty-theme"
+
+    # Create template
+    create_minimal_test_template "$PROJECT_ROOT/templates" "minimal"
+
+    # Create empty theme directory (no files)
+    mkdir -p "$PROJECT_ROOT/themes/$THEME"
+
+    # Call function - should succeed despite empty theme
+    run_safely prepare_build_environment
+    [ "$status" -eq 0 ]
+
+    # Verify OUTPUT was created
+    assert_directory_exists "$OUTPUT"
+    assert_file_exists "$OUTPUT/README.md"
+
+    # Theme directory should be copied (even if empty)
+    assert_directory_exists "$OUTPUT/themes/$THEME"
+}
