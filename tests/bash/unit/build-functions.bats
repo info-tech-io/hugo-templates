@@ -936,3 +936,59 @@ EOF
     # Function should return to original directory even on error
     # (This is implicit in the function implementation)
 }
+
+# ============================================================================
+# Stage 5: Integration Test - Full Build Workflow
+# Test #52: Validates all HIGH priority functions working together
+# ============================================================================
+
+@test "full build workflow integrates prepare, update, and build" {
+    # Integration Test: Verify complete build workflow
+    # Tests that prepare_build_environment, update_hugo_config, and run_hugo_build work together
+
+    # Setup comprehensive build parameters
+    OUTPUT="$TEST_TEMP_DIR/integration-build"
+    TEMPLATE="integration-test"
+    THEME="compose"
+    BASE_URL="https://integration.example.com"
+    ENVIRONMENT="production"
+    MINIFY="true"
+    LOG_LEVEL="info"
+
+    # Create test template structure
+    create_minimal_test_template "$PROJECT_ROOT/templates" "$TEMPLATE"
+
+    # Verify OUTPUT doesn't exist initially
+    [[ ! -d "$OUTPUT" ]]
+
+    # Step 1: Prepare build environment
+    run_safely prepare_build_environment
+    [ "$status" -eq 0 ]
+    assert_contains "$output" "Build environment prepared"
+
+    # Verify environment preparation results
+    assert_directory_exists "$OUTPUT"
+    assert_file_exists "$OUTPUT/README.md"
+    assert_file_exists "$OUTPUT/hugo.toml"
+
+    # Step 2: Update Hugo configuration
+    run_safely update_hugo_config
+    [ "$status" -eq 0 ]
+    assert_contains "$output" "Hugo configuration updated"
+
+    # Verify configuration updates
+    assert_file_contains "$OUTPUT/hugo.toml" "baseURL = 'https://integration.example.com'"
+    assert_file_contains "$OUTPUT/hugo.toml" "environment = \"production\""
+
+    # Step 3: Run Hugo build
+    run_safely run_hugo_build
+    [ "$status" -eq 0 ]
+    assert_contains "$output" "Hugo build completed"
+
+    # Verify complete workflow success
+    # All 3 functions should have logged success messages
+    echo "Integration test completed: Full build workflow successful"
+
+    # Cleanup
+    rm -rf "$OUTPUT"
+}
