@@ -514,6 +514,15 @@ try {
         if (module.css_path_prefix) {
             console.log(`MODULE_${index}_CSS_PREFIX=${module.css_path_prefix}`);
         }
+        if (module.merge_strategy) {
+            const validStrategies = ['overwrite', 'preserve', 'merge', 'error'];
+            if (!validStrategies.includes(module.merge_strategy)) {
+                console.error(`ERROR: Invalid merge_strategy for '${module.name}': ${module.merge_strategy}`);
+                console.error(`  Valid strategies: ${validStrategies.join(', ')}`);
+                process.exit(1);
+            }
+            console.log(`MODULE_${index}_MERGE_STRATEGY=${module.merge_strategy}`);
+        }
     });
 
     // Success
@@ -1486,6 +1495,203 @@ EOF
 }
 
 # ==========================================
+# Stage 2.5: Intelligent Merging System
+# ==========================================
+# Functions for intelligent content merging with conflict detection
+# and merge strategies (overwrite|preserve|merge|error).
+# Part of Child Issue #19 - Download-Merge-Deploy Logic
+
+# Detect conflicts between existing and new content directories
+# Arguments:
+#   $1 - Existing content directory
+#   $2 - New content directory
+#   $3 - Output array variable for conflict paths
+# Returns:
+#   0 if no conflicts, 1 if conflicts detected
+detect_merge_conflicts() {
+    local existing_dir="$1"
+    local new_dir="$2"
+    local -n conflicts_array="$3"
+
+    enter_function "detect_merge_conflicts"
+    set_error_context "Detecting merge conflicts"
+
+    # Check if directories exist
+    if [[ ! -d "$existing_dir" ]]; then
+        log_verbose "No existing content - no conflicts possible"
+        exit_function
+        return 0
+    fi
+
+    if [[ ! -d "$new_dir" ]]; then
+        log_error "New content directory not found: $new_dir"
+        exit_function
+        return 1
+    fi
+
+    local conflict_count=0
+
+    # Find all files/directories in new content
+    while IFS= read -r new_item; do
+        # Get relative path
+        local rel_path="${new_item#$new_dir/}"
+
+        # Check if exists in existing content
+        local existing_item="$existing_dir/$rel_path"
+
+        if [[ -e "$existing_item" ]]; then
+            # Conflict detected
+            conflicts_array+=("$rel_path")
+            ((conflict_count++))
+
+            # Determine conflict type
+            if [[ -f "$new_item" ]] && [[ -f "$existing_item" ]]; then
+                log_verbose "  File conflict: $rel_path"
+            elif [[ -d "$new_item" ]] && [[ -d "$existing_item" ]]; then
+                log_verbose "  Directory conflict: $rel_path (may contain sub-conflicts)"
+            else
+                log_verbose "  Type conflict: $rel_path (file vs directory)"
+            fi
+        fi
+    done < <(find "$new_dir" -mindepth 1 2>/dev/null)
+
+    if [[ $conflict_count -gt 0 ]]; then
+        log_warning "Detected $conflict_count potential merge conflicts"
+        exit_function
+        return 1
+    else
+        log_success "No merge conflicts detected"
+        exit_function
+        return 0
+    fi
+}
+
+# Merge content using specified strategy
+# Arguments:
+#   $1 - Source directory (new content)
+#   $2 - Target directory (existing content)
+#   $3 - Merge strategy (overwrite|preserve|merge|error)
+# Returns:
+#   0 on success, 1 on failure
+merge_with_strategy() {
+    local source_dir="$1"
+    local target_dir="$2"
+    local strategy="${3:-overwrite}"
+
+    enter_function "merge_with_strategy"
+    set_error_context "Merging with strategy: $strategy"
+
+    log_info "Applying merge strategy: $strategy"
+    log_verbose "  Source: $source_dir"
+    log_verbose "  Target: $target_dir"
+
+    # Detect conflicts first
+    declare -a conflicts=()
+    detect_merge_conflicts "$target_dir" "$source_dir" conflicts
+
+    local has_conflicts=$?
+
+    # Apply strategy
+    case "$strategy" in
+        overwrite)
+            log_info "Strategy: Overwrite - new content replaces existing"
+
+            if [[ $has_conflicts -eq 1 ]]; then
+                log_warning "Overwriting ${#conflicts[@]} conflicting items"
+            fi
+
+            # Use rsync for better control
+            if command -v rsync >/dev/null 2>&1; then
+                rsync -a --delete-during "$source_dir/" "$target_dir/"
+            else
+                # Fallback to cp
+                cp -rf "$source_dir"/* "$target_dir/" 2>/dev/null || true
+            fi
+            ;;
+
+        preserve)
+            log_info "Strategy: Preserve - keep existing, skip conflicting new content"
+
+            if [[ $has_conflicts -eq 1 ]]; then
+                log_warning "Preserving ${#conflicts[@]} existing items, skipping new versions"
+            fi
+
+            # Copy only non-conflicting files
+            if command -v rsync >/dev/null 2>&1; then
+                rsync -a --ignore-existing "$source_dir/" "$target_dir/"
+            else
+                # Fallback: manual copy of non-conflicting files
+                find "$source_dir" -type f | while IFS= read -r source_file; do
+                    local rel_path="${source_file#$source_dir/}"
+                    local target_file="$target_dir/$rel_path"
+
+                    if [[ ! -e "$target_file" ]]; then
+                        mkdir -p "$(dirname "$target_file")"
+                        cp "$source_file" "$target_file"
+                    fi
+                done
+            fi
+            ;;
+
+        merge)
+            log_info "Strategy: Merge - combine compatible content"
+
+            # For directories: recursive merge
+            # For files: depends on format (HTML can be merged, binaries cannot)
+
+            find "$source_dir" -type f | while IFS= read -r source_file; do
+                local rel_path="${source_file#$source_dir/}"
+                local target_file="$target_dir/$rel_path"
+
+                if [[ ! -e "$target_file" ]]; then
+                    # No conflict - copy directly
+                    mkdir -p "$(dirname "$target_file")"
+                    cp "$source_file" "$target_file"
+                elif [[ -f "$target_file" ]]; then
+                    # Both exist - attempt merge based on file type
+                    if [[ "$source_file" =~ \.(html|htm|xml|txt)$ ]]; then
+                        log_warning "Merging text file: $rel_path (experimental)"
+                        # Simple concatenation for text files
+                        cat "$source_file" >> "$target_file"
+                    else
+                        # Binary or unknown - overwrite
+                        log_verbose "Overwriting non-mergeable file: $rel_path"
+                        cp "$source_file" "$target_file"
+                    fi
+                fi
+            done
+            ;;
+
+        error)
+            log_info "Strategy: Error - fail on any conflict"
+
+            if [[ $has_conflicts -eq 1 ]]; then
+                log_error "Merge conflicts detected with 'error' strategy"
+                log_error "Conflicting paths:"
+                for conflict in "${conflicts[@]}"; do
+                    log_error "  - $conflict"
+                done
+                exit_function
+                return 1
+            fi
+
+            # No conflicts - safe to merge
+            cp -r "$source_dir"/* "$target_dir"/ 2>/dev/null || true
+            ;;
+
+        *)
+            log_error "Unknown merge strategy: $strategy"
+            exit_function
+            return 1
+            ;;
+    esac
+
+    log_success "Merge completed with strategy: $strategy"
+    exit_function
+    return 0
+}
+
+# ==========================================
 # Stage 3: Output Management Functions
 # ==========================================
 
@@ -1496,6 +1702,33 @@ merge_federation_output() {
 
     log_federation "Merging module outputs into federation structure"
 
+    # If preserve-base-site, merge existing content first
+    if [[ "$PRESERVE_BASE_SITE" == "true" ]] && [[ -n "${EXISTING_PAGES_DIR:-}" ]]; then
+        log_info "Merging existing base site content"
+
+        if [[ -d "$EXISTING_PAGES_DIR" ]]; then
+            log_verbose "Existing content: $EXISTING_PAGES_DIR"
+
+            # Copy existing content to output (base layer)
+            if [[ ! -d "$OUTPUT" ]]; then
+                mkdir -p "$OUTPUT"
+            fi
+
+            # Use rsync or cp to copy base content
+            if command -v rsync >/dev/null 2>&1; then
+                rsync -a "$EXISTING_PAGES_DIR/" "$OUTPUT/"
+            else
+                cp -r "$EXISTING_PAGES_DIR"/* "$OUTPUT"/ 2>/dev/null || true
+            fi
+
+            local existing_count
+            existing_count=$(find "$OUTPUT" -type f | wc -l)
+            log_success "Merged $existing_count existing files into base"
+        else
+            log_warning "Existing pages directory not found, skipping base merge"
+        fi
+    fi
+
     # Convert exported space-separated strings back to arrays
     local -a output_dirs
     local -a build_status
@@ -1504,13 +1737,17 @@ merge_federation_output() {
 
     local merged_count=0
     local skipped_count=0
+    local conflict_count=0
 
     # Process each module
     for ((i=0; i<MODULES_COUNT; i++)); do
         local module_name_var="MODULE_${i}_NAME"
         local module_dest_var="MODULE_${i}_DESTINATION"
+        local module_strategy_var="MODULE_${i}_MERGE_STRATEGY"
+
         local module_name="${!module_name_var}"
         local module_dest="${!module_dest_var:-/}"
+        local module_strategy="${!module_strategy_var:-overwrite}"
 
         # Skip failed builds
         if [[ "${build_status[$i]}" != "success" ]]; then
@@ -1522,7 +1759,6 @@ merge_federation_output() {
         local module_output="${output_dirs[$i]}"
 
         # Determine target directory
-        # Remove leading slash for path joining
         local dest_path="${module_dest#/}"
         local target_dir="$OUTPUT"
 
@@ -1530,7 +1766,7 @@ merge_federation_output() {
             target_dir="$OUTPUT/$dest_path"
         fi
 
-        log_info "Merging $module_name → $target_dir"
+        log_info "Merging $module_name → $target_dir (strategy: $module_strategy)"
 
         # In dry-run mode, just show what would happen
         if [[ "$DRY_RUN" == "true" ]]; then
@@ -1545,21 +1781,26 @@ merge_federation_output() {
             continue
         fi
 
-        # Merge module output to target
-        if [[ -d "$module_output" ]]; then
-            # Use cp -r for recursive copy, preserving structure
-            if cp -r "$module_output"/* "$target_dir/" 2>/dev/null; then
-                log_success "Merged $module_name successfully"
-                merged_count=$((merged_count + 1))
-            else
-                log_error "Failed to merge module: $module_name"
-            fi
+        # Apply intelligent merge with strategy
+        if merge_with_strategy "$module_output" "$target_dir" "$module_strategy"; then
+            log_success "Merged $module_name successfully"
+            merged_count=$((merged_count + 1))
         else
-            log_warning "Module output directory not found: $module_output"
+            log_error "Failed to merge module: $module_name"
+            conflict_count=$((conflict_count + 1))
         fi
     done
 
-    log_info "Merge complete: $merged_count modules merged, $skipped_count skipped"
+    log_info "Merge summary:"
+    log_info "  - Modules merged: $merged_count"
+    log_info "  - Modules skipped: $skipped_count"
+    log_info "  - Merge conflicts: $conflict_count"
+
+    if [[ $merged_count -eq 0 ]] && [[ $conflict_count -gt 0 ]]; then
+        log_error "All module merges failed due to conflicts"
+        exit_function
+        return 1
+    fi
 
     if [[ $merged_count -eq 0 ]]; then
         log_error "No modules were merged successfully"
