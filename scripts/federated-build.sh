@@ -1004,6 +1004,162 @@ validate_rewritten_paths() {
 }
 
 # ============================================================================
+# STAGE 1.5: DOWNLOAD MANAGEMENT
+# ============================================================================
+# Functions for downloading existing GitHub Pages content to support
+# incremental federation updates with --preserve-base-site functionality.
+# Part of Child Issue #19 - Download-Merge-Deploy Logic
+
+# Download existing GitHub Pages content for preservation
+# Arguments:
+#   $1 - Base URL (e.g., https://info-tech-io.github.io)
+#   $2 - Output directory for downloaded content
+# Returns:
+#   0 on success, 1 on failure
+download_existing_pages() {
+    local base_url="$1"
+    local output_dir="$2"
+
+    enter_function "download_existing_pages"
+    set_error_context "Downloading existing pages from $base_url"
+
+    log_info "Downloading existing site content from: $base_url"
+
+    # Validate base URL
+    if [[ ! "$base_url" =~ ^https?:// ]]; then
+        log_error "Invalid base URL: $base_url"
+        log_error "URL must start with http:// or https://"
+        exit_function
+        return 1
+    fi
+
+    # Create output directory
+    mkdir -p "$output_dir" || {
+        log_io_error "Failed to create download directory: $output_dir"
+        exit_function
+        return 1
+    }
+
+    # Check if wget is available
+    if ! command -v wget >/dev/null 2>&1; then
+        log_dependency_error "wget is required for downloading existing pages"
+        log_error "Please install wget: apt-get install wget  or  brew install wget"
+        exit_function
+        return 1
+    fi
+
+    # Check available disk space
+    local available_kb
+    available_kb=$(df -k "$TEMP_DIR" 2>/dev/null | tail -1 | awk '{print $4}')
+    if [[ -n "$available_kb" ]] && [[ $available_kb -lt 102400 ]]; then
+        log_error "Insufficient disk space for download (< 100MB available)"
+        log_error "Available space: $(df -h "$TEMP_DIR" | tail -1 | awk '{print $4}')"
+        exit_function
+        return 1
+    fi
+
+    log_info "Available disk space: $(df -h "$TEMP_DIR" 2>/dev/null | tail -1 | awk '{print $4}' || echo 'unknown')"
+
+    # Dry-run mode
+    if [[ "$DRY_RUN" == "true" ]]; then
+        log_info "[DRY RUN] Would download: $base_url -> $output_dir"
+        log_info "[DRY RUN] wget options: --mirror --no-parent --convert-links --page-requisites"
+        exit_function
+        return 0
+    fi
+
+    # Download with wget (mirror mode)
+    log_verbose "Executing wget mirror: $base_url -> $output_dir"
+
+    local wget_opts=(
+        --mirror                    # Enable mirroring mode
+        --no-parent                 # Don't ascend to parent directory
+        --convert-links             # Convert links for local browsing
+        --adjust-extension          # Add .html extension if needed
+        --page-requisites           # Download CSS, JS, images
+        --no-host-directories       # Don't create hostname directory
+        --directory-prefix="$output_dir"  # Output to specific directory
+        --no-verbose                # Quiet output
+        --no-check-certificate      # Allow self-signed certificates
+        --timeout=30                # 30 second timeout
+        --tries=3                   # 3 retries
+        --waitretry=2               # 2 seconds between retries
+    )
+
+    # Add user-agent to avoid blocking
+    wget_opts+=(--user-agent="Hugo-Federation-Builder/1.0")
+
+    # Execute wget with progress monitoring and error handling
+    log_info "Download progress:"
+
+    local download_start
+    download_start=$(date +%s)
+    local wget_log="/tmp/wget-download-$$.log"
+
+    if wget "${wget_opts[@]}" "$base_url" 2>&1 | \
+        while IFS= read -r line; do
+            # Parse wget progress (if verbose mode)
+            if [[ "$VERBOSE" == "true" ]]; then
+                if [[ "$line" =~ saved ]]; then
+                    log_verbose "  $line"
+                fi
+            fi
+            echo "$line" >> "$wget_log"
+        done; then
+
+        local download_end
+        download_end=$(date +%s)
+        local download_time=$((download_end - download_start))
+
+        # Count downloaded files
+        local file_count
+        file_count=$(find "$output_dir" -type f 2>/dev/null | wc -l)
+
+        if [[ $file_count -eq 0 ]]; then
+            log_warning "No files downloaded - site may be empty or inaccessible"
+            log_warning "Continuing with normal build (no existing content to preserve)"
+            exit_function
+            return 0  # Not fatal - just means fresh build
+        fi
+
+        log_success "Downloaded existing site content successfully"
+        log_info "  - Files downloaded: $file_count"
+        log_info "  - Download time: ${download_time}s"
+
+        # Clean up log file
+        rm -f "$wget_log"
+
+        exit_function
+        return 0
+    else
+        local wget_exit_code=$?
+        log_error "wget failed with exit code: $wget_exit_code"
+
+        # Provide specific error messages based on exit code
+        case $wget_exit_code in
+            4)
+                log_error "Network timeout - unable to download existing pages"
+                log_error "Check network connection or disable --preserve-base-site"
+                ;;
+            6)
+                log_error "Authentication required for accessing $base_url"
+                log_error "Set GITHUB_TOKEN environment variable or disable --preserve-base-site"
+                ;;
+            8)
+                log_error "Server returned error (404, 500, etc.)"
+                log_error "Verify the base URL is correct: $base_url"
+                ;;
+            *)
+                log_error "See $wget_log for details"
+                ;;
+        esac
+
+        exit_function
+        return 1
+    fi
+}
+
+# ============================================================================
 # STAGE 2: BUILD ORCHESTRATION
 # ============================================================================
 
@@ -1578,6 +1734,34 @@ main() {
     if ! setup_output_structure; then
         log_error "Failed to setup output structure"
         exit 1
+    fi
+
+    # Stage 1.5: Download existing pages (if preserve-base-site enabled)
+    if [[ "$PRESERVE_BASE_SITE" == "true" ]]; then
+        log_federation "Stage 1.5: Downloading Existing Pages"
+
+        # Determine base URL from federation config
+        local base_url="${FEDERATION_BASE_URL:-}"
+
+        if [[ -z "$base_url" ]]; then
+            log_error "Cannot preserve base site: baseURL not specified in modules.json"
+            log_error "Add 'baseURL' to federation configuration or disable --preserve-base-site"
+            exit 1
+        fi
+
+        # Create directory for existing content
+        local existing_dir="$TEMP_DIR/existing-pages"
+
+        if ! download_existing_pages "$base_url" "$existing_dir"; then
+            log_error "Failed to download existing pages"
+            log_error "Consider running without --preserve-base-site for full rebuild"
+            exit 1
+        fi
+
+        # Store path for later merge
+        export EXISTING_PAGES_DIR="$existing_dir"
+
+        log_success "Existing pages preserved for merge"
     fi
 
     # Stage 2: Build orchestration
