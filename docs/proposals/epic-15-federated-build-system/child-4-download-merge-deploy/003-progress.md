@@ -7,6 +7,8 @@
 **Actual Duration**: ~3 hours
 **Dependencies**: Stage 1 & 2 complete
 
+**Commit**: [692ff6e](https://github.com/info-tech-io/hugo-templates/commit/692ff6e9745c194ff50660f17806c5446e5dc8e1) - Implementation
+
 ## Checklist
 
 ### Step 3.1: Enhanced Federation Validation
@@ -124,6 +126,9 @@
    - 3 rollback procedures
    - Troubleshooting scenarios
    - Best practices and advanced topics
+
+**Related Commit**:
+- Implementation: [692ff6e](https://github.com/info-tech-io/hugo-templates/commit/692ff6e9745c194ff50660f17806c5446e5dc8e1)
 
 ---
 
