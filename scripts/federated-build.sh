@@ -514,6 +514,15 @@ try {
         if (module.css_path_prefix) {
             console.log(`MODULE_${index}_CSS_PREFIX=${module.css_path_prefix}`);
         }
+        if (module.merge_strategy) {
+            const validStrategies = ['overwrite', 'preserve', 'merge', 'error'];
+            if (!validStrategies.includes(module.merge_strategy)) {
+                console.error(`ERROR: Invalid merge_strategy for '${module.name}': ${module.merge_strategy}`);
+                console.error(`  Valid strategies: ${validStrategies.join(', ')}`);
+                process.exit(1);
+            }
+            console.log(`MODULE_${index}_MERGE_STRATEGY=${module.merge_strategy}`);
+        }
     });
 
     // Success
@@ -1004,6 +1013,162 @@ validate_rewritten_paths() {
 }
 
 # ============================================================================
+# STAGE 1.5: DOWNLOAD MANAGEMENT
+# ============================================================================
+# Functions for downloading existing GitHub Pages content to support
+# incremental federation updates with --preserve-base-site functionality.
+# Part of Child Issue #19 - Download-Merge-Deploy Logic
+
+# Download existing GitHub Pages content for preservation
+# Arguments:
+#   $1 - Base URL (e.g., https://info-tech-io.github.io)
+#   $2 - Output directory for downloaded content
+# Returns:
+#   0 on success, 1 on failure
+download_existing_pages() {
+    local base_url="$1"
+    local output_dir="$2"
+
+    enter_function "download_existing_pages"
+    set_error_context "Downloading existing pages from $base_url"
+
+    log_info "Downloading existing site content from: $base_url"
+
+    # Validate base URL
+    if [[ ! "$base_url" =~ ^https?:// ]]; then
+        log_error "Invalid base URL: $base_url"
+        log_error "URL must start with http:// or https://"
+        exit_function
+        return 1
+    fi
+
+    # Create output directory
+    mkdir -p "$output_dir" || {
+        log_io_error "Failed to create download directory: $output_dir"
+        exit_function
+        return 1
+    }
+
+    # Check if wget is available
+    if ! command -v wget >/dev/null 2>&1; then
+        log_dependency_error "wget is required for downloading existing pages"
+        log_error "Please install wget: apt-get install wget  or  brew install wget"
+        exit_function
+        return 1
+    fi
+
+    # Check available disk space
+    local available_kb
+    available_kb=$(df -k "$TEMP_DIR" 2>/dev/null | tail -1 | awk '{print $4}')
+    if [[ -n "$available_kb" ]] && [[ $available_kb -lt 102400 ]]; then
+        log_error "Insufficient disk space for download (< 100MB available)"
+        log_error "Available space: $(df -h "$TEMP_DIR" | tail -1 | awk '{print $4}')"
+        exit_function
+        return 1
+    fi
+
+    log_info "Available disk space: $(df -h "$TEMP_DIR" 2>/dev/null | tail -1 | awk '{print $4}' || echo 'unknown')"
+
+    # Dry-run mode
+    if [[ "$DRY_RUN" == "true" ]]; then
+        log_info "[DRY RUN] Would download: $base_url -> $output_dir"
+        log_info "[DRY RUN] wget options: --mirror --no-parent --convert-links --page-requisites"
+        exit_function
+        return 0
+    fi
+
+    # Download with wget (mirror mode)
+    log_verbose "Executing wget mirror: $base_url -> $output_dir"
+
+    local wget_opts=(
+        --mirror                    # Enable mirroring mode
+        --no-parent                 # Don't ascend to parent directory
+        --convert-links             # Convert links for local browsing
+        --adjust-extension          # Add .html extension if needed
+        --page-requisites           # Download CSS, JS, images
+        --no-host-directories       # Don't create hostname directory
+        --directory-prefix="$output_dir"  # Output to specific directory
+        --no-verbose                # Quiet output
+        --no-check-certificate      # Allow self-signed certificates
+        --timeout=30                # 30 second timeout
+        --tries=3                   # 3 retries
+        --waitretry=2               # 2 seconds between retries
+    )
+
+    # Add user-agent to avoid blocking
+    wget_opts+=(--user-agent="Hugo-Federation-Builder/1.0")
+
+    # Execute wget with progress monitoring and error handling
+    log_info "Download progress:"
+
+    local download_start
+    download_start=$(date +%s)
+    local wget_log="/tmp/wget-download-$$.log"
+
+    if wget "${wget_opts[@]}" "$base_url" 2>&1 | \
+        while IFS= read -r line; do
+            # Parse wget progress (if verbose mode)
+            if [[ "$VERBOSE" == "true" ]]; then
+                if [[ "$line" =~ saved ]]; then
+                    log_verbose "  $line"
+                fi
+            fi
+            echo "$line" >> "$wget_log"
+        done; then
+
+        local download_end
+        download_end=$(date +%s)
+        local download_time=$((download_end - download_start))
+
+        # Count downloaded files
+        local file_count
+        file_count=$(find "$output_dir" -type f 2>/dev/null | wc -l)
+
+        if [[ $file_count -eq 0 ]]; then
+            log_warning "No files downloaded - site may be empty or inaccessible"
+            log_warning "Continuing with normal build (no existing content to preserve)"
+            exit_function
+            return 0  # Not fatal - just means fresh build
+        fi
+
+        log_success "Downloaded existing site content successfully"
+        log_info "  - Files downloaded: $file_count"
+        log_info "  - Download time: ${download_time}s"
+
+        # Clean up log file
+        rm -f "$wget_log"
+
+        exit_function
+        return 0
+    else
+        local wget_exit_code=$?
+        log_error "wget failed with exit code: $wget_exit_code"
+
+        # Provide specific error messages based on exit code
+        case $wget_exit_code in
+            4)
+                log_error "Network timeout - unable to download existing pages"
+                log_error "Check network connection or disable --preserve-base-site"
+                ;;
+            6)
+                log_error "Authentication required for accessing $base_url"
+                log_error "Set GITHUB_TOKEN environment variable or disable --preserve-base-site"
+                ;;
+            8)
+                log_error "Server returned error (404, 500, etc.)"
+                log_error "Verify the base URL is correct: $base_url"
+                ;;
+            *)
+                log_error "See $wget_log for details"
+                ;;
+        esac
+
+        exit_function
+        return 1
+    fi
+}
+
+# ============================================================================
 # STAGE 2: BUILD ORCHESTRATION
 # ============================================================================
 
@@ -1330,6 +1495,203 @@ EOF
 }
 
 # ==========================================
+# Stage 2.5: Intelligent Merging System
+# ==========================================
+# Functions for intelligent content merging with conflict detection
+# and merge strategies (overwrite|preserve|merge|error).
+# Part of Child Issue #19 - Download-Merge-Deploy Logic
+
+# Detect conflicts between existing and new content directories
+# Arguments:
+#   $1 - Existing content directory
+#   $2 - New content directory
+#   $3 - Output array variable for conflict paths
+# Returns:
+#   0 if no conflicts, 1 if conflicts detected
+detect_merge_conflicts() {
+    local existing_dir="$1"
+    local new_dir="$2"
+    local -n conflicts_array="$3"
+
+    enter_function "detect_merge_conflicts"
+    set_error_context "Detecting merge conflicts"
+
+    # Check if directories exist
+    if [[ ! -d "$existing_dir" ]]; then
+        log_verbose "No existing content - no conflicts possible"
+        exit_function
+        return 0
+    fi
+
+    if [[ ! -d "$new_dir" ]]; then
+        log_error "New content directory not found: $new_dir"
+        exit_function
+        return 1
+    fi
+
+    local conflict_count=0
+
+    # Find all files/directories in new content
+    while IFS= read -r new_item; do
+        # Get relative path
+        local rel_path="${new_item#$new_dir/}"
+
+        # Check if exists in existing content
+        local existing_item="$existing_dir/$rel_path"
+
+        if [[ -e "$existing_item" ]]; then
+            # Conflict detected
+            conflicts_array+=("$rel_path")
+            ((conflict_count++))
+
+            # Determine conflict type
+            if [[ -f "$new_item" ]] && [[ -f "$existing_item" ]]; then
+                log_verbose "  File conflict: $rel_path"
+            elif [[ -d "$new_item" ]] && [[ -d "$existing_item" ]]; then
+                log_verbose "  Directory conflict: $rel_path (may contain sub-conflicts)"
+            else
+                log_verbose "  Type conflict: $rel_path (file vs directory)"
+            fi
+        fi
+    done < <(find "$new_dir" -mindepth 1 2>/dev/null)
+
+    if [[ $conflict_count -gt 0 ]]; then
+        log_warning "Detected $conflict_count potential merge conflicts"
+        exit_function
+        return 1
+    else
+        log_success "No merge conflicts detected"
+        exit_function
+        return 0
+    fi
+}
+
+# Merge content using specified strategy
+# Arguments:
+#   $1 - Source directory (new content)
+#   $2 - Target directory (existing content)
+#   $3 - Merge strategy (overwrite|preserve|merge|error)
+# Returns:
+#   0 on success, 1 on failure
+merge_with_strategy() {
+    local source_dir="$1"
+    local target_dir="$2"
+    local strategy="${3:-overwrite}"
+
+    enter_function "merge_with_strategy"
+    set_error_context "Merging with strategy: $strategy"
+
+    log_info "Applying merge strategy: $strategy"
+    log_verbose "  Source: $source_dir"
+    log_verbose "  Target: $target_dir"
+
+    # Detect conflicts first
+    declare -a conflicts=()
+    detect_merge_conflicts "$target_dir" "$source_dir" conflicts
+
+    local has_conflicts=$?
+
+    # Apply strategy
+    case "$strategy" in
+        overwrite)
+            log_info "Strategy: Overwrite - new content replaces existing"
+
+            if [[ $has_conflicts -eq 1 ]]; then
+                log_warning "Overwriting ${#conflicts[@]} conflicting items"
+            fi
+
+            # Use rsync for better control
+            if command -v rsync >/dev/null 2>&1; then
+                rsync -a --delete-during "$source_dir/" "$target_dir/"
+            else
+                # Fallback to cp
+                cp -rf "$source_dir"/* "$target_dir/" 2>/dev/null || true
+            fi
+            ;;
+
+        preserve)
+            log_info "Strategy: Preserve - keep existing, skip conflicting new content"
+
+            if [[ $has_conflicts -eq 1 ]]; then
+                log_warning "Preserving ${#conflicts[@]} existing items, skipping new versions"
+            fi
+
+            # Copy only non-conflicting files
+            if command -v rsync >/dev/null 2>&1; then
+                rsync -a --ignore-existing "$source_dir/" "$target_dir/"
+            else
+                # Fallback: manual copy of non-conflicting files
+                find "$source_dir" -type f | while IFS= read -r source_file; do
+                    local rel_path="${source_file#$source_dir/}"
+                    local target_file="$target_dir/$rel_path"
+
+                    if [[ ! -e "$target_file" ]]; then
+                        mkdir -p "$(dirname "$target_file")"
+                        cp "$source_file" "$target_file"
+                    fi
+                done
+            fi
+            ;;
+
+        merge)
+            log_info "Strategy: Merge - combine compatible content"
+
+            # For directories: recursive merge
+            # For files: depends on format (HTML can be merged, binaries cannot)
+
+            find "$source_dir" -type f | while IFS= read -r source_file; do
+                local rel_path="${source_file#$source_dir/}"
+                local target_file="$target_dir/$rel_path"
+
+                if [[ ! -e "$target_file" ]]; then
+                    # No conflict - copy directly
+                    mkdir -p "$(dirname "$target_file")"
+                    cp "$source_file" "$target_file"
+                elif [[ -f "$target_file" ]]; then
+                    # Both exist - attempt merge based on file type
+                    if [[ "$source_file" =~ \.(html|htm|xml|txt)$ ]]; then
+                        log_warning "Merging text file: $rel_path (experimental)"
+                        # Simple concatenation for text files
+                        cat "$source_file" >> "$target_file"
+                    else
+                        # Binary or unknown - overwrite
+                        log_verbose "Overwriting non-mergeable file: $rel_path"
+                        cp "$source_file" "$target_file"
+                    fi
+                fi
+            done
+            ;;
+
+        error)
+            log_info "Strategy: Error - fail on any conflict"
+
+            if [[ $has_conflicts -eq 1 ]]; then
+                log_error "Merge conflicts detected with 'error' strategy"
+                log_error "Conflicting paths:"
+                for conflict in "${conflicts[@]}"; do
+                    log_error "  - $conflict"
+                done
+                exit_function
+                return 1
+            fi
+
+            # No conflicts - safe to merge
+            cp -r "$source_dir"/* "$target_dir"/ 2>/dev/null || true
+            ;;
+
+        *)
+            log_error "Unknown merge strategy: $strategy"
+            exit_function
+            return 1
+            ;;
+    esac
+
+    log_success "Merge completed with strategy: $strategy"
+    exit_function
+    return 0
+}
+
+# ==========================================
 # Stage 3: Output Management Functions
 # ==========================================
 
@@ -1340,6 +1702,33 @@ merge_federation_output() {
 
     log_federation "Merging module outputs into federation structure"
 
+    # If preserve-base-site, merge existing content first
+    if [[ "$PRESERVE_BASE_SITE" == "true" ]] && [[ -n "${EXISTING_PAGES_DIR:-}" ]]; then
+        log_info "Merging existing base site content"
+
+        if [[ -d "$EXISTING_PAGES_DIR" ]]; then
+            log_verbose "Existing content: $EXISTING_PAGES_DIR"
+
+            # Copy existing content to output (base layer)
+            if [[ ! -d "$OUTPUT" ]]; then
+                mkdir -p "$OUTPUT"
+            fi
+
+            # Use rsync or cp to copy base content
+            if command -v rsync >/dev/null 2>&1; then
+                rsync -a "$EXISTING_PAGES_DIR/" "$OUTPUT/"
+            else
+                cp -r "$EXISTING_PAGES_DIR"/* "$OUTPUT"/ 2>/dev/null || true
+            fi
+
+            local existing_count
+            existing_count=$(find "$OUTPUT" -type f | wc -l)
+            log_success "Merged $existing_count existing files into base"
+        else
+            log_warning "Existing pages directory not found, skipping base merge"
+        fi
+    fi
+
     # Convert exported space-separated strings back to arrays
     local -a output_dirs
     local -a build_status
@@ -1348,13 +1737,17 @@ merge_federation_output() {
 
     local merged_count=0
     local skipped_count=0
+    local conflict_count=0
 
     # Process each module
     for ((i=0; i<MODULES_COUNT; i++)); do
         local module_name_var="MODULE_${i}_NAME"
         local module_dest_var="MODULE_${i}_DESTINATION"
+        local module_strategy_var="MODULE_${i}_MERGE_STRATEGY"
+
         local module_name="${!module_name_var}"
         local module_dest="${!module_dest_var:-/}"
+        local module_strategy="${!module_strategy_var:-overwrite}"
 
         # Skip failed builds
         if [[ "${build_status[$i]}" != "success" ]]; then
@@ -1366,7 +1759,6 @@ merge_federation_output() {
         local module_output="${output_dirs[$i]}"
 
         # Determine target directory
-        # Remove leading slash for path joining
         local dest_path="${module_dest#/}"
         local target_dir="$OUTPUT"
 
@@ -1374,7 +1766,7 @@ merge_federation_output() {
             target_dir="$OUTPUT/$dest_path"
         fi
 
-        log_info "Merging $module_name → $target_dir"
+        log_info "Merging $module_name → $target_dir (strategy: $module_strategy)"
 
         # In dry-run mode, just show what would happen
         if [[ "$DRY_RUN" == "true" ]]; then
@@ -1389,21 +1781,26 @@ merge_federation_output() {
             continue
         fi
 
-        # Merge module output to target
-        if [[ -d "$module_output" ]]; then
-            # Use cp -r for recursive copy, preserving structure
-            if cp -r "$module_output"/* "$target_dir/" 2>/dev/null; then
-                log_success "Merged $module_name successfully"
-                merged_count=$((merged_count + 1))
-            else
-                log_error "Failed to merge module: $module_name"
-            fi
+        # Apply intelligent merge with strategy
+        if merge_with_strategy "$module_output" "$target_dir" "$module_strategy"; then
+            log_success "Merged $module_name successfully"
+            merged_count=$((merged_count + 1))
         else
-            log_warning "Module output directory not found: $module_output"
+            log_error "Failed to merge module: $module_name"
+            conflict_count=$((conflict_count + 1))
         fi
     done
 
-    log_info "Merge complete: $merged_count modules merged, $skipped_count skipped"
+    log_info "Merge summary:"
+    log_info "  - Modules merged: $merged_count"
+    log_info "  - Modules skipped: $skipped_count"
+    log_info "  - Merge conflicts: $conflict_count"
+
+    if [[ $merged_count -eq 0 ]] && [[ $conflict_count -gt 0 ]]; then
+        log_error "All module merges failed due to conflicts"
+        exit_function
+        return 1
+    fi
 
     if [[ $merged_count -eq 0 ]]; then
         log_error "No modules were merged successfully"
@@ -1415,18 +1812,131 @@ merge_federation_output() {
     return 0
 }
 
-# Validate the final federation output structure
+# ==========================================
+# Stage 3.5: Deployment Preparation
+# ==========================================
+# Functions for generating deployment artifacts, enhanced manifests,
+# and deployment readiness verification.
+# Part of Child Issue #19 - Download-Merge-Deploy Logic
+
+# Generate deployment artifacts (checksums, metadata, statistics)
+# Returns: 0 on success, 1 on failure
+generate_deployment_artifacts() {
+    enter_function "generate_deployment_artifacts"
+    set_error_context "Generating deployment artifacts"
+
+    log_info "Generating deployment artifacts"
+
+    # In dry-run mode, skip
+    if [[ "$DRY_RUN" == "true" ]]; then
+        log_verbose "[DRY-RUN] Would generate deployment artifacts"
+        exit_function
+        return 0
+    fi
+
+    local artifacts_dir="$OUTPUT/.federation"
+    mkdir -p "$artifacts_dir" || {
+        log_io_error "Failed to create artifacts directory"
+        exit_function
+        return 1
+    }
+
+    # Artifact 1: File checksums (SHA256)
+    log_info "Generating checksums..."
+
+    local checksum_file="$artifacts_dir/checksums.sha256"
+
+    if command -v sha256sum >/dev/null 2>&1; then
+        find "$OUTPUT" -type f ! -path "$artifacts_dir/*" -exec sha256sum {} \; > "$checksum_file" 2>/dev/null
+    elif command -v shasum >/dev/null 2>&1; then
+        find "$OUTPUT" -type f ! -path "$artifacts_dir/*" -exec shasum -a 256 {} \; > "$checksum_file" 2>/dev/null
+    else
+        log_warning "sha256sum/shasum not available - skipping checksums"
+        echo "# Checksums not available" > "$checksum_file"
+    fi
+
+    local checksum_count
+    checksum_count=$(wc -l < "$checksum_file" 2>/dev/null || echo 0)
+    log_info "  Generated checksums for $checksum_count files"
+
+    # Artifact 2: Deployment metadata
+    log_info "Generating metadata..."
+
+    local metadata_file="$artifacts_dir/deployment.json"
+
+    # Calculate federation statistics
+    local total_size
+    total_size=$(du -sh "$OUTPUT" 2>/dev/null | cut -f1 || echo "unknown")
+    local file_count
+    file_count=$(find "$OUTPUT" -type f ! -path "$artifacts_dir/*" 2>/dev/null | wc -l)
+    local html_count
+    html_count=$(find "$OUTPUT" -name "*.html" ! -path "$artifacts_dir/*" 2>/dev/null | wc -l)
+    local css_count
+    css_count=$(find "$OUTPUT" -name "*.css" ! -path "$artifacts_dir/*" 2>/dev/null | wc -l)
+    local js_count
+    js_count=$(find "$OUTPUT" -name "*.js" ! -path "$artifacts_dir/*" 2>/dev/null | wc -l)
+    local image_count
+    image_count=$(find "$OUTPUT" \( -name "*.png" -o -name "*.jpg" -o -name "*.jpeg" -o -name "*.gif" -o -name "*.svg" \) ! -path "$artifacts_dir/*" 2>/dev/null | wc -l)
+
+    # Generate JSON metadata
+    cat > "$metadata_file" << EOF
+{
+  "federation": {
+    "name": "${FEDERATION_NAME:-Unknown}",
+    "baseURL": "${FEDERATION_BASE_URL:-}",
+    "buildDate": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
+    "buildHost": "$(hostname)",
+    "preserveBaseSite": $PRESERVE_BASE_SITE
+  },
+  "statistics": {
+    "totalSize": "$total_size",
+    "totalFiles": $file_count,
+    "htmlFiles": $html_count,
+    "cssFiles": $css_count,
+    "jsFiles": $js_count,
+    "imageFiles": $image_count
+  },
+  "modules": {
+    "total": $MODULES_COUNT,
+    "successful": $SUCCESSFUL_BUILDS,
+    "failed": $FAILED_BUILDS
+  },
+  "artifacts": {
+    "checksumsFile": "checksums.sha256",
+    "manifestFile": "federation-manifest.json",
+    "metadataFile": "deployment.json"
+  }
+}
+EOF
+
+    log_success "Deployment artifacts generated in: $artifacts_dir"
+    log_info "  - Checksums: $checksum_count files"
+    log_info "  - Total size: $total_size"
+    log_info "  - Total files: $file_count"
+
+    exit_function
+    return 0
+}
+
+# Validate the final federation output structure with comprehensive 3-phase validation
 validate_federation_output() {
     enter_function "validate_federation_output"
     set_error_context "Validating federation output"
 
-    log_info "Validating federation output structure"
+    log_federation "Running comprehensive federation validation"
+
+    local validation_passed=true
+    local warnings=0
+    local errors=0
 
     # Convert exported space-separated strings back to arrays
     local -a build_status
     read -ra build_status <<< "$MODULE_BUILD_STATUS"
 
-    local validation_passed=true
+    # =================================================================
+    # Phase 1: Structure Validation
+    # =================================================================
+    log_section "Phase 1: Structure Validation"
 
     # Check each successful module has content in its destination
     for ((i=0; i<MODULES_COUNT; i++)); do
@@ -1454,37 +1964,111 @@ validate_federation_output() {
             continue
         fi
 
-        # Check if target directory exists and has content
+        # Check 1: Directory exists
         if [[ ! -d "$target_dir" ]]; then
-            log_error "Validation failed: Missing directory for $module_name at $target_dir"
+            log_error "✗ Missing directory for $module_name at $target_dir"
+            errors=$((errors + 1))
             validation_passed=false
-        elif [[ -z "$(ls -A "$target_dir" 2>/dev/null)" ]]; then
-            log_error "Validation failed: Empty directory for $module_name at $target_dir"
+            continue
+        fi
+
+        # Check 2: Directory has content
+        if [[ -z "$(ls -A "$target_dir" 2>/dev/null)" ]]; then
+            log_error "✗ Empty directory for $module_name at $target_dir"
+            errors=$((errors + 1))
             validation_passed=false
+            continue
+        fi
+
+        # Check 3: Has index.html or index.htm
+        if [[ ! -f "$target_dir/index.html" ]] && [[ ! -f "$target_dir/index.htm" ]]; then
+            log_warning "⚠ No index file for $module_name at $target_dir"
+            warnings=$((warnings + 1))
         else
-            log_verbose "✓ $module_name validated at $target_dir"
+            log_verbose "✓ $module_name structure valid"
         fi
     done
 
+    log_info "Structure validation: $errors errors, $warnings warnings"
+
+    # =================================================================
+    # Phase 2: Content Validation
+    # =================================================================
+    log_section "Phase 2: Content Validation"
+
+    local html_count=0
+    local broken_html=0
+
+    # Validate HTML files
+    while IFS= read -r html_file; do
+        ((html_count++))
+
+        # Basic HTML validation (check for closing html tag)
+        if ! grep -q "</html>" "$html_file" 2>/dev/null; then
+            if [[ "$VERBOSE" == "true" ]]; then
+                log_warning "⚠ Possibly malformed HTML: ${html_file#$OUTPUT/}"
+            fi
+            warnings=$((warnings + 1))
+            ((broken_html++))
+        fi
+    done < <(find "$OUTPUT" -name "*.html" -type f 2>/dev/null)
+
+    log_info "Content validation: $html_count HTML files checked, $broken_html warnings"
+
+    # =================================================================
+    # Phase 3: Asset Path Validation
+    # =================================================================
+    log_section "Phase 3: Asset Path Validation"
+
+    local broken_assets=0
+
+    # Check for common asset path issues (double slashes)
+    while IFS= read -r html_file; do
+        # Check for double slashes (excluding https://)
+        if grep -qE 'href="//[^h]' "$html_file" 2>/dev/null || grep -qE 'src="//[^h]' "$html_file" 2>/dev/null; then
+            if [[ "$VERBOSE" == "true" ]]; then
+                log_warning "⚠ Possible double-slash in: ${html_file#$OUTPUT/}"
+            fi
+            warnings=$((warnings + 1))
+            ((broken_assets++))
+        fi
+    done < <(find "$OUTPUT" -name "*.html" -type f 2>/dev/null | head -50)
+
+    log_info "Asset validation: $broken_assets potential issues detected"
+
+    # =================================================================
+    # Validation Summary
+    # =================================================================
+    log_section "Validation Summary"
+
     if [[ "$validation_passed" == "true" ]]; then
-        log_success "Federation output validation passed"
+        log_success "✅ Federation output validation passed"
+        log_info "  - Errors: $errors"
+        log_info "  - Warnings: $warnings"
+        log_info "  - HTML files: $html_count"
+
         exit_function
         return 0
     else
-        log_error "Federation output validation failed"
+        log_error "❌ Federation output validation failed"
+        log_error "  - Errors: $errors (critical)"
+        log_error "  - Warnings: $warnings (non-critical)"
+
         exit_function
         return 1
     fi
 }
 
-# Create federation manifest file
+# Create enhanced federation manifest file with deployment-ready information
+# Enhanced for Stage 3: Deployment Preparation
+# Includes schema version, deployment metadata, per-module sizes, and instructions
 create_federation_manifest() {
     enter_function "create_federation_manifest"
     set_error_context "Creating federation manifest"
 
-    log_info "Creating federation manifest"
+    log_info "Creating enhanced federation manifest"
 
-    local manifest_file="$OUTPUT/federation-manifest.json"
+    local manifest_file="$OUTPUT/.federation/federation-manifest.json"
 
     # In dry-run mode, skip manifest creation
     if [[ "$DRY_RUN" == "true" ]]; then
@@ -1493,61 +2077,321 @@ create_federation_manifest() {
         return 0
     fi
 
+    # Ensure .federation directory exists
+    mkdir -p "$(dirname "$manifest_file")" || {
+        log_io_error "Failed to create manifest directory"
+        exit_function
+        return 1
+    }
+
     # Convert exported space-separated strings back to arrays
     local -a build_status
+    local -a output_dirs
     read -ra build_status <<< "$MODULE_BUILD_STATUS"
+    read -ra output_dirs <<< "$MODULE_OUTPUT_DIRS"
 
-    # Build JSON manifest
-    local json_content='{\n'
-    json_content+='  "federation": {\n'
-    json_content+="    \"name\": \"$FEDERATION_NAME\",\n"
-    json_content+="    \"baseURL\": \"$FEDERATION_BASE_URL\",\n"
-    json_content+="    \"buildDate\": \"$(date -u +"%Y-%m-%dT%H:%M:%SZ")\",\n"
-    json_content+="    \"totalModules\": $MODULES_COUNT,\n"
-    json_content+="    \"successfulBuilds\": $SUCCESSFUL_BUILDS,\n"
-    json_content+="    \"failedBuilds\": $FAILED_BUILDS\n"
-    json_content+='  },\n'
-    json_content+='  "modules": [\n'
+    # Calculate build duration (if start time available)
+    local build_duration_sec=0
+    if [[ -n "${BUILD_START_TIME:-}" ]]; then
+        local current_time
+        current_time=$(date +%s)
+        build_duration_sec=$((current_time - BUILD_START_TIME))
+    fi
 
-    # Add each module to manifest
+    # Calculate total deployed size
+    local total_size
+    total_size=$(du -sh "$OUTPUT" 2>/dev/null | cut -f1 || echo "unknown")
+
+    # Determine deployment readiness
+    local deployment_ready="true"
+    if [[ "$FAILED_BUILDS" -gt 0 ]] || [[ "$SUCCESSFUL_BUILDS" -eq 0 ]]; then
+        deployment_ready="false"
+    fi
+
+    # Build JSON manifest with heredoc for better formatting
+    cat > "$manifest_file" << EOF
+{
+  "version": "1.0",
+  "schemaVersion": "2.0",
+  "generatedBy": "Hugo Template Factory - Federated Build System",
+  "generatedAt": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
+  "federation": {
+    "name": "${FEDERATION_NAME:-Unknown}",
+    "baseURL": "${FEDERATION_BASE_URL:-}",
+    "buildDate": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
+    "buildHost": "$(hostname)",
+    "buildDurationSeconds": $build_duration_sec,
+    "preserveBaseSite": $PRESERVE_BASE_SITE,
+    "totalModules": $MODULES_COUNT,
+    "successfulBuilds": $SUCCESSFUL_BUILDS,
+    "failedBuilds": $FAILED_BUILDS
+  },
+  "deployment": {
+    "ready": $deployment_ready,
+    "validated": true,
+    "totalSize": "$total_size",
+    "artifactsDir": ".federation",
+    "deploymentInstructions": [
+      "1. Verify all module builds succeeded (check successfulBuilds == totalModules)",
+      "2. Review deployment artifacts in .federation/ directory",
+      "3. Validate checksums: sha256sum -c .federation/checksums.sha256",
+      "4. Deploy entire public/ directory to GitHub Pages repository",
+      "5. Verify deployment at: ${FEDERATION_BASE_URL:-https://your-site.github.io}",
+      "6. Monitor federation-manifest.json for deployment metadata"
+    ]
+  },
+  "modules": [
+EOF
+
+    # Add each module to manifest with enhanced metadata
     for ((i=0; i<MODULES_COUNT; i++)); do
         local module_name_var="MODULE_${i}_NAME"
         local module_dest_var="MODULE_${i}_DESTINATION"
         local module_repo_var="MODULE_${i}_REPO"
+        local module_branch_var="MODULE_${i}_BRANCH"
+        local module_strategy_var="MODULE_${i}_MERGE_STRATEGY"
+
         local module_name="${!module_name_var}"
         local module_dest="${!module_dest_var:-/}"
-        local module_repo="${!module_repo_var:-unknown}"
+        local module_repo="${!module_repo_var:-local}"
+        local module_branch="${!module_branch_var:-main}"
+        local module_strategy="${!module_strategy_var:-overwrite}"
         local module_status="${build_status[$i]}"
 
-        json_content+='    {\n'
-        json_content+="      \"name\": \"$module_name\",\n"
-        json_content+="      \"destination\": \"$module_dest\",\n"
-        json_content+="      \"repository\": \"$module_repo\",\n"
-        json_content+="      \"buildStatus\": \"$module_status\"\n"
+        # Calculate module deployment size
+        local module_size="unknown"
+        local deployed_status="false"
+
+        if [[ "$module_status" == "success" ]]; then
+            deployed_status="true"
+
+            # Determine target directory for size calculation
+            local dest_path="${module_dest#/}"
+            local target_dir="$OUTPUT"
+
+            if [[ -n "$dest_path" && "$dest_path" != "/" ]]; then
+                target_dir="$OUTPUT/$dest_path"
+            fi
+
+            if [[ -d "$target_dir" ]]; then
+                module_size=$(du -sh "$target_dir" 2>/dev/null | cut -f1 || echo "unknown")
+            fi
+        fi
+
+        # Write module JSON
+        cat >> "$manifest_file" << MODULE_EOF
+    {
+      "name": "$module_name",
+      "destination": "$module_dest",
+      "repository": "$module_repo",
+      "branch": "$module_branch",
+      "buildStatus": "$module_status",
+      "mergeStrategy": "$module_strategy",
+      "deployedSize": "$module_size",
+      "deployed": $deployed_status
+    }MODULE_EOF
 
         # Add comma if not last module
         if [[ $i -lt $((MODULES_COUNT - 1)) ]]; then
-            json_content+='    },\n'
+            echo "," >> "$manifest_file"
         else
-            json_content+='    }\n'
+            echo "" >> "$manifest_file"
         fi
     done
 
-    json_content+='  ]\n'
-    json_content+='}\n'
+    # Close modules array and JSON
+    cat >> "$manifest_file" << 'EOF'
+  ]
+}
+EOF
 
-    # Write manifest file
-    echo -e "$json_content" > "$manifest_file"
+    log_success "Enhanced federation manifest created: $manifest_file"
+    log_info "  - Schema version: 2.0"
+    log_info "  - Deployment ready: $deployment_ready"
+    log_info "  - Total size: $total_size"
 
-    log_success "Federation manifest created: $manifest_file"
+    # Also create a copy in the root output directory for backward compatibility
+    if [[ ! -f "$OUTPUT/federation-manifest.json" ]]; then
+        cp "$manifest_file" "$OUTPUT/federation-manifest.json" 2>/dev/null || true
+        log_verbose "Manifest copied to output root for backward compatibility"
+    fi
 
     exit_function
     return 0
 }
 
+# Verify deployment readiness with comprehensive pre-deployment checks
+# Performs 5-phase validation before deployment
+# Returns: 0 if ready, 1 if not ready
+verify_deployment_ready() {
+    enter_function "verify_deployment_ready"
+    set_error_context "Verifying deployment readiness"
+
+    log_federation "Running deployment readiness verification"
+
+    local checks_passed=0
+    local checks_failed=0
+    local total_checks=5
+
+    # =================================================================
+    # Check 1: Output Directory Validation
+    # =================================================================
+    log_section "Check 1/5: Output Directory"
+
+    if [[ ! -d "$OUTPUT" ]]; then
+        log_error "✗ Output directory does not exist: $OUTPUT"
+        checks_failed=$((checks_failed + 1))
+    elif [[ -z "$(ls -A "$OUTPUT" 2>/dev/null)" ]]; then
+        log_error "✗ Output directory is empty: $OUTPUT"
+        checks_failed=$((checks_failed + 1))
+    else
+        local file_count
+        file_count=$(find "$OUTPUT" -type f 2>/dev/null | wc -l)
+        log_success "✓ Output directory valid ($file_count files)"
+        checks_passed=$((checks_passed + 1))
+    fi
+
+    # =================================================================
+    # Check 2: Manifest Validation
+    # =================================================================
+    log_section "Check 2/5: Federation Manifest"
+
+    local manifest_file="$OUTPUT/.federation/federation-manifest.json"
+
+    if [[ ! -f "$manifest_file" ]]; then
+        log_error "✗ Manifest file not found: $manifest_file"
+        checks_failed=$((checks_failed + 1))
+    else
+        # Validate JSON syntax
+        if command -v node >/dev/null 2>&1; then
+            if node -e "JSON.parse(require('fs').readFileSync('$manifest_file', 'utf8'))" 2>/dev/null; then
+                log_success "✓ Manifest file valid JSON"
+                checks_passed=$((checks_passed + 1))
+            else
+                log_error "✗ Manifest file contains invalid JSON"
+                checks_failed=$((checks_failed + 1))
+            fi
+        elif command -v python3 >/dev/null 2>&1; then
+            if python3 -c "import json; json.load(open('$manifest_file'))" 2>/dev/null; then
+                log_success "✓ Manifest file valid JSON"
+                checks_passed=$((checks_passed + 1))
+            else
+                log_error "✗ Manifest file contains invalid JSON"
+                checks_failed=$((checks_failed + 1))
+            fi
+        else
+            log_warning "⚠ Cannot validate JSON (node/python3 not available)"
+            log_info "✓ Manifest file exists (syntax not validated)"
+            checks_passed=$((checks_passed + 1))
+        fi
+    fi
+
+    # =================================================================
+    # Check 3: Build Success Validation
+    # =================================================================
+    log_section "Check 3/5: Build Success"
+
+    if [[ "$SUCCESSFUL_BUILDS" -eq 0 ]]; then
+        log_error "✗ No successful builds (cannot deploy)"
+        checks_failed=$((checks_failed + 1))
+    elif [[ "$FAILED_BUILDS" -gt 0 ]]; then
+        log_warning "⚠ Some builds failed ($FAILED_BUILDS/$MODULES_COUNT)"
+        log_success "✓ At least one build succeeded ($SUCCESSFUL_BUILDS/$MODULES_COUNT)"
+        checks_passed=$((checks_passed + 1))
+    else
+        log_success "✓ All builds succeeded ($SUCCESSFUL_BUILDS/$MODULES_COUNT)"
+        checks_passed=$((checks_passed + 1))
+    fi
+
+    # =================================================================
+    # Check 4: Deployment Artifacts Validation
+    # =================================================================
+    log_section "Check 4/5: Deployment Artifacts"
+
+    local artifacts_dir="$OUTPUT/.federation"
+    local checksum_file="$artifacts_dir/checksums.sha256"
+    local metadata_file="$artifacts_dir/deployment.json"
+
+    local artifacts_ok=true
+
+    if [[ ! -d "$artifacts_dir" ]]; then
+        log_error "✗ Artifacts directory not found: $artifacts_dir"
+        artifacts_ok=false
+    fi
+
+    if [[ ! -f "$checksum_file" ]]; then
+        log_error "✗ Checksum file not found: $checksum_file"
+        artifacts_ok=false
+    fi
+
+    if [[ ! -f "$metadata_file" ]]; then
+        log_error "✗ Metadata file not found: $metadata_file"
+        artifacts_ok=false
+    fi
+
+    if [[ "$artifacts_ok" == "true" ]]; then
+        log_success "✓ All deployment artifacts present"
+        checks_passed=$((checks_passed + 1))
+    else
+        log_error "✗ Missing deployment artifacts"
+        checks_failed=$((checks_failed + 1))
+    fi
+
+    # =================================================================
+    # Check 5: Root Index File
+    # =================================================================
+    log_section "Check 5/5: Root Index File"
+
+    if [[ -f "$OUTPUT/index.html" ]]; then
+        log_success "✓ Root index.html exists"
+        checks_passed=$((checks_passed + 1))
+    elif [[ -f "$OUTPUT/index.htm" ]]; then
+        log_success "✓ Root index.htm exists"
+        checks_passed=$((checks_passed + 1))
+    else
+        log_warning "⚠ No root index file (GitHub Pages may show 404)"
+        log_info "  This is acceptable if base site module provides index"
+        # Don't fail on this - it's a warning
+        checks_passed=$((checks_passed + 1))
+    fi
+
+    # =================================================================
+    # Verification Summary
+    # =================================================================
+    log_section "Deployment Readiness Summary"
+
+    log_info "Checks passed: $checks_passed/$total_checks"
+    log_info "Checks failed: $checks_failed/$total_checks"
+
+    if [[ $checks_failed -eq 0 ]]; then
+        log_success "✅ Deployment verification PASSED"
+        log_success "Federation is ready for deployment!"
+
+        # Show deployment instructions
+        log_section "Next Steps"
+        log_info "To deploy this federation:"
+        log_info "  1. Review artifacts in: $OUTPUT/.federation/"
+        log_info "  2. Verify checksums: cd $OUTPUT && sha256sum -c .federation/checksums.sha256"
+        log_info "  3. Deploy to GitHub Pages: Copy $OUTPUT/* to your gh-pages branch"
+        log_info "  4. Verify at: ${FEDERATION_BASE_URL:-https://your-site.github.io}"
+
+        exit_function
+        return 0
+    else
+        log_error "❌ Deployment verification FAILED"
+        log_error "Please fix the issues above before deploying"
+
+        exit_function
+        return 1
+    fi
+}
+
 # Main execution function
 main() {
     enter_function "main"
+
+    # Track build start time for deployment manifest
+    export BUILD_START_TIME=$(date +%s)
 
     # Parse arguments
     parse_arguments "$@"
@@ -1580,6 +2424,34 @@ main() {
         exit 1
     fi
 
+    # Stage 1.5: Download existing pages (if preserve-base-site enabled)
+    if [[ "$PRESERVE_BASE_SITE" == "true" ]]; then
+        log_federation "Stage 1.5: Downloading Existing Pages"
+
+        # Determine base URL from federation config
+        local base_url="${FEDERATION_BASE_URL:-}"
+
+        if [[ -z "$base_url" ]]; then
+            log_error "Cannot preserve base site: baseURL not specified in modules.json"
+            log_error "Add 'baseURL' to federation configuration or disable --preserve-base-site"
+            exit 1
+        fi
+
+        # Create directory for existing content
+        local existing_dir="$TEMP_DIR/existing-pages"
+
+        if ! download_existing_pages "$base_url" "$existing_dir"; then
+            log_error "Failed to download existing pages"
+            log_error "Consider running without --preserve-base-site for full rebuild"
+            exit 1
+        fi
+
+        # Store path for later merge
+        export EXISTING_PAGES_DIR="$existing_dir"
+
+        log_success "Existing pages preserved for merge"
+    fi
+
     # Stage 2: Build orchestration
     if ! orchestrate_builds; then
         log_error "Build orchestration failed"
@@ -1601,15 +2473,33 @@ main() {
         exit 1
     fi
 
-    # Create federation manifest
+    # Stage 3.5: Deployment Preparation
+    log_federation "Stage 3.5: Deployment Preparation"
+
+    # Generate deployment artifacts (checksums, metadata)
+    if ! generate_deployment_artifacts; then
+        log_error "Failed to generate deployment artifacts"
+        exit 1
+    fi
+
+    # Create enhanced federation manifest with deployment info
     if ! create_federation_manifest; then
-        log_warning "Failed to create federation manifest (non-critical)"
+        log_error "Failed to create federation manifest"
+        exit 1
+    fi
+
+    # Verify deployment readiness
+    if ! verify_deployment_ready; then
+        log_error "Deployment readiness verification failed"
+        log_error "Please review the issues above before deploying"
+        exit 1
     fi
 
     # Generate final build report
     generate_build_report
 
     log_success "Federation build completed successfully"
+    log_success "Output is deployment-ready - see deployment instructions above"
 
     exit_function
     return 0
