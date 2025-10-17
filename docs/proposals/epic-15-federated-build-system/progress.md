@@ -67,7 +67,7 @@ graph TB
 | [#16] Federated Build Script | ✅ **COMPLETE** | `feature/federated-build-script` | [#23](https://github.com/info-tech-io/hugo-templates/pull/23) (merged) | 100% | None |
 | [#17] Modules.json Schema | ✅ **COMPLETE** | `feature/modules-json-schema` | [#24](https://github.com/info-tech-io/hugo-templates/pull/24) (merged) | 100% | #16 ✅ |
 | [#18] CSS Path Resolution | ✅ **COMPLETE** | `feature/css-path-resolution` | [#25](https://github.com/info-tech-io/hugo-templates/pull/25) (merged) | 100% | #16 ✅, #17 ✅ |
-| [#19] Download-Merge-Deploy | ✅ **COMPLETE** | `feature/download-merge-deploy` | [#28](https://github.com/info-tech-io/hugo-templates/pull/28) (open) | 100% | #16 ✅, #17 ✅, #18 ✅ |
+| [#19] Download-Merge-Deploy | ✅ **COMPLETE** | `feature/download-merge-deploy` | [#28](https://github.com/info-tech-io/hugo-templates/pull/28) (merged) | 100% | #16 ✅, #17 ✅, #18 ✅ |
 | [#20] Testing Infrastructure | ⬜ **NOT STARTED** | `feature/testing-infrastructure` | TBD → epic | 0% | #16-19 |
 | [#21] Documentation & Migration | ⬜ **NOT STARTED** | `feature/documentation-migration` | TBD → epic | 0% | #16-20 |
 
@@ -233,7 +233,7 @@ erDiagram
    - PR #23: `feature/federated-build-script` → `epic/federated-build-system` ✅ (merged)
    - PR #24: `feature/modules-json-schema` → `epic/federated-build-system` ✅ (merged)
    - PR #25: `feature/css-path-resolution` → `epic/federated-build-system` ✅ (merged)
-   - PR #28: `feature/download-merge-deploy` → `epic/federated-build-system` ✅ (ready to merge)
+   - PR #28: `feature/download-merge-deploy` → `epic/federated-build-system` ✅ (merged)
    - PR TBD: `feature/testing-infrastructure` → `epic/federated-build-system`
    - PR TBD: `feature/documentation-migration` → `epic/federated-build-system`
    - Final PR: `epic/federated-build-system` → `main`
@@ -453,7 +453,7 @@ graph TB
 - Test coverage: 10 tests total (all passing)
 
 ### Child Issue #19: Download-Merge-Deploy Logic ✅
-**Completed**: October 17, 2025 | **PR**: [#28](https://github.com/info-tech-io/hugo-templates/pull/28) (ready to merge)
+**Completed**: October 17, 2025 | **PR**: [#28](https://github.com/info-tech-io/hugo-templates/pull/28) (merged)
 
 **Deliverables**:
 - ✅ Stage 1: Download Existing Pages (download_existing_pages function, ~156 lines)
