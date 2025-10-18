@@ -12,6 +12,7 @@ TESTS_DIR="$PROJECT_ROOT/tests/bash"
 
 # Default configuration
 TEST_SUITE="all"
+LAYER="all"  # NEW: Layer filter (layer1, layer2, integration, all)
 VERBOSE=false
 COVERAGE=false
 PERFORMANCE=false
@@ -33,7 +34,8 @@ Hugo Templates Framework - Bash Test Runner
 Usage: $0 [OPTIONS]
 
 Options:
-  -s, --suite SUITE      Test suite to run: all, unit, integration, performance (default: all)
+  -s, --suite SUITE      Test suite to run: all, unit, integration, performance, federation (default: all)
+  -l, --layer LAYER      Layer filter: all, layer1, layer2, integration (default: all)
   -v, --verbose          Enable verbose output
   -c, --coverage         Enable coverage reporting (requires kcov)
   -p, --performance      Run performance benchmarks
@@ -45,15 +47,24 @@ Options:
 Examples:
   $0                              # Run all tests
   $0 -s unit -v                   # Run unit tests with verbose output
+  $0 -s federation -l layer2      # Run Layer 2 federation tests only
+  $0 -s federation -l all         # Run all federation tests (legacy shell + BATS)
   $0 -s performance -p            # Run performance benchmarks
   $0 -s integration -f junit      # Run integration tests with JUnit output
   $0 -c -o results.xml            # Run with coverage and save results
 
 Test Suites:
-  unit          - Unit tests for individual functions
+  unit          - Unit tests for individual functions (Layer 1: build.sh)
   integration   - End-to-end workflow tests
   performance   - Performance benchmarks and regression tests
+  federation    - Federation system tests (Layer 2: federated-build.sh)
   all           - All test suites
+
+Layer Filters (for federation suite):
+  layer1        - Layer 1 tests only (build.sh - 78 tests)
+  layer2        - Layer 2 tests only (federated-build.sh - BATS tests)
+  integration   - Integration tests (Layer 1 + Layer 2 interaction)
+  all           - All layers (default)
 
 Requirements:
   - bats-core (https://github.com/bats-core/bats-core)
@@ -140,13 +151,57 @@ get_test_files() {
 
     case "$suite" in
         "unit")
-            test_files=("$TESTS_DIR/unit"/*.bats)
+            # Layer 1 tests only (build.sh, error-handling.sh)
+            test_files=("$TESTS_DIR/unit"/build-functions.bats "$TESTS_DIR/unit"/error-handling.bats)
             ;;
         "integration")
-            test_files=("$TESTS_DIR/integration"/*.bats)
+            # Integration tests (excluding federation-e2e.bats)
+            for file in "$TESTS_DIR/integration"/*.bats; do
+                if [[ -f "$file" ]] && [[ "$(basename "$file")" != "federation-e2e.bats" ]]; then
+                    test_files+=("$file")
+                fi
+            done
             ;;
         "performance")
             test_files=("$TESTS_DIR/performance"/*.bats)
+            ;;
+        "federation")
+            # Federation tests - filtered by LAYER
+            case "$LAYER" in
+                "layer1")
+                    # Layer 1 only: build.sh tests
+                    test_files=("$TESTS_DIR/unit"/build-functions.bats "$TESTS_DIR/unit"/error-handling.bats)
+                    ;;
+                "layer2")
+                    # Layer 2 only: federated-build.sh BATS tests
+                    test_files=(
+                        "$TESTS_DIR/unit"/federated-config.bats
+                        "$TESTS_DIR/unit"/federated-build.bats
+                        "$TESTS_DIR/unit"/federated-merge.bats
+                        "$TESTS_DIR/unit"/federated-validation.bats
+                    )
+                    ;;
+                "integration")
+                    # Integration tests: Layer 1 + Layer 2 interaction
+                    test_files=("$TESTS_DIR/integration"/federation-e2e.bats)
+                    ;;
+                "all")
+                    # All federation tests (Layer 1 + Layer 2 + Integration)
+                    test_files=(
+                        "$TESTS_DIR/unit"/build-functions.bats
+                        "$TESTS_DIR/unit"/error-handling.bats
+                        "$TESTS_DIR/unit"/federated-config.bats
+                        "$TESTS_DIR/unit"/federated-build.bats
+                        "$TESTS_DIR/unit"/federated-merge.bats
+                        "$TESTS_DIR/unit"/federated-validation.bats
+                        "$TESTS_DIR/integration"/federation-e2e.bats
+                    )
+                    ;;
+                *)
+                    log_error "Unknown layer filter: $LAYER"
+                    return 1
+                    ;;
+            esac
             ;;
         "all")
             test_files=(
@@ -170,7 +225,7 @@ get_test_files() {
     done
 
     if [[ ${#existing_files[@]} -eq 0 ]]; then
-        log_error "No test files found for suite: $suite"
+        log_error "No test files found for suite: $suite (layer: $LAYER)"
         return 1
     fi
 
@@ -297,6 +352,10 @@ main() {
                 TEST_SUITE="$2"
                 shift 2
                 ;;
+            -l|--layer)
+                LAYER="$2"
+                shift 2
+                ;;
             -v|--verbose)
                 VERBOSE=true
                 shift
@@ -334,8 +393,13 @@ main() {
     done
 
     # Validation
-    if [[ ! "$TEST_SUITE" =~ ^(all|unit|integration|performance)$ ]]; then
+    if [[ ! "$TEST_SUITE" =~ ^(all|unit|integration|performance|federation)$ ]]; then
         log_error "Invalid test suite: $TEST_SUITE"
+        exit 1
+    fi
+
+    if [[ ! "$LAYER" =~ ^(all|layer1|layer2|integration)$ ]]; then
+        log_error "Invalid layer filter: $LAYER"
         exit 1
     fi
 
@@ -347,6 +411,9 @@ main() {
     # Main execution
     log_info "Hugo Templates Framework - Bash Test Runner"
     log_info "Test suite: $TEST_SUITE"
+    if [[ "$TEST_SUITE" == "federation" ]]; then
+        log_info "Layer filter: $LAYER"
+    fi
 
     # Check dependencies
     if ! check_dependencies; then
