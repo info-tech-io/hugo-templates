@@ -271,13 +271,70 @@ NODESCRIPT
 }
 
 # ============================================================================
-# Placeholder Tests - To be implemented later
+# Tests for validate_configuration()
 # ============================================================================
 
-@test "validate_configuration accepts valid schema" {
-    skip "To be implemented in Stage 2.1.2"
+@test "validate_configuration: accepts valid configuration" {
+    local config="$TEST_FIXTURES/minimal.json"
+
+    # Load configuration first
+    load_modules_config "$config"
+
+    # Validate should succeed
+    validate_configuration
+
+    # No errors should occur
+    [[ $? -eq 0 ]]
 }
 
-@test "validate_configuration rejects invalid JSON" {
-    skip "To be implemented in Stage 2.1.2"
+@test "validate_configuration: rejects when no modules defined" {
+    # Set MODULES_COUNT to 0
+    export MODULES_COUNT=0
+
+    # Validate should fail
+    run validate_configuration
+
+    [ "$status" -ne 0 ]
+    assert_contains "$output" "No modules"
+}
+
+@test "validate_configuration: rejects module missing name" {
+    # Setup: 1 module with destination but no name
+    export MODULES_COUNT=1
+    export MODULE_0_NAME=""
+    export MODULE_0_DESTINATION="/test"
+
+    # Validate should fail
+    run validate_configuration
+
+    [ "$status" -ne 0 ]
+    assert_contains "$output" "missing name"
+}
+
+@test "validate_configuration: rejects module missing destination" {
+    # Setup: 1 module with name but no destination
+    export MODULES_COUNT=1
+    export MODULE_0_NAME="test-module"
+    export MODULE_0_DESTINATION=""
+
+    # Validate should fail
+    run validate_configuration
+
+    [ "$status" -ne 0 ]
+    assert_contains "$output" "missing destination"
+}
+
+@test "validate_configuration: detects destination conflicts" {
+    # Setup: 2 modules with same destination
+    export MODULES_COUNT=2
+    export MODULE_0_NAME="module-a"
+    export MODULE_0_DESTINATION="/shared"
+    export MODULE_1_NAME="module-b"
+    export MODULE_1_DESTINATION="/shared"
+
+    # Validate should fail
+    run validate_configuration
+
+    [ "$status" -ne 0 ]
+    assert_contains "$output" "conflict"
 }
