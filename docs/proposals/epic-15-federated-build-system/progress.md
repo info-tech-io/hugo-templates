@@ -12,7 +12,7 @@ graph TB
             C2[#17: Modules.json Schema ✅]
             C3[#18: CSS Path Resolution ✅]
             C4[#19: Download-Merge-Deploy ✅]
-            C5[#20: Testing Infrastructure ⬜]
+            C5[#20: Testing Infrastructure 🔄]
             C6[#21: Documentation & Migration ⬜]
         end
 
@@ -21,7 +21,7 @@ graph TB
             F2[feature/modules-json-schema ✅]
             F3[feature/css-path-resolution ✅]
             F4[feature/download-merge-deploy ✅]
-            F5[feature/testing-infrastructure ⬜]
+            F5[feature/testing-infrastructure 🔄]
             F6[feature/documentation-migration ⬜]
         end
 
@@ -60,7 +60,7 @@ graph TB
 
 ## 🎯 Progress Status
 
-### Epic Progress: 66% Complete (4/6 child issues complete)
+### Epic Progress: 70% Complete (4/6 child issues complete, 1 in progress)
 
 | Child Issue | Status | Feature Branch | PR | Progress | Dependencies |
 |-------------|--------|----------------|----|---------|--------------|
@@ -68,7 +68,7 @@ graph TB
 | [#17] Modules.json Schema | ✅ **COMPLETE** | `feature/modules-json-schema` | [#24](https://github.com/info-tech-io/hugo-templates/pull/24) (merged) | 100% | #16 ✅ |
 | [#18] CSS Path Resolution | ✅ **COMPLETE** | `feature/css-path-resolution` | [#25](https://github.com/info-tech-io/hugo-templates/pull/25) (merged) | 100% | #16 ✅, #17 ✅ |
 | [#19] Download-Merge-Deploy | ✅ **COMPLETE** | `feature/download-merge-deploy` | [#28](https://github.com/info-tech-io/hugo-templates/pull/28) (merged) | 100% | #16 ✅, #17 ✅, #18 ✅ |
-| [#20] Testing Infrastructure | ⬜ **NOT STARTED** | `feature/testing-infrastructure` | TBD → epic | 0% | #16-19 |
+| [#20] Testing Infrastructure | 🔄 **IN PROGRESS** | `feature/testing-infrastructure` | TBD → epic | 25% | #16-19 ✅ |
 | [#21] Documentation & Migration | ⬜ **NOT STARTED** | `feature/documentation-migration` | TBD → epic | 0% | #16-20 |
 
 ### Development Timeline
@@ -475,8 +475,37 @@ graph TB
 - Backward compatibility: 100%
 - No breaking changes
 
+### Child Issue #20: Testing Infrastructure 🔄 (25%)
+**Status**: IN PROGRESS (Stage 1 complete)
+**Branch**: `feature/testing-infrastructure`
+**Started**: October 18, 2025
+
+**Stage 1 Achievements** ✅:
+- ✅ Test infrastructure created (BATS files, fixtures, test runner)
+- ✅ **100% shell test pass rate (37/37 tests)** ⭐
+- ✅ 4 critical bugs fixed in federated-build.sh
+- ✅ Test harness proven stable
+
+**Commits (4)**:
+1. `e8e7856` - Fixed heredoc syntax error
+2. `7a2070b` - Made script testable + TEMP_DIR fallback
+3. `67a5927` - Fixed arithmetic expansion hangs (set -e + ERR trap)
+4. `f5d2f59` - Fixed merge strategies for 100% pass rate
+
+**Shell Test Results**:
+- test-schema-validation.sh: 16/16 ✅
+- test-css-path-detection.sh: 5/5 ✅
+- test-css-path-rewriting.sh: 5/5 ✅
+- test-download-pages.sh: 5/5 ✅
+- test-intelligent-merge.sh: 6/6 ✅ (fixed from 0/6!)
+
+**Remaining Work**:
+- Stage 2: Unit Tests for Federation Functions (13 tests needed)
+- Stage 3: Integration & E2E Tests (12 tests)
+- Stage 4: Performance Benchmarks & Documentation
+
 ---
 
-**Last Updated**: October 17, 2025
-**Next Action**: Start Child Issue #20 (Testing Infrastructure)
-**Epic Status**: 🔄 **IN PROGRESS** (66% complete, 4/6 children done)
+**Last Updated**: October 18, 2025
+**Next Action**: Continue Child Issue #20 - Stage 2 (Unit Tests)
+**Epic Status**: 🔄 **IN PROGRESS** (70% complete, 4/6 children done, 1 in progress)
