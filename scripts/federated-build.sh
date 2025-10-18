@@ -1590,9 +1590,10 @@ merge_with_strategy() {
 
     # Detect conflicts first
     declare -a conflicts=()
-    detect_merge_conflicts "$target_dir" "$source_dir" conflicts
-
-    local has_conflicts=$?
+    local has_conflicts=0
+    if ! detect_merge_conflicts "$target_dir" "$source_dir" conflicts 2>/dev/null; then
+        has_conflicts=1
+    fi
 
     # Apply strategy
     case "$strategy" in
@@ -1603,9 +1604,9 @@ merge_with_strategy() {
                 log_warning "Overwriting ${#conflicts[@]} conflicting items"
             fi
 
-            # Use rsync for better control
+            # Use rsync for better control (use -I to ignore times, transfer based on content)
             if command -v rsync >/dev/null 2>&1; then
-                rsync -a --delete-during "$source_dir/" "$target_dir/"
+                rsync -aI --delete-during "$source_dir/" "$target_dir/"
             else
                 # Fallback to cp
                 cp -rf "$source_dir"/* "$target_dir/" 2>/dev/null || true
@@ -1619,9 +1620,9 @@ merge_with_strategy() {
                 log_warning "Preserving ${#conflicts[@]} existing items, skipping new versions"
             fi
 
-            # Copy only non-conflicting files
+            # Copy only non-conflicting files (use -I to ignore times)
             if command -v rsync >/dev/null 2>&1; then
-                rsync -a --ignore-existing "$source_dir/" "$target_dir/"
+                rsync -aI --ignore-existing "$source_dir/" "$target_dir/"
             else
                 # Fallback: manual copy of non-conflicting files
                 find "$source_dir" -type f | while IFS= read -r source_file; do
