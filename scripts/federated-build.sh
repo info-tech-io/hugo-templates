@@ -2189,7 +2189,8 @@ EOF
       "mergeStrategy": "$module_strategy",
       "deployedSize": "$module_size",
       "deployed": $deployed_status
-    }MODULE_EOF
+    }
+MODULE_EOF
 
         # Add comma if not last module
         if [[ $i -lt $((MODULES_COUNT - 1)) ]]; then
