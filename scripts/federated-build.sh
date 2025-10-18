@@ -1057,17 +1057,18 @@ download_existing_pages() {
         return 1
     fi
 
-    # Check available disk space
+    # Check available disk space (use output_dir if TEMP_DIR is not set)
+    local check_dir="${TEMP_DIR:-$output_dir}"
     local available_kb
-    available_kb=$(df -k "$TEMP_DIR" 2>/dev/null | tail -1 | awk '{print $4}')
+    available_kb=$(df -k "$check_dir" 2>/dev/null | tail -1 | awk '{print $4}')
     if [[ -n "$available_kb" ]] && [[ $available_kb -lt 102400 ]]; then
         log_error "Insufficient disk space for download (< 100MB available)"
-        log_error "Available space: $(df -h "$TEMP_DIR" | tail -1 | awk '{print $4}')"
+        log_error "Available space: $(df -h "$check_dir" | tail -1 | awk '{print $4}')"
         exit_function
         return 1
     fi
 
-    log_info "Available disk space: $(df -h "$TEMP_DIR" 2>/dev/null | tail -1 | awk '{print $4}' || echo 'unknown')"
+    log_info "Available disk space: $(df -h "$check_dir" 2>/dev/null | tail -1 | awk '{print $4}' || echo 'unknown')"
 
     # Dry-run mode
     if [[ "$DRY_RUN" == "true" ]]; then
@@ -2506,5 +2507,7 @@ main() {
     return 0
 }
 
-# Execute main function with all arguments
-main "$@"
+# Execute main function with all arguments (only if script is run directly, not sourced)
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    main "$@"
+fi
