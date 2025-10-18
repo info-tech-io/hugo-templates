@@ -670,8 +670,10 @@ cleanup_temp_files() {
     fi
 }
 
-# Register cleanup trap
-trap cleanup_temp_files EXIT
+# Register cleanup trap (only when script is run directly, not when sourced for testing)
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    trap cleanup_temp_files EXIT
+fi
 
 # Show federation summary
 show_federation_summary() {
@@ -810,12 +812,12 @@ analyze_module_paths() {
 
     # Scan all HTML files
     while IFS= read -r html_file; do
-        ((html_count++))
+        ((html_count++)) || true
 
         declare -a paths=()
         if detect_asset_paths "$html_file" paths; then
             for path in "${paths[@]}"; do
-                ((asset_count++))
+                ((asset_count++)) || true
                 # Track unique path patterns (first part of path)
                 local pattern
                 pattern="$(echo "$path" | cut -d'/' -f2)"
@@ -1543,7 +1545,7 @@ detect_merge_conflicts() {
         if [[ -e "$existing_item" ]]; then
             # Conflict detected
             conflicts_array+=("$rel_path")
-            ((conflict_count++))
+            ((conflict_count++)) || true
 
             # Determine conflict type
             if [[ -f "$new_item" ]] && [[ -f "$existing_item" ]]; then
@@ -2002,7 +2004,7 @@ validate_federation_output() {
 
     # Validate HTML files
     while IFS= read -r html_file; do
-        ((html_count++))
+        ((html_count++)) || true
 
         # Basic HTML validation (check for closing html tag)
         if ! grep -q "</html>" "$html_file" 2>/dev/null; then
@@ -2010,7 +2012,7 @@ validate_federation_output() {
                 log_warning "⚠ Possibly malformed HTML: ${html_file#$OUTPUT/}"
             fi
             warnings=$((warnings + 1))
-            ((broken_html++))
+            ((broken_html++)) || true
         fi
     done < <(find "$OUTPUT" -name "*.html" -type f 2>/dev/null)
 
@@ -2031,7 +2033,7 @@ validate_federation_output() {
                 log_warning "⚠ Possible double-slash in: ${html_file#$OUTPUT/}"
             fi
             warnings=$((warnings + 1))
-            ((broken_assets++))
+            ((broken_assets++)) || true
         fi
     done < <(find "$OUTPUT" -name "*.html" -type f 2>/dev/null | head -50)
 
