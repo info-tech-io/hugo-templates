@@ -2538,18 +2538,26 @@ main() {
         exit 1
     fi
 
-    # Verify deployment readiness
-    if ! verify_deployment_ready; then
-        log_error "Deployment readiness verification failed"
-        log_error "Please review the issues above before deploying"
-        exit 1
+    # Verify deployment readiness (skip in dry-run mode)
+    if [[ "$DRY_RUN" != "true" ]]; then
+        if ! verify_deployment_ready; then
+            log_error "Deployment readiness verification failed"
+            log_error "Please review the issues above before deploying"
+            exit 1
+        fi
+    else
+        log_info "[DRY RUN] Skipping deployment readiness verification"
     fi
 
     # Generate final build report
     generate_build_report
 
-    log_success "Federation build completed successfully"
-    log_success "Output is deployment-ready - see deployment instructions above"
+    if [[ "$DRY_RUN" == "true" ]]; then
+        log_success "Dry-run completed successfully - no files were created"
+    else
+        log_success "Federation build completed successfully"
+        log_success "Output is deployment-ready - see deployment instructions above"
+    fi
 
     exit_function
     return 0
