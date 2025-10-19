@@ -462,6 +462,179 @@ When testing verbose mode, check for additional information without being too sp
 
 ---
 
+### Pattern G: Testing Federation Functions
+
+When testing federation functions, use realistic multi-module configurations and validate complete workflows.
+
+✅ **Good Federation Test Pattern**:
+```bash
+@test "Federation: single module build end-to-end" {
+    # 1. Create realistic federation configuration
+    local config="$TEST_TEMP_DIR/federation.json"
+    cat > "$config" << EOF
+{
+  "federation": {
+    "name": "Test Federation",
+    "baseURL": "http://localhost:1313",
+    "strategy": "download-merge-deploy"
+  },
+  "modules": [
+    {
+      "name": "test-module",
+      "source": {
+        "repository": "local",
+        "local_path": "$TEST_FIXTURES_DIR/test-module",
+        "path": "content"
+      },
+      "destination": "/docs/"
+    }
+  ]
+}
+EOF
+
+    # 2. Set up module content
+    mkdir -p "$TEST_FIXTURES_DIR/test-module/content"
+    echo "# Test Content" > "$TEST_FIXTURES_DIR/test-module/content/_index.md"
+
+    # 3. Run federation build
+    run bash "$FEDERATED_BUILD_SCRIPT" \
+        --config="$config" \
+        --output="$TEST_OUTPUT_DIR" \
+        --dry-run
+
+    # 4. Validate results
+    [ "$status" -eq 0 ]
+    assert_contains "$output" "test-module"
+    assert_contains "$output" "Federation build complete" ||
+        assert_contains "$output" "Processing module"
+}
+```
+
+**Key Principles**:
+1. **Use Realistic Configs**: Match production federation.json structure
+2. **Test Complete Workflows**: Don't just test individual functions
+3. **Validate Side Effects**: Check merged content, rewritten paths, etc.
+4. **Use Dry-Run Mode**: For faster tests without actual builds
+5. **Test Error Recovery**: Validate behavior when modules fail
+
+**Federation-Specific Assertions**:
+```bash
+# Verify module processed
+assert_contains "$output" "module-name"
+
+# Verify strategy executed
+assert_contains "$output" "download-merge-deploy" ||
+    assert_contains "$output" "Processing module"
+
+# Verify paths rewritten
+grep -q "/module/css/" "$OUTPUT_DIR/index.html"
+
+# Verify merge succeeded
+[ -f "$OUTPUT_DIR/merged-content/_index.md" ]
+```
+
+**Real Examples from Our Codebase**:
+- Tests in `federated-config.bats` - Configuration loading
+- Tests in `federated-build.bats` - Build orchestration
+- Tests in `federated-merge.bats` - Merge operations
+- Tests in `federation-e2e.bats` - End-to-end workflows
+
+---
+
+### Pattern H: Performance Testing
+
+When writing performance tests, measure execution time and compare against targets.
+
+✅ **Good Performance Test Pattern**:
+```bash
+@test "Performance: single module build completes in < 10 seconds" {
+    # 1. Create minimal test configuration
+    local config="$TEST_TEMP_DIR/perf-config.json"
+    create_minimal_federation_config "$config" 1  # Helper function
+
+    # 2. Measure execution time (nanoseconds)
+    local start_time=$(date +%s%N)
+
+    run bash "$FEDERATED_BUILD_SCRIPT" \
+        --config="$config" \
+        --output="$TEST_OUTPUT_DIR" \
+        --dry-run
+
+    local end_time=$(date +%s%N)
+    local duration=$(( (end_time - start_time) / 1000000 ))  # Convert to milliseconds
+
+    # 3. Output timing for analysis
+    echo "Build duration: ${duration}ms" >&3
+
+    # 4. Verify success
+    [ "$status" -eq 0 ]
+
+    # 5. Validate performance target (non-blocking warning)
+    if [ "$duration" -ge 10000 ]; then
+        echo "WARNING: Build took longer than expected (${duration}ms)" >&3
+    fi
+
+    # 6. Validate functional correctness
+    assert_contains "$output" "module-name"
+}
+```
+
+**Key Principles**:
+1. **Use Minimal Configs**: Test with minimal but realistic data
+2. **Measure in Nanoseconds**: Use `date +%s%N` for precision
+3. **Convert to Milliseconds**: Easier to read and reason about
+4. **Output Timing**: Always show duration for baseline tracking
+5. **Non-Blocking Checks**: Use warnings, not hard failures for timing
+6. **Validate Correctness**: Ensure function works, not just runs fast
+
+**Performance Measurement Helpers**:
+```bash
+# Measure execution time
+measure_duration() {
+    local start=$(date +%s%N)
+    "$@"
+    local end=$(date +%s%N)
+    echo $(( (end - start) / 1000000 ))  # milliseconds
+}
+
+# Usage
+duration=$(measure_duration my_function --arg1 --arg2)
+echo "Execution time: ${duration}ms" >&3
+```
+
+**Performance Assertions**:
+```bash
+# Soft check (warning only)
+if [ "$duration" -ge 10000 ]; then
+    echo "WARNING: Slow execution (${duration}ms)" >&3
+fi
+
+# Hard check (test failure)
+[ "$duration" -lt 10000 ] || {
+    echo "FAIL: Exceeded timeout (${duration}ms > 10000ms)" >&3
+    return 1
+}
+```
+
+**Baseline Documentation**:
+Always document performance baselines:
+```markdown
+# Performance Baseline (Dry-Run Mode)
+- Single module: ~1000ms
+- 3 modules: ~1000ms
+- 5 modules: ~1000ms
+
+Environment: Linux, Bash 5.x, Node.js 18.x
+Recorded: 2025-10-19
+```
+
+**Real Examples from Our Codebase**:
+- Tests in `federation-benchmarks.bats` - Build performance
+- Pattern: Measure → Report → Validate
+- All targets met with significant margin
+
+---
+
 ## Mock Functions
 
 ### Mock Function Guidelines
@@ -980,12 +1153,14 @@ Use this checklist when writing or reviewing tests:
 
 ## Related Documentation
 
-- [Test Inventory](../test-inventory/) - Complete catalog of all tests
-- [Coverage Matrix](../coverage-matrix/) - Function coverage analysis
+- [Test Inventory](./test-inventory.md) - Complete catalog of all tests
+- [Coverage Matrix (Layer 1)](./coverage-matrix.md) - Layer 1 coverage analysis
+- [Coverage Matrix (Layer 2)](./coverage-matrix-federation.md) - Federation coverage analysis
+- [Federation Testing Guide](./federation-testing.md) - Federation-specific testing patterns
 - [Contributing Guide](../../contributing/) - General contribution guidelines
 
 ---
 
 **Remember**: Good tests are clear, isolated, and actually validate functionality. When in doubt, refer to the real-world examples in this guide!
 
-**Last Updated**: 2025-10-11
+**Last Updated**: 2025-10-19
