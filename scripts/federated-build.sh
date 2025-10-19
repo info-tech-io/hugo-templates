@@ -109,6 +109,11 @@ log_federation() {
     print_color "$CYAN" "🌐 $*"
 }
 
+log_section() {
+    [[ "$QUIET" == "true" ]] && return
+    log_info "$*"
+}
+
 # Function to show usage
 show_usage() {
     cat << EOF
