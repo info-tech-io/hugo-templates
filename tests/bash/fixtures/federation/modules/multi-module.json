@@ -1,0 +1,46 @@
+{
+  "federation": {
+    "name": "Multi-Module Federation Test",
+    "baseURL": "https://example.com",
+    "strategy": "download-merge-deploy",
+    "build_settings": {
+      "parallel": true,
+      "max_parallel_builds": 3
+    }
+  },
+  "modules": [
+    {
+      "name": "module-a",
+      "source": {
+        "repository": "local",
+        "path": "docs",
+        "branch": "main"
+      },
+      "destination": "/a/",
+      "module_json": "module.json",
+      "css_path_prefix": "/a"
+    },
+    {
+      "name": "module-b",
+      "source": {
+        "repository": "local",
+        "path": "docs",
+        "branch": "main"
+      },
+      "destination": "/b/",
+      "module_json": "module.json",
+      "css_path_prefix": "/b"
+    },
+    {
+      "name": "module-c",
+      "source": {
+        "repository": "local",
+        "path": "docs",
+        "branch": "main"
+      },
+      "destination": "/c/",
+      "module_json": "module.json",
+      "css_path_prefix": "/c"
+    }
+  ]
+}

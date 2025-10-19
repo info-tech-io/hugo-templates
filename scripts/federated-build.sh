@@ -109,6 +109,11 @@ log_federation() {
     print_color "$CYAN" "🌐 $*"
 }
 
+log_section() {
+    [[ "$QUIET" == "true" ]] && return
+    log_info "$*"
+}
+
 # Function to show usage
 show_usage() {
     cat << EOF
@@ -365,6 +370,15 @@ try {
             }
         }
 
+        // Additional properties check
+        if (schema.additionalProperties === false && typeof data === 'object' && !Array.isArray(data)) {
+            for (const key of Object.keys(data)) {
+                if (schema.properties && !schema.properties.hasOwnProperty(key)) {
+                    errors.push(`${path}: Additional property "${key}" is not allowed`);
+                }
+            }
+        }
+
         // Array items
         if (schema.items && Array.isArray(data)) {
             if (schema.minItems && data.length < schema.minItems) {
@@ -501,6 +515,9 @@ try {
 
         if (module.source.repository) {
             console.log(`MODULE_${index}_REPO=${module.source.repository}`);
+        }
+        if (module.source.local_path) {
+            console.log(`MODULE_${index}_LOCAL_PATH=${module.source.local_path}`);
         }
         if (module.source.path) {
             console.log(`MODULE_${index}_PATH=${module.source.path}`);
@@ -670,8 +687,10 @@ cleanup_temp_files() {
     fi
 }
 
-# Register cleanup trap
-trap cleanup_temp_files EXIT
+# Register cleanup trap (only when script is run directly, not when sourced for testing)
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    trap cleanup_temp_files EXIT
+fi
 
 # Show federation summary
 show_federation_summary() {
@@ -810,12 +829,12 @@ analyze_module_paths() {
 
     # Scan all HTML files
     while IFS= read -r html_file; do
-        ((html_count++))
+        ((html_count++)) || true
 
         declare -a paths=()
         if detect_asset_paths "$html_file" paths; then
             for path in "${paths[@]}"; do
-                ((asset_count++))
+                ((asset_count++)) || true
                 # Track unique path patterns (first part of path)
                 local pattern
                 pattern="$(echo "$path" | cut -d'/' -f2)"
@@ -1057,17 +1076,18 @@ download_existing_pages() {
         return 1
     fi
 
-    # Check available disk space
+    # Check available disk space (use output_dir if TEMP_DIR is not set)
+    local check_dir="${TEMP_DIR:-$output_dir}"
     local available_kb
-    available_kb=$(df -k "$TEMP_DIR" 2>/dev/null | tail -1 | awk '{print $4}')
+    available_kb=$(df -k "$check_dir" 2>/dev/null | tail -1 | awk '{print $4}')
     if [[ -n "$available_kb" ]] && [[ $available_kb -lt 102400 ]]; then
         log_error "Insufficient disk space for download (< 100MB available)"
-        log_error "Available space: $(df -h "$TEMP_DIR" | tail -1 | awk '{print $4}')"
+        log_error "Available space: $(df -h "$check_dir" | tail -1 | awk '{print $4}')"
         exit_function
         return 1
     fi
 
-    log_info "Available disk space: $(df -h "$TEMP_DIR" 2>/dev/null | tail -1 | awk '{print $4}' || echo 'unknown')"
+    log_info "Available disk space: $(df -h "$check_dir" 2>/dev/null | tail -1 | awk '{print $4}' || echo 'unknown')"
 
     # Dry-run mode
     if [[ "$DRY_RUN" == "true" ]]; then
@@ -1178,11 +1198,13 @@ download_module_source() {
     local module_index=$1
     local module_name_var="MODULE_${module_index}_NAME"
     local module_repo_var="MODULE_${module_index}_REPO"
+    local module_local_path_var="MODULE_${module_index}_LOCAL_PATH"
     local module_path_var="MODULE_${module_index}_PATH"
     local module_branch_var="MODULE_${module_index}_BRANCH"
 
     local module_name="${!module_name_var}"
     local module_repo="${!module_repo_var:-}"
+    local module_local_path="${!module_local_path_var:-}"
     local module_path="${!module_path_var:-.}"
     local module_branch="${!module_branch_var:-main}"
 
@@ -1192,7 +1214,11 @@ download_module_source() {
     # Create module working directory
     if [[ "$DRY_RUN" == "true" ]]; then
         MODULE_WORK_DIR="/tmp/dry-run/module-$module_index-$module_name"
-        log_info "[DRY RUN] Would download: $module_repo ($module_branch) -> $MODULE_WORK_DIR"
+        if [[ "$module_repo" == "local" ]]; then
+            log_info "[DRY RUN] Would copy from local: $module_local_path/$module_path -> $MODULE_WORK_DIR"
+        else
+            log_info "[DRY RUN] Would download: $module_repo ($module_branch) -> $MODULE_WORK_DIR"
+        fi
         exit_function
         return 0
     fi
@@ -1244,7 +1270,43 @@ download_module_source() {
 
         log_success "Downloaded: $module_name"
     else
-        log_warning "No repository specified for $module_name - using local configuration"
+        # repository == "local" - use local_path
+        if [[ -z "$module_local_path" ]]; then
+            log_config_error "Local repository specified but local_path not provided for module '$module_name'"
+            exit_function
+            return 1
+        fi
+
+        if [[ ! -d "$module_local_path" ]]; then
+            log_io_error "Local path does not exist: $module_local_path"
+            exit_function
+            return 1
+        fi
+
+        log_info "Copying $module_name from local path: $module_local_path"
+
+        # Copy from local_path/module_path to work directory
+        local source_path="$module_local_path/$module_path"
+
+        if [[ ! -d "$source_path" ]]; then
+            log_io_error "Specified path not found in local directory: $source_path"
+            log_info "Local path: $module_local_path"
+            log_info "Relative path: $module_path"
+            exit_function
+            return 1
+        fi
+
+        # Copy all contents from source_path to MODULE_WORK_DIR
+        cp -r "$source_path"/* "$MODULE_WORK_DIR/" 2>/dev/null || {
+            log_io_error "Failed to copy from local path: $source_path"
+            exit_function
+            return 1
+        }
+
+        # Also copy hidden files if they exist
+        cp -r "$source_path"/.[!.]* "$MODULE_WORK_DIR/" 2>/dev/null || true
+
+        log_success "Copied from local: $module_name (from $source_path)"
     fi
 
     exit_function
@@ -1542,7 +1604,7 @@ detect_merge_conflicts() {
         if [[ -e "$existing_item" ]]; then
             # Conflict detected
             conflicts_array+=("$rel_path")
-            ((conflict_count++))
+            ((conflict_count++)) || true
 
             # Determine conflict type
             if [[ -f "$new_item" ]] && [[ -f "$existing_item" ]]; then
@@ -1587,9 +1649,10 @@ merge_with_strategy() {
 
     # Detect conflicts first
     declare -a conflicts=()
-    detect_merge_conflicts "$target_dir" "$source_dir" conflicts
-
-    local has_conflicts=$?
+    local has_conflicts=0
+    if ! detect_merge_conflicts "$target_dir" "$source_dir" conflicts 2>/dev/null; then
+        has_conflicts=1
+    fi
 
     # Apply strategy
     case "$strategy" in
@@ -1600,9 +1663,9 @@ merge_with_strategy() {
                 log_warning "Overwriting ${#conflicts[@]} conflicting items"
             fi
 
-            # Use rsync for better control
+            # Use rsync for better control (use -I to ignore times, transfer based on content)
             if command -v rsync >/dev/null 2>&1; then
-                rsync -a --delete-during "$source_dir/" "$target_dir/"
+                rsync -aI --delete-during "$source_dir/" "$target_dir/"
             else
                 # Fallback to cp
                 cp -rf "$source_dir"/* "$target_dir/" 2>/dev/null || true
@@ -1616,9 +1679,9 @@ merge_with_strategy() {
                 log_warning "Preserving ${#conflicts[@]} existing items, skipping new versions"
             fi
 
-            # Copy only non-conflicting files
+            # Copy only non-conflicting files (use -I to ignore times)
             if command -v rsync >/dev/null 2>&1; then
-                rsync -a --ignore-existing "$source_dir/" "$target_dir/"
+                rsync -aI --ignore-existing "$source_dir/" "$target_dir/"
             else
                 # Fallback: manual copy of non-conflicting files
                 find "$source_dir" -type f | while IFS= read -r source_file; do
@@ -2001,7 +2064,7 @@ validate_federation_output() {
 
     # Validate HTML files
     while IFS= read -r html_file; do
-        ((html_count++))
+        ((html_count++)) || true
 
         # Basic HTML validation (check for closing html tag)
         if ! grep -q "</html>" "$html_file" 2>/dev/null; then
@@ -2009,7 +2072,7 @@ validate_federation_output() {
                 log_warning "⚠ Possibly malformed HTML: ${html_file#$OUTPUT/}"
             fi
             warnings=$((warnings + 1))
-            ((broken_html++))
+            ((broken_html++)) || true
         fi
     done < <(find "$OUTPUT" -name "*.html" -type f 2>/dev/null)
 
@@ -2030,7 +2093,7 @@ validate_federation_output() {
                 log_warning "⚠ Possible double-slash in: ${html_file#$OUTPUT/}"
             fi
             warnings=$((warnings + 1))
-            ((broken_assets++))
+            ((broken_assets++)) || true
         fi
     done < <(find "$OUTPUT" -name "*.html" -type f 2>/dev/null | head -50)
 
@@ -2189,7 +2252,8 @@ EOF
       "mergeStrategy": "$module_strategy",
       "deployedSize": "$module_size",
       "deployed": $deployed_status
-    }MODULE_EOF
+    }
+MODULE_EOF
 
         # Add comma if not last module
         if [[ $i -lt $((MODULES_COUNT - 1)) ]]; then
@@ -2488,22 +2552,32 @@ main() {
         exit 1
     fi
 
-    # Verify deployment readiness
-    if ! verify_deployment_ready; then
-        log_error "Deployment readiness verification failed"
-        log_error "Please review the issues above before deploying"
-        exit 1
+    # Verify deployment readiness (skip in dry-run mode)
+    if [[ "$DRY_RUN" != "true" ]]; then
+        if ! verify_deployment_ready; then
+            log_error "Deployment readiness verification failed"
+            log_error "Please review the issues above before deploying"
+            exit 1
+        fi
+    else
+        log_info "[DRY RUN] Skipping deployment readiness verification"
     fi
 
     # Generate final build report
     generate_build_report
 
-    log_success "Federation build completed successfully"
-    log_success "Output is deployment-ready - see deployment instructions above"
+    if [[ "$DRY_RUN" == "true" ]]; then
+        log_success "Dry-run completed successfully - no files were created"
+    else
+        log_success "Federation build completed successfully"
+        log_success "Output is deployment-ready - see deployment instructions above"
+    fi
 
     exit_function
     return 0
 }
 
-# Execute main function with all arguments
-main "$@"
+# Execute main function with all arguments (only if script is run directly, not sourced)
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    main "$@"
+fi

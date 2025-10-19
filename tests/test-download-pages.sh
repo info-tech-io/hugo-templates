@@ -29,12 +29,12 @@ print_test_header() {
 
 pass_test() {
     echo "✓ $1"
-    ((TESTS_PASSED++))
+    ((TESTS_PASSED++)) || true
 }
 
 fail_test() {
     echo "✗ $1"
-    ((TESTS_FAILED++))
+    ((TESTS_FAILED++)) || true
 }
 
 # ===========================================================================

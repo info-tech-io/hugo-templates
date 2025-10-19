@@ -1,0 +1,19 @@
+{
+  "federation": {
+    "name": "Minimal Federation Test",
+    "baseURL": "http://localhost:1313",
+    "strategy": "download-merge-deploy"
+  },
+  "modules": [
+    {
+      "name": "test-module",
+      "source": {
+        "repository": "local",
+        "path": "docs",
+        "branch": "main"
+      },
+      "destination": "/",
+      "module_json": "module.json"
+    }
+  ]
+}

@@ -95,18 +95,23 @@ EOF
     # Create mock Node.js binary
     cat > "$TEST_TEMP_DIR/bin/node" << 'EOF'
 #!/bin/bash
+# Use real Node.js for actual execution
+REAL_NODE=$(command -v nodejs || command -v node | grep -v "^$TEST_TEMP_DIR" | head -1)
+
+# If real Node.js exists and script is being executed, use it
+if [[ -n "$REAL_NODE" && -f "$1" ]]; then
+    exec "$REAL_NODE" "$@"
+fi
+
+# Fallback for --version check
 if [[ "$1" == "--version" ]]; then
     echo "v18.0.0"
     exit 0
 fi
 
-# Mock Node.js script execution
-script_content=$(cat "$1" 2>/dev/null || echo "")
+# Fallback mock for simple cases (shouldn't be reached with real node)
 config_file="$2"
-
-# Simple JSON parsing mock
 if [[ -f "$config_file" ]]; then
-    # Return mock configuration
     echo "TEMPLATE=corporate"
     echo "THEME=compose"
     echo "BASE_URL=http://localhost:1313"

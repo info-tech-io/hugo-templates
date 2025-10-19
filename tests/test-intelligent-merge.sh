@@ -29,12 +29,12 @@ print_test_header() {
 
 pass_test() {
     echo "✓ $1"
-    ((TESTS_PASSED++))
+    ((TESTS_PASSED++)) || true
 }
 
 fail_test() {
     echo "✗ $1"
-    ((TESTS_FAILED++))
+    ((TESTS_FAILED++)) || true
 }
 
 # ===========================================================================
@@ -56,7 +56,7 @@ test_conflict_detection() {
     echo "unique" > "$new_dir/unique.html"
 
     declare -a conflicts=()
-    detect_merge_conflicts "$existing_dir" "$new_dir" conflicts >/dev/null 2>&1
+    detect_merge_conflicts "$existing_dir" "$new_dir" conflicts >/dev/null 2>&1 || true
 
     if [[ ${#conflicts[@]} -eq 1 ]] && [[ "${conflicts[0]}" == "conflict.html" ]]; then
         pass_test "Conflict detected correctly (1 conflict found)"
@@ -82,7 +82,7 @@ test_overwrite_strategy() {
     echo "old content" > "$target/file.html"
     echo "new content" > "$source/file.html"
 
-    merge_with_strategy "$source" "$target" "overwrite" >/dev/null 2>&1
+    merge_with_strategy "$source" "$target" "overwrite" >/dev/null 2>&1 || true
 
     local content
     content=$(cat "$target/file.html")
@@ -112,7 +112,7 @@ test_preserve_strategy() {
     echo "new content" > "$source/file.html"
     echo "unique" > "$source/unique.html"
 
-    merge_with_strategy "$source" "$target" "preserve" >/dev/null 2>&1
+    merge_with_strategy "$source" "$target" "preserve" >/dev/null 2>&1 || true
 
     local existing_content
     local unique_content
