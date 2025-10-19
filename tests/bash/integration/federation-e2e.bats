@@ -80,9 +80,9 @@ create_federation_config() {
     "baseURL": "http://localhost:1313",
     "strategy": "download-merge-deploy",
     "build_settings": {
-      "parallel_builds": false,
-      "preserve_base_site": false,
-      "css_path_resolution": true
+      "cache_enabled": true,
+      "performance_tracking": false,
+      "fail_fast": false
     }
   },
   "modules": [
@@ -315,10 +315,7 @@ EOF
   "federation": {
     "name": "CSS Path Test",
     "baseURL": "http://localhost:1313",
-    "strategy": "download-merge-deploy",
-    "build_settings": {
-      "css_path_resolution": true
-    }
+    "strategy": "download-merge-deploy"
   },
   "modules": [
     {
@@ -354,9 +351,9 @@ EOF
     # Setup: Create federation with preserve flag
     create_federation_config "$MODULES_CONFIG" 1
 
-    # Modify config to enable preserve
+    # Modify config to use preserve-base-site strategy
     local temp_config="$MODULES_CONFIG.tmp"
-    sed 's/"preserve_base_site": false/"preserve_base_site": true/' "$MODULES_CONFIG" > "$temp_config"
+    sed 's/"strategy": "download-merge-deploy"/"strategy": "preserve-base-site"/' "$MODULES_CONFIG" > "$temp_config"
     mv "$temp_config" "$MODULES_CONFIG"
 
     # Create existing output to preserve
@@ -410,9 +407,9 @@ EOF
     "baseURL": "https://info-tech-io.github.io",
     "strategy": "download-merge-deploy",
     "build_settings": {
-      "parallel_builds": false,
-      "preserve_base_site": true,
-      "css_path_resolution": true
+      "cache_enabled": true,
+      "performance_tracking": true,
+      "fail_fast": false
     }
   },
   "modules": [

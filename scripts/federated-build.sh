@@ -370,6 +370,15 @@ try {
             }
         }
 
+        // Additional properties check
+        if (schema.additionalProperties === false && typeof data === 'object' && !Array.isArray(data)) {
+            for (const key of Object.keys(data)) {
+                if (schema.properties && !schema.properties.hasOwnProperty(key)) {
+                    errors.push(`${path}: Additional property "${key}" is not allowed`);
+                }
+            }
+        }
+
         // Array items
         if (schema.items && Array.isArray(data)) {
             if (schema.minItems && data.length < schema.minItems) {
