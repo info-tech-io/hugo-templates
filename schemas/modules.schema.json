@@ -105,53 +105,92 @@
           "source": {
             "type": "object",
             "description": "Source location for module content",
-            "required": ["repository", "path", "branch"],
-            "additionalProperties": false,
-            "properties": {
-              "repository": {
-                "type": "string",
-                "description": "Git repository URL (GitHub format) or 'local' for local sources",
-                "oneOf": [
-                  {
+            "oneOf": [
+              {
+                "description": "Remote Git repository source",
+                "required": ["repository", "path", "branch"],
+                "additionalProperties": false,
+                "properties": {
+                  "repository": {
+                    "type": "string",
+                    "description": "Git repository URL (GitHub format)",
                     "pattern": "^(https://github\\.com/|git@github\\.com:)[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+(\\.git)?$",
                     "examples": [
                       "https://github.com/info-tech-io/info-tech",
                       "https://github.com/info-tech-io/quiz"
                     ]
                   },
-                  {
-                    "const": "local",
-                    "examples": ["local"]
+                  "path": {
+                    "type": "string",
+                    "description": "Path within repository to content directory",
+                    "pattern": "^[^/].*[^/]$",
+                    "minLength": 1,
+                    "maxLength": 200,
+                    "examples": [
+                      "docs",
+                      "content",
+                      "site/content"
+                    ]
+                  },
+                  "branch": {
+                    "type": "string",
+                    "description": "Git branch name",
+                    "pattern": "^[a-zA-Z0-9/_.-]+$",
+                    "minLength": 1,
+                    "maxLength": 100,
+                    "default": "main",
+                    "examples": [
+                      "main",
+                      "master",
+                      "develop",
+                      "feature/docs-update"
+                    ]
                   }
-                ]
+                }
               },
-              "path": {
-                "type": "string",
-                "description": "Path within repository to content directory",
-                "pattern": "^[^/].*[^/]$",
-                "minLength": 1,
-                "maxLength": 200,
-                "examples": [
-                  "docs",
-                  "content",
-                  "site/content"
-                ]
-              },
-              "branch": {
-                "type": "string",
-                "description": "Git branch name",
-                "pattern": "^[a-zA-Z0-9/_.-]+$",
-                "minLength": 1,
-                "maxLength": 100,
-                "default": "main",
-                "examples": [
-                  "main",
-                  "master",
-                  "develop",
-                  "feature/docs-update"
-                ]
+              {
+                "description": "Local filesystem source (for testing and development)",
+                "required": ["repository", "local_path", "path"],
+                "additionalProperties": false,
+                "properties": {
+                  "repository": {
+                    "type": "string",
+                    "const": "local",
+                    "description": "Indicates a local filesystem source"
+                  },
+                  "local_path": {
+                    "type": "string",
+                    "description": "Absolute path to local module directory",
+                    "pattern": "^/",
+                    "minLength": 2,
+                    "maxLength": 500,
+                    "examples": [
+                      "/tmp/test-module",
+                      "/home/user/projects/my-module",
+                      "/var/www/content"
+                    ]
+                  },
+                  "path": {
+                    "type": "string",
+                    "description": "Relative path within local_path to content directory",
+                    "pattern": "^[^/].*[^/]$",
+                    "minLength": 1,
+                    "maxLength": 200,
+                    "examples": [
+                      "docs",
+                      "content",
+                      "site/content"
+                    ]
+                  },
+                  "branch": {
+                    "type": "string",
+                    "description": "Branch name (ignored for local sources, but kept for consistency)",
+                    "pattern": "^[a-zA-Z0-9/_.-]+$",
+                    "default": "main"
+                  }
+                }
               }
-            }
+            ]
           },
           "destination": {
             "type": "string",

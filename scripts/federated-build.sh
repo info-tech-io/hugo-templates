@@ -502,6 +502,9 @@ try {
         if (module.source.repository) {
             console.log(`MODULE_${index}_REPO=${module.source.repository}`);
         }
+        if (module.source.local_path) {
+            console.log(`MODULE_${index}_LOCAL_PATH=${module.source.local_path}`);
+        }
         if (module.source.path) {
             console.log(`MODULE_${index}_PATH=${module.source.path}`);
         }
@@ -1181,11 +1184,13 @@ download_module_source() {
     local module_index=$1
     local module_name_var="MODULE_${module_index}_NAME"
     local module_repo_var="MODULE_${module_index}_REPO"
+    local module_local_path_var="MODULE_${module_index}_LOCAL_PATH"
     local module_path_var="MODULE_${module_index}_PATH"
     local module_branch_var="MODULE_${module_index}_BRANCH"
 
     local module_name="${!module_name_var}"
     local module_repo="${!module_repo_var:-}"
+    local module_local_path="${!module_local_path_var:-}"
     local module_path="${!module_path_var:-.}"
     local module_branch="${!module_branch_var:-main}"
 
@@ -1195,7 +1200,11 @@ download_module_source() {
     # Create module working directory
     if [[ "$DRY_RUN" == "true" ]]; then
         MODULE_WORK_DIR="/tmp/dry-run/module-$module_index-$module_name"
-        log_info "[DRY RUN] Would download: $module_repo ($module_branch) -> $MODULE_WORK_DIR"
+        if [[ "$module_repo" == "local" ]]; then
+            log_info "[DRY RUN] Would copy from local: $module_local_path/$module_path -> $MODULE_WORK_DIR"
+        else
+            log_info "[DRY RUN] Would download: $module_repo ($module_branch) -> $MODULE_WORK_DIR"
+        fi
         exit_function
         return 0
     fi
@@ -1247,7 +1256,43 @@ download_module_source() {
 
         log_success "Downloaded: $module_name"
     else
-        log_warning "No repository specified for $module_name - using local configuration"
+        # repository == "local" - use local_path
+        if [[ -z "$module_local_path" ]]; then
+            log_config_error "Local repository specified but local_path not provided for module '$module_name'"
+            exit_function
+            return 1
+        fi
+
+        if [[ ! -d "$module_local_path" ]]; then
+            log_io_error "Local path does not exist: $module_local_path"
+            exit_function
+            return 1
+        fi
+
+        log_info "Copying $module_name from local path: $module_local_path"
+
+        # Copy from local_path/module_path to work directory
+        local source_path="$module_local_path/$module_path"
+
+        if [[ ! -d "$source_path" ]]; then
+            log_io_error "Specified path not found in local directory: $source_path"
+            log_info "Local path: $module_local_path"
+            log_info "Relative path: $module_path"
+            exit_function
+            return 1
+        fi
+
+        # Copy all contents from source_path to MODULE_WORK_DIR
+        cp -r "$source_path"/* "$MODULE_WORK_DIR/" 2>/dev/null || {
+            log_io_error "Failed to copy from local path: $source_path"
+            exit_function
+            return 1
+        }
+
+        # Also copy hidden files if they exist
+        cp -r "$source_path"/.[!.]* "$MODULE_WORK_DIR/" 2>/dev/null || true
+
+        log_success "Copied from local: $module_name (from $source_path)"
     fi
 
     exit_function
