@@ -364,6 +364,196 @@ Brief description of changes made.
 - Performance optimizations
 - Security improvements
 
+### Federation Contributions (Layer 2)
+
+**NEW**: The federated build system enables multi-repository Hugo site orchestration. Contributing to federation requires understanding the Layer 1/Layer 2 architecture.
+
+#### Understanding Layers
+
+The hugo-templates framework uses a **layered architecture**:
+- **Layer 1**: Single-site builds (`build.sh`) - Stable, production-ready
+- **Layer 2**: Multi-module federation (`federated-build.sh`) - Enhancement layer
+
+**CRITICAL**: Layer 2 must not modify Layer 1. Federation builds upon Layer 1, using it for individual module builds.
+
+#### Federation Development Workflow
+
+**1. Setup Development Environment**
+```bash
+# Clone repository
+git clone https://github.com/info-tech-io/hugo-templates.git
+cd hugo-templates
+
+# Create feature branch from epic branch
+git checkout epic/federated-build-system
+git checkout -b feature/federation-your-feature
+
+# Install dependencies
+npm install
+```
+
+**2. Make Changes**
+
+Follow the project structure:
+- **Federation code**: `scripts/federated-build.sh`
+- **Schema**: `schemas/modules.schema.json`
+- **Tests**: `tests/bash/unit/federated-*.bats`
+- **Integration tests**: `tests/bash/integration/federation-e2e.bats`
+- **Documentation**: `docs/content/*/federation-*.md`
+
+**3. Write Tests FIRST**
+
+**CRITICAL**: Federation features require comprehensive testing.
+
+For new functions:
+1. Add unit test in `tests/bash/unit/federated-*.bats`
+2. Run test, watch it fail
+3. Implement function
+4. Run test, verify pass
+5. Add integration test if user-facing
+
+```bash
+# Run federation tests
+./tests/run-federation-tests.sh --layer unit
+
+# Run all tests
+./tests/run-federation-tests.sh --layer all
+```
+
+**4. Update Documentation**
+
+For user-facing changes:
+- Update `docs/content/user-guides/federated-builds.md`
+- Add examples if needed
+- Update tutorials if workflow changes
+
+For technical changes:
+- Update `docs/content/developer-docs/federation-architecture.md`
+- Update `docs/content/developer-docs/federation-api-reference.md`
+- Add to coverage matrix: `docs/content/developer-docs/testing/coverage-matrix-federation.md`
+
+**5. Run Full Test Suite**
+
+```bash
+# Layer 1 tests (must not break)
+./scripts/test-bash.sh
+
+# Layer 2 unit tests
+./tests/run-federation-tests.sh --layer unit
+
+# Integration tests
+./tests/run-federation-tests.sh --layer integration
+
+# All federation tests
+./tests/run-federation-tests.sh --layer all
+
+# Performance benchmarks
+./tests/run-federation-tests.sh --layer performance
+```
+
+**6. Create Pull Request**
+
+```bash
+# Commit changes
+git add .
+git commit -m "feat: add federation feature X
+
+Description of changes...
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>"
+
+# Push to origin
+git push origin feature/federation-your-feature
+
+# Create PR to epic branch
+gh pr create --base epic/federated-build-system \
+  --title "feat: add federation feature X" \
+  --body "## Summary
+
+  Description...
+
+  ## Testing
+  - [ ] Unit tests: X passing
+  - [ ] Integration tests: Y passing
+  - [ ] Documentation updated
+
+  ## Related
+  - Child Issue: #21
+  - Epic: #15"
+```
+
+#### Testing Requirements for Federation PRs
+
+All federation PRs must include:
+1. ✅ **Unit tests** for new functions (BATS)
+2. ✅ **Integration test** if user-facing
+3. ✅ **All 140 existing tests still passing**
+4. ✅ **Documentation updates**
+5. ✅ **Coverage matrix updated**
+
+**PR Checklist**:
+- [ ] Tests written before implementation
+- [ ] All tests passing locally
+- [ ] Documentation updated
+- [ ] No Layer 1 modifications (unless intentional)
+- [ ] Conventional commit format used
+- [ ] PR targets correct branch (`epic/federated-build-system`)
+
+#### Federation Testing Guide
+
+See comprehensive testing documentation:
+- [Testing Guide](../developer-docs/testing/federation-testing.md) - Overview
+- [Test Inventory](../developer-docs/testing/test-inventory.md) - All 140 tests
+- [Coverage Matrix](../developer-docs/testing/coverage-matrix-federation.md) - 28 functions
+- [Testing Guidelines](../developer-docs/testing/guidelines.md) - Patterns G & H
+
+**Quick Test Commands**:
+```bash
+# Run specific layer
+./tests/run-federation-tests.sh --layer unit
+./tests/run-federation-tests.sh --layer integration
+./tests/run-federation-tests.sh --layer performance
+
+# Run all federation tests
+./tests/run-federation-tests.sh --layer all
+
+# Verbose output
+./tests/run-federation-tests.sh --layer all --verbose
+```
+
+#### Common Federation Tasks
+
+**Add New Function**:
+1. Add function to `scripts/federated-build.sh`
+2. Add unit test to `tests/bash/unit/federated-*.bats`
+3. Run test to verify
+4. Add to `docs/content/developer-docs/federation-api-reference.md`
+5. Update `docs/content/developer-docs/testing/coverage-matrix-federation.md`
+
+**Add New Strategy**:
+1. Implement workflow function in `scripts/federated-build.sh`
+2. Add to schema validation in `schemas/modules.schema.json`
+3. Add integration test in `tests/bash/integration/federation-e2e.bats`
+4. Document in user guide and architecture doc
+5. Add tutorial example
+
+**Fix Federation Bug**:
+1. Add failing test that reproduces bug
+2. Fix bug in `scripts/federated-build.sh`
+3. Verify test now passes
+4. Check all other tests still pass
+5. Update docs if behavior changed
+
+#### Federation Architecture Resources
+
+Before contributing, familiarize yourself with:
+- [Federation Architecture](../developer-docs/federation-architecture.md) - Technical design and Layer 1/2 separation
+- [Federation API Reference](../developer-docs/federation-api-reference.md) - Complete function documentation (28 functions)
+- [Simple Tutorial](../tutorials/federation-simple-tutorial.md) - Get hands-on experience
+- [Advanced Tutorial](../tutorials/federation-advanced-tutorial.md) - Production scenario
+
 ## Getting Help
 
 ### Questions and Support
