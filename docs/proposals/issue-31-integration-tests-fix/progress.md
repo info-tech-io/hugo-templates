@@ -1,7 +1,7 @@
 # Issue #31: Fix Integration Tests - Progress Tracking
 
 **Issue**: https://github.com/info-tech-io/hugo-templates/issues/31
-**Status**: ⏳ NOT STARTED
+**Status**: 🔄 IN PROGRESS (Stage 1 Complete)
 **Branch**: `bugfix/integration-tests-fix`
 **Created**: 2025-10-20
 **Updated**: 2025-10-20
@@ -40,20 +40,21 @@ Fix 17 failing integration tests that were not updated to match the new structur
 
 ## Implementation Stages
 
-### Stage 1: Create Test Helper Functions ⏳
-**Status**: NOT STARTED
-**Estimated Duration**: 30 minutes
+### Stage 1: Create Test Helper Functions ✅
+**Status**: COMPLETE
+**Actual Duration**: ~30 minutes
 **Priority**: HIGHEST
 **File**: `tests/bash/helpers/test-helpers.bash`
+**Commit**: [6147e06](https://github.com/info-tech-io/hugo-templates/commit/6147e06)
 
 **Tasks**:
-- [ ] 1.1: Add `assert_log_message()` function (+30 lines)
-- [ ] 1.2: Add `assert_log_message_with_category()` function (+30 lines)
-- [ ] 1.3: Add JSDoc-style documentation for both helpers
-- [ ] 1.4: Test helpers with sample inputs
-- [ ] 1.5: Commit: `test: add structured logging test helpers`
+- [x] 1.1: Add `assert_log_message()` function (+30 lines)
+- [x] 1.2: Add `assert_log_message_with_category()` function (+30 lines)
+- [x] 1.3: Add JSDoc-style documentation for both helpers
+- [x] 1.4: Test helpers with sample inputs
+- [x] 1.5: Commit: `test: add structured logging test helpers`
 
-**Deliverable**: 2 new helper functions with documentation
+**Deliverable**: ✅ 2 new helper functions with documentation (87 lines added)
 
 ---
 
@@ -122,16 +123,17 @@ Fix 17 failing integration tests that were not updated to match the new structur
 
 ## Progress Metrics
 
-### Overall Completion: 0% (0/4 stages complete)
+### Overall Completion: 25% (1/4 stages complete)
 
 | Stage | Status | Progress | Duration | Tests Fixed |
 |-------|--------|----------|----------|-------------|
-| Stage 1: Helper Functions | ⏳ Pending | 0% | - | - |
+| Stage 1: Helper Functions | ✅ Complete | 100% | 30 min | - |
 | Stage 2: Enhanced Features | ⏳ Pending | 0% | - | 0/5 |
 | Stage 3: Error Scenarios | ⏳ Pending | 0% | - | 0/9 |
 | Stage 4: Build Workflows | ⏳ Pending | 0% | - | 0/3 |
 
 **Total Tests Fixed**: 0/17 (0%)
+**Helper Functions Created**: 2/2 (100%)
 
 ---
 
@@ -145,9 +147,10 @@ Fix 17 failing integration tests that were not updated to match the new structur
 - **Stage 4**: 20 minutes
 
 ### Actual Timeline
-- **Started**: Not started
-- **Completed**: Not completed
-- **Total Duration**: -
+- **Started**: 2025-10-20
+- **Stage 1 Completed**: 2025-10-20 (30 minutes)
+- **Completed**: In progress
+- **Total Duration**: ~30 minutes so far
 
 ---
 
@@ -180,7 +183,7 @@ Stage 4: 265/265 (100%) ✅ → Target
 ## Files Modified
 
 ### Test Helpers
-- [ ] `tests/bash/helpers/test-helpers.bash` (+60 lines)
+- [x] `tests/bash/helpers/test-helpers.bash` (+87 lines)
 
 ### Integration Tests
 - [ ] `tests/bash/integration/enhanced-features-v2.bats` (~14 tests updated)
@@ -193,13 +196,14 @@ Stage 4: 265/265 (100%) ✅ → Target
 ## Commits
 
 ### Planned Commits (4 total)
-1. ⏳ `test: add structured logging test helpers`
+1. ✅ `test: add structured logging test helpers` - [6147e06](https://github.com/info-tech-io/hugo-templates/commit/6147e06)
 2. ⏳ `test: update enhanced features tests for structured logging`
 3. ⏳ `test: update error scenario tests for structured logging`
 4. ⏳ `test: update build workflow tests for structured logging`
 
 ### Actual Commits
-- None yet
+1. ✅ [6625b91](https://github.com/info-tech-io/hugo-templates/commit/6625b91) - `docs(issue-31): add Stage 1 detailed plan`
+2. ✅ [6147e06](https://github.com/info-tech-io/hugo-templates/commit/6147e06) - `test: add structured logging test helpers`
 
 ---
 
@@ -288,17 +292,18 @@ gh pr create --base epic/federated-build-system \
 ## Next Actions
 
 ### Immediate Next Steps
-1. ⏳ Start Stage 1: Create helper functions
-2. ⏳ Add `assert_log_message()` to test-helpers.bash
-3. ⏳ Add `assert_log_message_with_category()` to test-helpers.bash
-4. ⏳ Test helpers with sample inputs
-5. ⏳ Commit Stage 1
+1. ✅ Start Stage 1: Create helper functions
+2. ✅ Add `assert_log_message()` to test-helpers.bash
+3. ✅ Add `assert_log_message_with_category()` to test-helpers.bash
+4. ✅ Test helpers with sample inputs
+5. ✅ Commit Stage 1
 
-### After Stage 1
-6. ⏳ Start Stage 2: Update enhanced features tests
-7. ⏳ Update 5 tests in enhanced-features-v2.bats
-8. ⏳ Run test file to verify
-9. ⏳ Commit Stage 2
+### Current Focus
+6. 🔄 Create Stage 2 detailed plan
+7. ⏳ Start Stage 2: Update enhanced features tests
+8. ⏳ Update 5 tests in enhanced-features-v2.bats
+9. ⏳ Run test file to verify
+10. ⏳ Commit Stage 2
 
 ---
 
@@ -324,7 +329,20 @@ gh pr create --base epic/federated-build-system \
 ---
 
 **Last Updated**: 2025-10-20
-**Status**: ⏳ **NOT STARTED - READY TO BEGIN**
-**Next Action**: Start Stage 1 - Create test helper functions
+**Status**: 🔄 **IN PROGRESS - Stage 1 Complete (25%)**
+**Next Action**: Create Stage 2 detailed plan - Enhanced Features Tests
 **Branch**: `bugfix/integration-tests-fix`
 **Target PR**: `bugfix/integration-tests-fix` → `epic/federated-build-system`
+
+---
+
+## Stage Completion Progress
+
+```
+[████████░░░░░░░░░░░░░░░░░░░░] 25% (1/4 stages)
+
+✅ Stage 1: Helper Functions (Complete)
+⏳ Stage 2: Enhanced Features (Pending)
+⏳ Stage 3: Error Scenarios (Pending)
+⏳ Stage 4: Build Workflows (Pending)
+```
