@@ -371,3 +371,90 @@ create_minimal_test_template() {
     mkdir -p "$template_dir/$template_name/content"
     echo "# Home" > "$template_dir/$template_name/content/_index.md"
 }
+
+# Structured Logging Test Helpers (Issue #31)
+# These helpers handle the structured logging format introduced in Child #20
+
+# Assert log message exists (handles structured logging format)
+#
+# Usage:
+#   assert_log_message "$output" "Expected message" "INFO"
+#   assert_log_message "$output" "Build completed" "SUCCESS"
+#
+# Arguments:
+#   $1 - Output to search (typically $output from BATS run)
+#   $2 - Expected message content (substring match)
+#   $3 - Expected log level (INFO|SUCCESS|WARN|ERROR|FATAL) [optional]
+#
+# Returns:
+#   0 - Message found with correct log level
+#   1 - Message not found or incorrect log level
+#
+assert_log_message() {
+  local output="$1"
+  local expected_message="$2"
+  local expected_level="${3:-}"  # Optional
+
+  # Strip ANSI escape codes
+  local clean_output
+  clean_output=$(echo "$output" | sed 's/\x1b\[[0-9;]*m//g')
+
+  # Strip timestamps (format: [YYYY-MM-DDTHH:MM:SS+00:00])
+  clean_output=$(echo "$clean_output" | sed 's/\[[0-9-]*T[0-9:+]*\]//g')
+
+  # Check message exists
+  if ! echo "$clean_output" | grep -qF "$expected_message"; then
+    echo "Expected message not found: '$expected_message'"
+    echo "Actual output (cleaned):"
+    echo "$clean_output"
+    return 1
+  fi
+
+  # Check log level if specified
+  if [[ -n "$expected_level" ]]; then
+    if ! echo "$clean_output" | grep -qF "[$expected_level]"; then
+      echo "Expected log level not found: [$expected_level]"
+      echo "Actual output (cleaned):"
+      echo "$clean_output"
+      return 1
+    fi
+  fi
+
+  return 0
+}
+
+# Assert log message with category
+#
+# Usage:
+#   assert_log_message_with_category "$output" "Build started" "INFO" "BUILD"
+#
+# Arguments:
+#   $1 - Output to search
+#   $2 - Expected message content
+#   $3 - Expected log level
+#   $4 - Expected category
+#
+# Returns:
+#   0 - Message found with correct level and category
+#   1 - Message/level/category not found
+#
+assert_log_message_with_category() {
+  local output="$1"
+  local expected_message="$2"
+  local expected_level="$3"
+  local expected_category="$4"
+
+  # First check message and level
+  assert_log_message "$output" "$expected_message" "$expected_level" || return 1
+
+  # Then check category
+  local clean_output
+  clean_output=$(echo "$output" | sed 's/\x1b\[[0-9;]*m//g' | sed 's/\[[0-9-]*T[0-9:+]*\]//g')
+
+  if ! echo "$clean_output" | grep -qF "[$expected_category]"; then
+    echo "Expected category not found: [$expected_category]"
+    return 1
+  fi
+
+  return 0
+}
