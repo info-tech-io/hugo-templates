@@ -25,12 +25,12 @@ teardown() {
 
 create_comprehensive_test_environment() {
     # Create templates directory structure
-    create_test_template_structure "$PROJECT_ROOT/templates" "corporate"
-    create_test_template_structure "$PROJECT_ROOT/templates" "minimal"
+    create_test_template_structure "$TEST_TEMPLATES_DIR" "corporate"
+    create_test_template_structure "$TEST_TEMPLATES_DIR" "minimal"
 
     # Create themes directory (mock)
-    mkdir -p "$PROJECT_ROOT/themes/compose"
-    echo "# Compose Theme" > "$PROJECT_ROOT/themes/compose/README.md"
+    mkdir -p "$TEST_THEMES_DIR/compose"
+    echo "# Compose Theme" > "$TEST_THEMES_DIR/compose/README.md"
 
     # Create components directory (mock)
     mkdir -p "$PROJECT_ROOT/components/quiz-engine"

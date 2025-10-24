@@ -15,7 +15,7 @@ setup() {
     export TEST_OUTPUT_DIR="$TEST_TEMP_DIR/output"
 
     # Create basic test structure
-    create_test_template_structure "$PROJECT_ROOT/templates" "corporate"
+    create_test_template_structure "$TEST_TEMPLATES_DIR" "corporate"
 }
 
 teardown() {
@@ -148,7 +148,7 @@ EOF
 
 @test "error scenario: malformed components.yml" {
     # Create template with malformed components.yml
-    local template_dir="$PROJECT_ROOT/templates/malformed_components"
+    local template_dir="$TEST_TEMPLATES_DIR/malformed_components"
     mkdir -p "$template_dir"
     echo "# Malformed Template" > "$template_dir/README.md"
     echo "invalid: yaml: [syntax: error" > "$template_dir/components.yml"
@@ -165,7 +165,7 @@ EOF
 
 @test "error scenario: invalid Hugo configuration" {
     # Create template with invalid hugo.toml
-    local template_dir="$PROJECT_ROOT/templates/invalid_config"
+    local template_dir="$TEST_TEMPLATES_DIR/invalid_config"
     mkdir -p "$template_dir"
     echo "invalid hugo configuration syntax" > "$template_dir/hugo.toml"
 

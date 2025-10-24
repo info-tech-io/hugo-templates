@@ -15,8 +15,8 @@ setup() {
     export TEST_OUTPUT_DIR="$TEST_TEMP_DIR/output"
 
     # Create test environment
-    create_test_template_structure "$PROJECT_ROOT/templates" "corporate"
-    create_test_template_structure "$PROJECT_ROOT/templates" "minimal"
+    create_test_template_structure "$TEST_TEMPLATES_DIR" "corporate"
+    create_test_template_structure "$TEST_TEMPLATES_DIR" "minimal"
 }
 
 teardown() {
