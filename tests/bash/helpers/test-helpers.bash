@@ -55,6 +55,24 @@ setup_test_environment() {
     export TEST_TEMP_DIR=$(mktemp -d)
     export ORIGINAL_PWD="$PWD"
 
+    # Create isolated template copies
+    export TEST_TEMPLATES_DIR="$TEST_TEMP_DIR/templates"
+    mkdir -p "$TEST_TEMPLATES_DIR"
+
+    # Copy real templates if they exist
+    if [[ -d "$PROJECT_ROOT/templates" ]]; then
+        cp -r "$PROJECT_ROOT/templates"/* "$TEST_TEMPLATES_DIR/" 2>/dev/null || true
+    fi
+
+    # Create isolated themes directory
+    export TEST_THEMES_DIR="$TEST_TEMP_DIR/themes"
+    mkdir -p "$TEST_THEMES_DIR"
+
+    # Copy real themes if they exist
+    if [[ -d "$PROJECT_ROOT/themes" ]]; then
+        cp -r "$PROJECT_ROOT/themes"/* "$TEST_THEMES_DIR/" 2>/dev/null || true
+    fi
+
     # Mock external dependencies
     setup_mocks
 
@@ -78,7 +96,7 @@ teardown_test_environment() {
     [[ -n "$ORIGINAL_PWD" ]] && cd "$ORIGINAL_PWD"
 
     # Clear test variables
-    unset TEST_TEMP_DIR ORIGINAL_PWD
+    unset TEST_TEMP_DIR ORIGINAL_PWD TEST_TEMPLATES_DIR TEST_THEMES_DIR
 }
 
 # Mock external dependencies
