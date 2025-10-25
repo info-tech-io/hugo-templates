@@ -8,11 +8,16 @@
 load '../helpers/test-helpers'
 
 setup() {
+    # Set PROJECT_ROOT before calling setup_test_environment
+    # This will be saved as ORIGINAL_PROJECT_ROOT and then replaced with isolated version
+    export PROJECT_ROOT="$BATS_TEST_DIRNAME/../../.."
+
     setup_test_environment
 
     # Set up more comprehensive environment for integration tests
-    export SCRIPT_DIR="$BATS_TEST_DIRNAME/../../../scripts"
-    export PROJECT_ROOT="$BATS_TEST_DIRNAME/../../.."
+    # Use ORIGINAL_PROJECT_ROOT for scripts (points to real project)
+    # PROJECT_ROOT now points to isolated temp directory
+    export SCRIPT_DIR="$ORIGINAL_PROJECT_ROOT/scripts"
     export TEST_OUTPUT_DIR="$TEST_TEMP_DIR/output"
 
     # Create comprehensive test structure
