@@ -287,7 +287,8 @@ EOF
     assert_log_message "$output" "Template" "ERROR" || assert_log_message "$output" "not found"
 
     # But output should be more concise than verbose mode
-    [[ ${#output} -lt 500 ]]
+    # Note: In CI with GitHub Actions annotations, output may be larger due to ::debug:: messages
+    [[ ${#output} -lt 1000 ]]
 }
 
 @test "error scenario: debug mode error diagnostics" {
