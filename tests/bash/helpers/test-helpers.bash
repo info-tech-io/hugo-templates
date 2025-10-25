@@ -129,20 +129,30 @@ EOF
     cat > "$TEST_TEMP_DIR/bin/node" << 'EOF'
 #!/bin/bash
 # Use real Node.js for actual execution
-REAL_NODE=$(command -v nodejs || command -v node | grep -v "^$TEST_TEMP_DIR" | head -1)
+# Find real Node.js, excluding the test mock directory
+REAL_NODE=""
+for node_path in $(which -a node nodejs 2>/dev/null); do
+    # Skip if it's in our test temp directory
+    if [[ "$node_path" != "$TEST_TEMP_DIR"* ]]; then
+        REAL_NODE="$node_path"
+        break
+    fi
+done
 
-# If real Node.js exists and script is being executed, use it
-if [[ -n "$REAL_NODE" && -f "$1" ]]; then
-    exec "$REAL_NODE" "$@"
+# If real Node.js exists, use it and preserve its exit code
+if [[ -n "$REAL_NODE" ]]; then
+    "$REAL_NODE" "$@"
+    exit $?
 fi
 
-# Fallback for --version check
+# Fallback for --version check when no real Node.js available
 if [[ "$1" == "--version" ]]; then
     echo "v18.0.0"
     exit 0
 fi
 
-# Fallback mock for simple cases (shouldn't be reached with real node)
+# Fallback mock for simple cases (only when real Node.js not available)
+# This should only be reached when testing without Node.js installed
 config_file="$2"
 if [[ -f "$config_file" ]]; then
     echo "TEMPLATE=corporate"
