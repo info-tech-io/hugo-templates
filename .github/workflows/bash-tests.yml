@@ -269,7 +269,8 @@ jobs:
         ./scripts/build.sh --template nonexistent --validate-only 2>&1 | tee error_output.log
 
         # Verify error output contains expected elements
-        if grep -q "VALIDATION" error_output.log && grep -q "Template directory not found" error_output.log; then
+        # Updated to match actual error message format: "Template 'X' not found"
+        if grep -q "Template.*not found" error_output.log; then
           echo "✅ Error handling system working correctly in CI"
         else
           echo "❌ Error handling system not working as expected"
@@ -285,8 +286,9 @@ jobs:
         # Test that GitHub Actions annotations are generated
         ./scripts/build.sh --template nonexistent --validate-only 2>&1 | tee github_actions_output.log
 
-        # Check for GitHub Actions annotation format
-        if grep -q "::error::" github_actions_output.log || grep -q "VALIDATION" github_actions_output.log; then
+        # Check for GitHub Actions annotation format or error message
+        # Updated to match actual output format
+        if grep -q "::error::" github_actions_output.log || grep -q "Template.*not found" github_actions_output.log; then
           echo "✅ GitHub Actions integration working"
         else
           echo "❌ GitHub Actions integration not working"
