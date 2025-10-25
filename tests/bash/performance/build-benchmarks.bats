@@ -24,13 +24,13 @@ teardown() {
 
 create_performance_test_environment() {
     # Create multiple templates for performance testing
-    create_test_template_structure "$PROJECT_ROOT/templates" "corporate"
-    create_test_template_structure "$PROJECT_ROOT/templates" "minimal"
-    create_test_template_structure "$PROJECT_ROOT/templates" "educational"
+    create_test_template_structure "$TEST_TEMPLATES_DIR" "corporate"
+    create_test_template_structure "$TEST_TEMPLATES_DIR" "minimal"
+    create_test_template_structure "$TEST_TEMPLATES_DIR" "educational"
 
     # Create themes
-    mkdir -p "$PROJECT_ROOT/themes/compose"
-    mkdir -p "$PROJECT_ROOT/themes/minimal"
+    mkdir -p "$TEST_THEMES_DIR/compose"
+    mkdir -p "$TEST_THEMES_DIR/minimal"
 
     # Create various sized configuration files
     create_test_module_config "$TEST_TEMP_DIR/small_config.json" "minimal" "minimal"

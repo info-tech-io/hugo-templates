@@ -55,6 +55,34 @@ setup_test_environment() {
     export TEST_TEMP_DIR=$(mktemp -d)
     export ORIGINAL_PWD="$PWD"
 
+    # Save original PROJECT_ROOT (set by tests)
+    export ORIGINAL_PROJECT_ROOT="$PROJECT_ROOT"
+
+    # Create isolated PROJECT_ROOT in temp directory
+    export PROJECT_ROOT="$TEST_TEMP_DIR/project"
+    mkdir -p "$PROJECT_ROOT"
+
+    # Create isolated template and themes directories
+    export TEST_TEMPLATES_DIR="$PROJECT_ROOT/templates"
+    export TEST_THEMES_DIR="$PROJECT_ROOT/themes"
+    mkdir -p "$TEST_TEMPLATES_DIR"
+    mkdir -p "$TEST_THEMES_DIR"
+
+    # Copy real templates if they exist
+    if [[ -d "$ORIGINAL_PROJECT_ROOT/templates" ]]; then
+        cp -r "$ORIGINAL_PROJECT_ROOT/templates"/* "$TEST_TEMPLATES_DIR/" 2>/dev/null || true
+    fi
+
+    # Copy real themes if they exist
+    if [[ -d "$ORIGINAL_PROJECT_ROOT/themes" ]]; then
+        cp -r "$ORIGINAL_PROJECT_ROOT/themes"/* "$TEST_THEMES_DIR/" 2>/dev/null || true
+    fi
+
+    # Copy scripts to isolated project root
+    if [[ -d "$ORIGINAL_PROJECT_ROOT/scripts" ]]; then
+        cp -r "$ORIGINAL_PROJECT_ROOT/scripts" "$PROJECT_ROOT/" 2>/dev/null || true
+    fi
+
     # Mock external dependencies
     setup_mocks
 
@@ -71,6 +99,11 @@ teardown_test_environment() {
     # Cleanup error handling safely
     cleanup_test_error_handling
 
+    # Restore original PROJECT_ROOT
+    if [[ -n "$ORIGINAL_PROJECT_ROOT" ]]; then
+        export PROJECT_ROOT="$ORIGINAL_PROJECT_ROOT"
+    fi
+
     # Cleanup temporary files
     [[ -n "$TEST_TEMP_DIR" ]] && rm -rf "$TEST_TEMP_DIR"
 
@@ -78,7 +111,7 @@ teardown_test_environment() {
     [[ -n "$ORIGINAL_PWD" ]] && cd "$ORIGINAL_PWD"
 
     # Clear test variables
-    unset TEST_TEMP_DIR ORIGINAL_PWD
+    unset TEST_TEMP_DIR ORIGINAL_PWD TEST_TEMPLATES_DIR TEST_THEMES_DIR ORIGINAL_PROJECT_ROOT
 }
 
 # Mock external dependencies

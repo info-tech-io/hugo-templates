@@ -46,14 +46,14 @@ create_build_functions_for_testing() {
         log_info "Validating parameters..."
 
         # Check if template exists
-        if [[ ! -d "$PROJECT_ROOT/templates/$TEMPLATE" ]]; then
+        if [[ ! -d "$TEST_TEMPLATES_DIR/$TEMPLATE" ]]; then
             log_validation_error "Template directory not found: $TEMPLATE" "Check available templates in templates/ directory"
             return 1
         fi
 
         # Verbose output
         if [[ "$VERBOSE" == "true" ]]; then
-            log_info "Template path: $PROJECT_ROOT/templates/$TEMPLATE"
+            log_info "Template path: $TEST_TEMPLATES_DIR/$TEMPLATE"
             log_info "Found template: $TEMPLATE"
         fi
 
@@ -158,7 +158,7 @@ EOF
         log_verbose "Created output directory: $OUTPUT"
 
         # Validate template path
-        local template_path="$PROJECT_ROOT/templates/$TEMPLATE"
+        local template_path="$TEST_TEMPLATES_DIR/$TEMPLATE"
         if [[ ! -d "$template_path" ]]; then
             log_error "Template directory not found: $template_path"
             return 1
@@ -174,7 +174,7 @@ EOF
         fi
 
         # Copy theme files if theme directory exists
-        local theme_path="$PROJECT_ROOT/themes/$THEME"
+        local theme_path="$TEST_THEMES_DIR/$THEME"
         if [[ -d "$theme_path" ]]; then
             log_verbose "Copying theme: $THEME"
             mkdir -p "$OUTPUT/themes"
@@ -265,7 +265,7 @@ EOF
     TEMPLATE="corporate"
 
     # Create template directory
-    mkdir -p "$PROJECT_ROOT/templates/corporate"
+    mkdir -p "$TEST_TEMPLATES_DIR/corporate"
 
     run validate_parameters
     [ "$status" -eq 0 ]
@@ -281,6 +281,9 @@ EOF
 
 @test "validate_parameters checks Hugo availability" {
     # Hugo should be available via our mock
+    # Create template in TEST_TEMPLATES_DIR
+    mkdir -p "$TEST_TEMPLATES_DIR/$TEMPLATE"
+
     run validate_parameters
     [ "$status" -eq 0 ]
 }
@@ -355,7 +358,7 @@ EOF
     TEMPLATE="corporate"
 
     # Create template with components.yml
-    local template_dir="$PROJECT_ROOT/templates/corporate"
+    local template_dir="$TEST_TEMPLATES_DIR/corporate"
     mkdir -p "$template_dir"
     create_test_components_yml "$template_dir/components.yml"
 
@@ -376,7 +379,7 @@ EOF
     TEMPLATE="corporate"
 
     # Create template with malformed components.yml
-    local template_dir="$PROJECT_ROOT/templates/corporate"
+    local template_dir="$TEST_TEMPLATES_DIR/corporate"
     mkdir -p "$template_dir"
     echo "invalid: yaml: content:" > "$template_dir/components.yml"
 
@@ -389,7 +392,7 @@ EOF
 
 @test "functions handle error context correctly" {
     TEMPLATE="corporate"
-    mkdir -p "$PROJECT_ROOT/templates/corporate"
+    mkdir -p "$TEST_TEMPLATES_DIR/corporate"
 
     # Test that error context is set and cleared
     run validate_parameters
@@ -415,7 +418,7 @@ EOF
 @test "verbose mode provides additional output" {
     VERBOSE="true"
     TEMPLATE="corporate"
-    mkdir -p "$PROJECT_ROOT/templates/corporate"
+    mkdir -p "$TEST_TEMPLATES_DIR/corporate"
 
     run validate_parameters
     [ "$status" -eq 0 ]
@@ -427,7 +430,7 @@ EOF
 @test "quiet mode suppresses non-error output" {
     QUIET="true"
     TEMPLATE="corporate"
-    mkdir -p "$PROJECT_ROOT/templates/corporate"
+    mkdir -p "$TEST_TEMPLATES_DIR/corporate"
 
     run validate_parameters
     [ "$status" -eq 0 ]
@@ -439,7 +442,7 @@ EOF
 @test "debug mode enables additional diagnostics" {
     DEBUG_MODE="true"
     TEMPLATE="corporate"
-    mkdir -p "$PROJECT_ROOT/templates/corporate"
+    mkdir -p "$TEST_TEMPLATES_DIR/corporate"
 
     run validate_parameters
     [ "$status" -eq 0 ]
@@ -614,7 +617,7 @@ EOF
     CONTENT=""
 
     # Create template directory with files
-    create_minimal_test_template "$PROJECT_ROOT/templates" "corporate"
+    create_minimal_test_template "$TEST_TEMPLATES_DIR" "corporate"
 
     # Verify OUTPUT doesn't exist yet
     [[ ! -d "$OUTPUT" ]]
@@ -637,10 +640,10 @@ EOF
     THEME="compose"
 
     # Create template with known files
-    mkdir -p "$PROJECT_ROOT/templates/minimal"
-    echo "# Test Template" > "$PROJECT_ROOT/templates/minimal/README.md"
-    echo "test content" > "$PROJECT_ROOT/templates/minimal/test.txt"
-    create_test_hugo_config "$PROJECT_ROOT/templates/minimal/hugo.toml"
+    mkdir -p "$TEST_TEMPLATES_DIR/minimal"
+    echo "# Test Template" > "$TEST_TEMPLATES_DIR/minimal/README.md"
+    echo "test content" > "$TEST_TEMPLATES_DIR/minimal/test.txt"
+    create_test_hugo_config "$TEST_TEMPLATES_DIR/minimal/hugo.toml"
 
     # Call function
     run_safely prepare_build_environment
@@ -663,7 +666,7 @@ EOF
     THEME="compose"
 
     # Ensure template directory doesn't exist
-    [[ ! -d "$PROJECT_ROOT/templates/$TEMPLATE" ]]
+    [[ ! -d "$TEST_TEMPLATES_DIR/$TEMPLATE" ]]
 
     # Call function
     run_safely prepare_build_environment
@@ -687,12 +690,12 @@ EOF
     THEME="test-theme"
 
     # Create template
-    create_minimal_test_template "$PROJECT_ROOT/templates" "minimal"
+    create_minimal_test_template "$TEST_TEMPLATES_DIR" "minimal"
 
     # Create theme directory with files
-    mkdir -p "$PROJECT_ROOT/themes/$THEME"
-    echo "# Theme" > "$PROJECT_ROOT/themes/$THEME/README.md"
-    echo "theme content" > "$PROJECT_ROOT/themes/$THEME/theme.txt"
+    mkdir -p "$TEST_THEMES_DIR/$THEME"
+    echo "# Theme" > "$TEST_THEMES_DIR/$THEME/README.md"
+    echo "theme content" > "$TEST_THEMES_DIR/$THEME/theme.txt"
 
     # Call function
     run_safely prepare_build_environment
@@ -714,10 +717,10 @@ EOF
     THEME="nonexistent-theme"
 
     # Create template but no theme
-    create_minimal_test_template "$PROJECT_ROOT/templates" "minimal"
+    create_minimal_test_template "$TEST_TEMPLATES_DIR" "minimal"
 
     # Ensure theme doesn't exist
-    [[ ! -d "$PROJECT_ROOT/themes/$THEME" ]]
+    [[ ! -d "$TEST_THEMES_DIR/$THEME" ]]
 
     # Call function - should succeed with warning
     run_safely prepare_build_environment
@@ -741,7 +744,7 @@ EOF
     CONTENT="$TEST_TEMP_DIR/custom-content"
 
     # Create template
-    create_minimal_test_template "$PROJECT_ROOT/templates" "minimal"
+    create_minimal_test_template "$TEST_TEMPLATES_DIR" "minimal"
 
     # Create custom content directory with files
     mkdir -p "$CONTENT"
@@ -782,7 +785,7 @@ EOF
     LOG_LEVEL="info"
 
     # Create complete build environment
-    create_minimal_test_template "$PROJECT_ROOT/templates" "minimal"
+    create_minimal_test_template "$TEST_TEMPLATES_DIR" "minimal"
 
     # Prepare the environment first
     run_safely prepare_build_environment
@@ -810,7 +813,7 @@ EOF
     THEME="compose"
 
     # Create build environment
-    create_minimal_test_template "$PROJECT_ROOT/templates" "minimal"
+    create_minimal_test_template "$TEST_TEMPLATES_DIR" "minimal"
     run_safely prepare_build_environment
     [ "$status" -eq 0 ]
 
@@ -838,7 +841,7 @@ EOF
     ENVIRONMENT="development"
 
     # Create build environment
-    create_minimal_test_template "$PROJECT_ROOT/templates" "minimal"
+    create_minimal_test_template "$TEST_TEMPLATES_DIR" "minimal"
     run_safely prepare_build_environment
     [ "$status" -eq 0 ]
 
@@ -875,7 +878,7 @@ EOF
     MINIFY="false"
 
     # Create build environment
-    create_minimal_test_template "$PROJECT_ROOT/templates" "minimal"
+    create_minimal_test_template "$TEST_TEMPLATES_DIR" "minimal"
     run_safely prepare_build_environment
     [ "$status" -eq 0 ]
 
@@ -910,7 +913,7 @@ EOF
     ENVIRONMENT="development"
 
     # Create build environment
-    create_minimal_test_template "$PROJECT_ROOT/templates" "minimal"
+    create_minimal_test_template "$TEST_TEMPLATES_DIR" "minimal"
     run_safely prepare_build_environment
     [ "$status" -eq 0 ]
 
@@ -956,7 +959,7 @@ EOF
     LOG_LEVEL="info"
 
     # Create test template structure
-    create_minimal_test_template "$PROJECT_ROOT/templates" "$TEMPLATE"
+    create_minimal_test_template "$TEST_TEMPLATES_DIR" "$TEMPLATE"
 
     # Verify OUTPUT doesn't exist initially
     [[ ! -d "$OUTPUT" ]]
@@ -1040,13 +1043,13 @@ EOF
 @test "list_templates lists available templates" {
     # Test #57: Verify list_templates() finds and lists templates
     # Create test templates
-    mkdir -p "$PROJECT_ROOT/templates/test-template-a"
-    mkdir -p "$PROJECT_ROOT/templates/test-template-b"
-    mkdir -p "$PROJECT_ROOT/templates/test-template-c"
+    mkdir -p "$TEST_TEMPLATES_DIR/test-template-a"
+    mkdir -p "$TEST_TEMPLATES_DIR/test-template-b"
+    mkdir -p "$TEST_TEMPLATES_DIR/test-template-c"
 
     # Create isolated list_templates function
     list_templates() {
-        local templates_dir="$PROJECT_ROOT/templates"
+        local templates_dir="$TEST_TEMPLATES_DIR"
         if [[ -d "$templates_dir" ]]; then
             find "$templates_dir" -mindepth 1 -maxdepth 1 -type d -exec basename {} \; | sort | sed 's/^/    - /'
         else
@@ -1063,24 +1066,24 @@ EOF
     assert_contains "$output" "test-template-c"
 
     # Cleanup
-    rm -rf "$PROJECT_ROOT/templates/test-template-a"
-    rm -rf "$PROJECT_ROOT/templates/test-template-b"
-    rm -rf "$PROJECT_ROOT/templates/test-template-c"
+    rm -rf "$TEST_TEMPLATES_DIR/test-template-a"
+    rm -rf "$TEST_TEMPLATES_DIR/test-template-b"
+    rm -rf "$TEST_TEMPLATES_DIR/test-template-c"
 }
 
 @test "list_templates handles missing templates directory" {
     # Test #58: Verify graceful handling when no templates found
     # Remove any existing backup first
-    rm -rf "$PROJECT_ROOT/templates.backup"
+    rm -rf "$TEST_TEMPLATES_DIR.backup"
 
     # Temporarily move templates directory
-    if [[ -d "$PROJECT_ROOT/templates" ]]; then
-        mv "$PROJECT_ROOT/templates" "$PROJECT_ROOT/templates.backup"
+    if [[ -d "$TEST_TEMPLATES_DIR" ]]; then
+        mv "$TEST_TEMPLATES_DIR" "$TEST_TEMPLATES_DIR.backup"
     fi
 
     # Create isolated list_templates function
     list_templates() {
-        local templates_dir="$PROJECT_ROOT/templates"
+        local templates_dir="$TEST_TEMPLATES_DIR"
         if [[ -d "$templates_dir" ]]; then
             find "$templates_dir" -mindepth 1 -maxdepth 1 -type d -exec basename {} \; | sort | sed 's/^/    - /'
         else
@@ -1095,8 +1098,8 @@ EOF
     assert_contains "$output" "No templates found"
 
     # Restore templates directory
-    if [[ -d "$PROJECT_ROOT/templates.backup" ]]; then
-        mv "$PROJECT_ROOT/templates.backup" "$PROJECT_ROOT/templates"
+    if [[ -d "$TEST_TEMPLATES_DIR.backup" ]]; then
+        mv "$TEST_TEMPLATES_DIR.backup" "$TEST_TEMPLATES_DIR"
     fi
 }
 
@@ -1338,10 +1341,10 @@ EOF
     THEME="compose"
 
     # Create template with empty files
-    mkdir -p "$PROJECT_ROOT/templates/$TEMPLATE"
-    touch "$PROJECT_ROOT/templates/$TEMPLATE/README.md"
-    touch "$PROJECT_ROOT/templates/$TEMPLATE/hugo.toml"
-    touch "$PROJECT_ROOT/templates/$TEMPLATE/empty.txt"
+    mkdir -p "$TEST_TEMPLATES_DIR/$TEMPLATE"
+    touch "$TEST_TEMPLATES_DIR/$TEMPLATE/README.md"
+    touch "$TEST_TEMPLATES_DIR/$TEMPLATE/hugo.toml"
+    touch "$TEST_TEMPLATES_DIR/$TEMPLATE/empty.txt"
 
     # Call function - should succeed even with empty files
     run_safely prepare_build_environment
@@ -1387,10 +1390,10 @@ EOF
     THEME="compose"
 
     # Create template with files containing spaces
-    mkdir -p "$PROJECT_ROOT/templates/$TEMPLATE"
-    echo "content" > "$PROJECT_ROOT/templates/$TEMPLATE/file with spaces.md"
-    echo "more content" > "$PROJECT_ROOT/templates/$TEMPLATE/another file.txt"
-    create_test_hugo_config "$PROJECT_ROOT/templates/$TEMPLATE/hugo.toml"
+    mkdir -p "$TEST_TEMPLATES_DIR/$TEMPLATE"
+    echo "content" > "$TEST_TEMPLATES_DIR/$TEMPLATE/file with spaces.md"
+    echo "more content" > "$TEST_TEMPLATES_DIR/$TEMPLATE/another file.txt"
+    create_test_hugo_config "$TEST_TEMPLATES_DIR/$TEMPLATE/hugo.toml"
 
     # Call function
     run_safely prepare_build_environment
@@ -1446,7 +1449,7 @@ EOF
     CONTENT="$TEST_TEMP_DIR/deep-content"
 
     # Create template
-    create_minimal_test_template "$PROJECT_ROOT/templates" "minimal"
+    create_minimal_test_template "$TEST_TEMPLATES_DIR" "minimal"
 
     # Create deeply nested content structure (5 levels)
     mkdir -p "$CONTENT/level1/level2/level3/level4/level5"
@@ -1474,7 +1477,7 @@ EOF
     LOG_LEVEL="debug"
 
     # Create and prepare build environment
-    create_minimal_test_template "$PROJECT_ROOT/templates" "minimal"
+    create_minimal_test_template "$TEST_TEMPLATES_DIR" "minimal"
     run_safely prepare_build_environment
     [ "$status" -eq 0 ]
 
@@ -1513,7 +1516,7 @@ EOF
     THEME="compose"
 
     # Create template
-    create_minimal_test_template "$PROJECT_ROOT/templates" "minimal"
+    create_minimal_test_template "$TEST_TEMPLATES_DIR" "minimal"
 
     # Pre-create OUTPUT directory with existing file
     mkdir -p "$OUTPUT"
@@ -1541,9 +1544,9 @@ EOF
     THEME="compose"
 
     # Create template with specific content
-    mkdir -p "$PROJECT_ROOT/templates/$TEMPLATE"
-    echo "# NEW README" > "$PROJECT_ROOT/templates/$TEMPLATE/README.md"
-    create_test_hugo_config "$PROJECT_ROOT/templates/$TEMPLATE/hugo.toml"
+    mkdir -p "$TEST_TEMPLATES_DIR/$TEMPLATE"
+    echo "# NEW README" > "$TEST_TEMPLATES_DIR/$TEMPLATE/README.md"
+    create_test_hugo_config "$TEST_TEMPLATES_DIR/$TEMPLATE/hugo.toml"
 
     # Pre-create OUTPUT with conflicting file
     mkdir -p "$OUTPUT"
@@ -1585,10 +1588,10 @@ EOF
     THEME="empty-theme"
 
     # Create template
-    create_minimal_test_template "$PROJECT_ROOT/templates" "minimal"
+    create_minimal_test_template "$TEST_TEMPLATES_DIR" "minimal"
 
     # Create empty theme directory (no files)
-    mkdir -p "$PROJECT_ROOT/themes/$THEME"
+    mkdir -p "$TEST_THEMES_DIR/$THEME"
 
     # Call function - should succeed despite empty theme
     run_safely prepare_build_environment
