@@ -1,0 +1,48 @@
+{
+  "federation": {
+    "name": "InfoTech.io Documentation Federation",
+    "baseURL": "https://info-tech-io.github.io",
+    "strategy": "download-merge-deploy",
+    "build_settings": {
+      "parallel": true,
+      "max_parallel_builds": 5,
+      "cache_enabled": true,
+      "performance_tracking": true
+    }
+  },
+  "modules": [
+    {
+      "name": "corporate-site",
+      "source": {
+        "repository": "https://github.com/info-tech-io/info-tech",
+        "path": "docs",
+        "branch": "main"
+      },
+      "destination": "/",
+      "module_json": "module.json",
+      "css_path_prefix": ""
+    },
+    {
+      "name": "quiz-docs",
+      "source": {
+        "repository": "https://github.com/info-tech-io/quiz",
+        "path": "docs",
+        "branch": "main"
+      },
+      "destination": "/quiz/",
+      "module_json": "module.json",
+      "css_path_prefix": "/quiz"
+    },
+    {
+      "name": "hugo-templates-docs",
+      "source": {
+        "repository": "https://github.com/info-tech-io/hugo-templates",
+        "path": "docs",
+        "branch": "main"
+      },
+      "destination": "/hugo-templates/",
+      "module_json": "module.json",
+      "css_path_prefix": "/hugo-templates"
+    }
+  ]
+}

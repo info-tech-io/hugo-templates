@@ -1,0 +1,32 @@
+{
+  "$schema": "../../schemas/modules.schema.json",
+  "federation": {
+    "name": "Simple Test Federation",
+    "baseURL": "http://localhost:1313",
+    "strategy": "download-merge-deploy"
+  },
+  "modules": [
+    {
+      "name": "main-site",
+      "source": {
+        "repository": "local",
+        "path": "./docs",
+        "branch": "main"
+      },
+      "module_json": "module.json",
+      "destination": "/",
+      "css_path_prefix": ""
+    },
+    {
+      "name": "sub-project",
+      "source": {
+        "repository": "local",
+        "path": "./examples",
+        "branch": "main"
+      },
+      "module_json": "module.json",
+      "destination": "/examples/",
+      "css_path_prefix": "/examples"
+    }
+  ]
+}

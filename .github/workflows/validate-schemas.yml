@@ -1,0 +1,103 @@
+name: Schema Validation
+
+on:
+  push:
+    branches: [ main, develop, epic/*, feature/* ]
+    paths:
+      - 'schemas/**'
+      - 'scripts/federated-build.sh'
+      - 'docs/content/examples/*.json'
+      - 'test-modules.json'
+      - 'tests/test-schema-validation.sh'
+  pull_request:
+    branches: [ main, develop, epic/* ]
+    paths:
+      - 'schemas/**'
+      - 'scripts/federated-build.sh'
+      - 'docs/content/examples/*.json'
+      - 'test-modules.json'
+      - 'tests/test-schema-validation.sh'
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '18'
+
+jobs:
+  validate-schemas:
+    name: Validate JSON Schemas
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+
+    - name: Install ajv-cli for schema validation
+      run: npm install -g ajv-cli ajv-formats
+
+    - name: Validate schema syntax
+      run: |
+        echo "🔍 Validating JSON Schema syntax..."
+        ajv compile -s schemas/modules.schema.json
+
+    - name: Validate example configurations
+      run: |
+        echo "📋 Validating example configurations against schema..."
+
+        # Validate all example files
+        for config in test-modules.json docs/content/examples/*.json; do
+          echo "  • Validating: $config"
+          ajv validate -s schemas/modules.schema.json -d "$config" --strict=false
+        done
+
+        echo "✅ All example configurations are valid"
+
+    - name: Run schema validation test suite
+      run: |
+        echo "🧪 Running schema validation test suite..."
+        chmod +x tests/test-schema-validation.sh
+        ./tests/test-schema-validation.sh
+
+    - name: Test federated-build.sh validation
+      run: |
+        echo "🔧 Testing federated-build.sh validation mode..."
+
+        # Test with valid configuration
+        ./scripts/federated-build.sh --config=test-modules.json --validate-only
+
+        # Test with all examples
+        for config in docs/content/examples/*.json; do
+          echo "  • Testing: $config"
+          ./scripts/federated-build.sh --config="$config" --validate-only
+        done
+
+        echo "✅ All federated-build.sh validation tests passed"
+
+  validate-on-multiple-platforms:
+    name: Cross-Platform Validation
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 5
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+
+    - name: Run validation test suite
+      run: |
+        echo "🧪 Running test suite on ${{ matrix.os }}..."
+        chmod +x tests/test-schema-validation.sh
+        ./tests/test-schema-validation.sh

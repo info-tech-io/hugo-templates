@@ -1,0 +1,8 @@
+{
+  "federation": {
+    "name": "Empty Modules Test",
+    "baseURL": "http://localhost:1313",
+    "strategy": "download-merge-deploy"
+  },
+  "modules": []
+}

@@ -57,6 +57,29 @@ runs:
           echo "/c/Hugo/bin" >> $GITHUB_PATH
         fi
 
+    - name: Restore Hugo from Cache
+      if: steps.cache-hugo.outputs.cache-hit == 'true'
+      shell: bash
+      run: |
+        # When Hugo is restored from cache, reinstall it to system paths
+        if [[ "${{ runner.os }}" == "Linux" ]]; then
+          cd ~/hugo
+          if [[ -f hugo.deb ]]; then
+            sudo dpkg -i hugo.deb
+          fi
+        elif [[ "${{ runner.os }}" == "macOS" ]]; then
+          if [[ -f ~/hugo/hugo ]]; then
+            sudo cp ~/hugo/hugo /usr/local/bin/
+            sudo chmod +x /usr/local/bin/hugo
+          fi
+        elif [[ "${{ runner.os }}" == "Windows" ]]; then
+          if [[ -f ~/hugo/hugo.exe ]]; then
+            mkdir -p /c/Hugo/bin
+            cp ~/hugo/hugo.exe /c/Hugo/bin/
+            echo "/c/Hugo/bin" >> $GITHUB_PATH
+          fi
+        fi
+
     - name: Verify Hugo Installation
       shell: bash
       run: |
