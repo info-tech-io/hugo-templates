@@ -1237,7 +1237,8 @@ download_module_source() {
 
         local clone_dir="$MODULE_WORK_DIR/source"
 
-        if ! git clone --depth 1 --branch "$module_branch" "$module_repo" "$clone_dir" 2>&1 | grep -v "^Cloning" || true; then
+        # Suppress "Cloning into..." informational message but keep errors visible
+        if ! git clone --depth 1 --branch "$module_branch" "$module_repo" "$clone_dir" 2>&1 | grep -v "^Cloning"; then
             log_error "Failed to clone repository: $module_repo"
             exit_function
             return 1
