@@ -2,7 +2,7 @@ name: Schema Validation
 
 on:
   push:
-    branches: [ main, develop, epic/*, feature/* ]
+    branches: [ main, epic/*, feature/* ]
     paths:
       - 'schemas/**'
       - 'scripts/federated-build.sh'
@@ -10,7 +10,7 @@ on:
       - 'test-modules.json'
       - 'tests/test-schema-validation.sh'
   pull_request:
-    branches: [ main, develop, epic/* ]
+    branches: [ main, epic/* ]
     paths:
       - 'schemas/**'
       - 'scripts/federated-build.sh'
