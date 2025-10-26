@@ -1237,8 +1237,7 @@ download_module_source() {
 
         local clone_dir="$MODULE_WORK_DIR/source"
 
-        # TEMPORARY DEBUG: Removed grep -v and || true to see actual Git errors
-        if ! git clone --depth 1 --branch "$module_branch" "$module_repo" "$clone_dir" 2>&1; then
+        if ! git clone --depth 1 --branch "$module_branch" "$module_repo" "$clone_dir" 2>&1 | grep -v "^Cloning" || true; then
             log_error "Failed to clone repository: $module_repo"
             exit_function
             return 1
@@ -1358,18 +1357,19 @@ build_module() {
     local build_params=()
 
     # Add config path (relative to module work directory)
+    # build.sh expects --option value (not --option=value)
     if [[ -f "$module_work_dir/$module_config" ]]; then
-        build_params+=("--config=$module_work_dir/$module_config")
+        build_params+=("--config" "$module_work_dir/$module_config")
     else
         log_warning "Module config not found: $module_work_dir/$module_config, using defaults"
     fi
 
     # Add output directory
-    build_params+=("--output=$MODULE_OUTPUT_DIR")
+    build_params+=("--output" "$MODULE_OUTPUT_DIR")
 
     # Add content directory (if module work directory has content)
     if [[ -d "$module_work_dir/content" ]]; then
-        build_params+=("--content=$module_work_dir/content")
+        build_params+=("--content" "$module_work_dir/content")
     fi
 
     # Add verbosity settings
