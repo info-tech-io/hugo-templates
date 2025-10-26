@@ -1239,8 +1239,15 @@ download_module_source() {
 
         local clone_dir="$MODULE_WORK_DIR/source"
 
-        # Clone repository (suppress "Cloning into..." message but keep errors)
-        if ! git clone --depth 1 --branch "$module_branch" "$module_repo" "$clone_dir" 2>&1 | grep -v "^Cloning"; then
+        # Clone repository - capture output but check git's actual exit code
+        local clone_output
+        clone_output=$(git clone --depth 1 --branch "$module_branch" "$module_repo" "$clone_dir" 2>&1)
+        local clone_status=$?
+
+        # Show output (filter out informational "Cloning into..." line)
+        echo "$clone_output" | grep -v "^Cloning" || true
+
+        if [ $clone_status -ne 0 ]; then
             log_error "Failed to clone repository: $module_repo"
             exit_function
             return 1
