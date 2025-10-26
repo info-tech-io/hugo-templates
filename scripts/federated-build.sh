@@ -915,26 +915,28 @@ rewrite_asset_paths() {
         # Pattern matches: href="/path" or href='/path'
         # Excludes: href="//..." (protocol-relative URLs)
         sed -i -E \
-            "s|href=(['\"])/([ ^/][^'\"]*)\1|href=\"${css_prefix}/\2\"|g" \
+            "s|href=(['\"])/([^/][^'\"]*)\1|href=\"${css_prefix}/\2\"|g" \
             "$html_file"
 
         # Rewrite src="/..." to src="/prefix/..."
         sed -i -E \
-            "s|src=(['\"])/([ ^/][^'\"]*)\1|src=\"${css_prefix}/\2\"|g" \
+            "s|src=(['\"])/([^/][^'\"]*)\1|src=\"${css_prefix}/\2\"|g" \
             "$html_file"
 
         # Rewrite data-* attributes with paths
         sed -i -E \
-            "s|data-([a-zA-Z-]+)=(['\"])/([ ^/][^'\"]*)\2|data-\1=\"${css_prefix}/\3\"|g" \
+            "s|data-([a-zA-Z-]+)=(['\"])/([^/][^'\"]*)\2|data-\1=\"${css_prefix}/\3\"|g" \
             "$html_file"
 
         # Rewrite CSS url(/...) to url(/prefix/...)
         sed -i -E \
-            "s|url\(/([ ^/)][^\)]*)\)|url(${css_prefix}/\1)|g" \
+            "s|url\(/([^/)][^\)]*)\)|url(${css_prefix}/\1)|g" \
             "$html_file"
 
-        # Count paths after rewriting
-        local after_count=$(grep -cE "(href|src)=\"${css_prefix}/" "$html_file" 2>/dev/null || echo 0)
+        # Count paths after rewriting (strip newlines to prevent arithmetic errors)
+        local after_count
+        after_count=$(grep -cE "(href|src)=\"${css_prefix}/" "$html_file" 2>/dev/null || echo "0")
+        after_count=$(echo "$after_count" | tr -d '[:space:]')
         rewrites_made=$((rewrites_made + after_count))
 
     done
@@ -1237,12 +1239,8 @@ download_module_source() {
 
         local clone_dir="$MODULE_WORK_DIR/source"
 
-        # TEMP DEBUG: Show ALL git clone output to diagnose issue
-        echo "DEBUG: About to clone $module_repo to $clone_dir"
-        if git clone --depth 1 --branch "$module_branch" "$module_repo" "$clone_dir" 2>&1; then
-            echo "DEBUG: Clone command returned success"
-        else
-            echo "DEBUG: Clone command returned failure (exit code: $?)"
+        # Clone repository (suppress "Cloning into..." message but keep errors)
+        if ! git clone --depth 1 --branch "$module_branch" "$module_repo" "$clone_dir" 2>&1 | grep -v "^Cloning"; then
             log_error "Failed to clone repository: $module_repo"
             exit_function
             return 1
