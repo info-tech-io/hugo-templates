@@ -384,7 +384,7 @@ quiz_data: "web-basics"
 
 Test your knowledge of HTML, CSS, and JavaScript fundamentals.
 
-{{< quiz "web-basics" >}}
+{{</* quiz "web-basics" */>}}
 EOF
 
 # Create quiz data

@@ -1020,17 +1020,24 @@ type: "quiz"
 
 # JavaScript Fundamentals
 
-Before we begin, let's test your current JavaScript knowledge:
+Before we begin, let's test your current JavaScript knowledge with a quiz.
 
-{{< quiz id="js-fundamentals" file="javascript-basics" >}}
+**Quiz component example:**
+```html
+{{</* quiz id="js-fundamentals" file="javascript-basics" */>}}
+```
 
-This quiz covers basic JavaScript concepts including:
+This quiz shortcode demonstrates how to embed interactive quizzes.
+It covers basic JavaScript concepts including:
 - Variables and data types
 - Functions and scope
 - Objects and arrays
 - Control flow
 
-{{< quiz id="advanced-js" file="javascript-advanced" >}}
+**Advanced quiz example:**
+```html
+{{</* quiz id="advanced-js" file="javascript-advanced" */>}}
+```
 ```
 
 ### Data Structure
