@@ -1830,7 +1830,14 @@ merge_federation_output() {
             continue
         fi
 
-        local module_output="${output_dirs[$i]}"
+        # Safe access to output_dirs array with bounds checking (Issue #39 fix)
+        if [[ -v "output_dirs[$i]" ]]; then
+            local module_output="${output_dirs[$i]}"
+        else
+            log_error "Missing output directory for module index $i ($module_name) - module likely failed to build"
+            skipped_count=$((skipped_count + 1))
+            continue
+        fi
 
         # Determine target directory
         local dest_path="${module_dest#/}"
