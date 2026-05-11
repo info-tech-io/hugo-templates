@@ -1,0 +1,57 @@
+{
+  "slowestTests": [
+    {
+      "name": "Performance Benchmarking Scalability Benchmarks should benchmark multiple concurrent builds",
+      "file": "/root/info-tech-io/hugo-templates/tests/performance/benchmark.test.js",
+      "duration": 3380
+    },
+    {
+      "name": "Build System Integration Parallel build support should handle multiple builds concurrently",
+      "file": "/root/info-tech-io/hugo-templates/tests/integration/build.test.js",
+      "duration": 2366
+    },
+    {
+      "name": "Performance Benchmarking File Size Benchmarks should compare minified vs non-minified sizes",
+      "file": "/root/info-tech-io/hugo-templates/tests/performance/benchmark.test.js",
+      "duration": 2297
+    },
+    {
+      "name": "CLI Workflow Integration Error recovery workflows should recover from invalid parameters gracefully",
+      "file": "/root/info-tech-io/hugo-templates/tests/integration/cli-workflow.test.js",
+      "duration": 2187
+    },
+    {
+      "name": "Performance Benchmarking Scalability Benchmarks should benchmark repeated operations",
+      "file": "/root/info-tech-io/hugo-templates/tests/performance/benchmark.test.js",
+      "duration": 2025
+    }
+  ],
+  "fastestTests": [
+    {
+      "name": "Components System Components availability should have quiz-engine component",
+      "file": "/root/info-tech-io/hugo-templates/tests/unit/components.test.js",
+      "duration": 1
+    },
+    {
+      "name": "Components System Quiz Engine component should have valid component configuration",
+      "file": "/root/info-tech-io/hugo-templates/tests/unit/components.test.js",
+      "duration": 1
+    },
+    {
+      "name": "Components System Component API should validate component metadata format",
+      "file": "/root/info-tech-io/hugo-templates/tests/unit/components.test.js",
+      "duration": 1
+    },
+    {
+      "name": "Template System Template structure minimal template should have valid metadata.json",
+      "file": "/root/info-tech-io/hugo-templates/tests/unit/templates.test.js",
+      "duration": 1
+    },
+    {
+      "name": "Template System Template structure minimal template should have static directory if needed",
+      "file": "/root/info-tech-io/hugo-templates/tests/unit/templates.test.js",
+      "duration": 1
+    }
+  ],
+  "averageTestDuration": 561.2608695652174
+}
